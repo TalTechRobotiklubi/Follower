@@ -378,6 +378,10 @@
               <Packet>UIControls</Packet>
               <Period>0</Period>
             </ReceivePacket>
+            <ReceivePacket>
+              <Packet>Sensors</Packet>
+              <Period>0</Period>
+            </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>

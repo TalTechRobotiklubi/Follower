@@ -16,8 +16,12 @@ SensorInputStatus_Typedef;
 /*private variables*/
 SensorInputStatus_Typedef 	priv_sensor1Stat = SENSOR_INPUT_IDLE;
 SensorInputStatus_Typedef 	priv_sensor2Stat = SENSOR_INPUT_IDLE;
+SensorInputStatus_Typedef 	priv_sensor3Stat = SENSOR_INPUT_IDLE;
+SensorInputStatus_Typedef 	priv_sensor4Stat = SENSOR_INPUT_IDLE;
 uint16_t 					priv_sensor1Value = 0;
 uint16_t 					priv_sensor2Value = 0;
+uint16_t 					priv_sensor3Value = 0;
+uint16_t 					priv_sensor4Value = 0;
 
 /*private function declarations*/
 void initDistanceSensor(GPIO_IdDef io);
@@ -72,16 +76,52 @@ void initDistanceSensor(GPIO_IdDef io)
 }
 
 /**
-00166   * @brief  This function handles External lines 15 to 10 interrupt request.
-00167   * @param  None
-00168   * @retval None
-00169   */
-void EXTI15_10_IRQHandler(void)
+* @brief  This function handles External line 4 interrupt request.
+* @param  None
+* @retval None
+*/
+void EXTI4_IRQHandler(void)
 {
-	if(EXTI_GetITStatus(GPIO_table[URF_SENSOR1].exti) != RESET)
+	if(EXTI_GetITStatus(GPIO_table[URF4_ECHO].exti) != RESET)
+	{
+
+		if (GPIO_inputValue(URF4_ECHO) == INPUT_ON)
+		{
+			// rising edge, start to measure
+			Timer_startTimer(TIMER2_ID);
+			priv_sensor4Stat = SENSOR_INPUT_RISED;
+		}
+		else
+		{
+			// falling edge, check that rising was previously
+			if (priv_sensor4Stat == SENSOR_INPUT_RISED)
+			{
+				/*stop timer*/
+				Timer_stopTimer(TIMER2_ID);
+				// read measurement result
+				priv_sensor4Value = Timer_getTimerValue(TIMER2_ID);
+				/*disable pin detection*/
+				EXTI_DeInit();
+			}
+			priv_sensor4Stat = SENSOR_INPUT_FALLED;
+		}
+
+		/* Clear the  EXTI line pending bit */
+		EXTI_ClearITPendingBit(GPIO_table[URF4_ECHO].exti);
+	}
+}
+
+/**
+* @brief  This function handles External lines 9 to 5 interrupt request.
+* @param  None
+* @retval None
+*/
+void EXTI9_5_IRQHandler(void)
+{
+	if(EXTI_GetITStatus(GPIO_table[URF1_ECHO].exti) != RESET)
     {
 
-		if (GPIO_inputValue(URF_SENSOR1) == INPUT_ON)
+		if (GPIO_inputValue(URF1_ECHO) == INPUT_ON)
 		{
 			// rising edge, start to measure
 			Timer_startTimer(TIMER2_ID);
@@ -102,14 +142,14 @@ void EXTI15_10_IRQHandler(void)
 			priv_sensor1Stat = SENSOR_INPUT_FALLED;
 		}
 
-		/* Clear the  EXTI line 11 pending bit */
-		EXTI_ClearITPendingBit(GPIO_table[URF_SENSOR1].exti);
+		/* Clear the  EXTI line pending bit */
+		EXTI_ClearITPendingBit(GPIO_table[URF1_ECHO].exti);
     }
 
-	if(EXTI_GetITStatus(GPIO_table[URF_SENSOR2].exti) != RESET)
+	if(EXTI_GetITStatus(GPIO_table[URF2_ECHO].exti) != RESET)
 	{
 
-		if (GPIO_inputValue(URF_SENSOR2) == INPUT_ON)
+		if (GPIO_inputValue(URF2_ECHO) == INPUT_ON)
 		{
 			// rising edge, start to measure
 			Timer_startTimer(TIMER2_ID);
@@ -130,16 +170,52 @@ void EXTI15_10_IRQHandler(void)
 			priv_sensor2Stat = SENSOR_INPUT_FALLED;
 		}
 
-		/* Clear the  EXTI line 11 pending bit */
-		EXTI_ClearITPendingBit(GPIO_table[URF_SENSOR2].exti);
+		/* Clear the  EXTI line pending bit */
+		EXTI_ClearITPendingBit(GPIO_table[URF2_ECHO].exti);
+	}
+
+	if(EXTI_GetITStatus(GPIO_table[URF3_ECHO].exti) != RESET)
+	{
+
+		if (GPIO_inputValue(URF3_ECHO) == INPUT_ON)
+		{
+			// rising edge, start to measure
+			Timer_startTimer(TIMER2_ID);
+			priv_sensor3Stat = SENSOR_INPUT_RISED;
+		}
+		else
+		{
+			// falling edge, check that rising was previously
+			if (priv_sensor3Stat == SENSOR_INPUT_RISED)
+			{
+				/*stop timer*/
+				Timer_stopTimer(TIMER2_ID);
+				// read measurement result
+				priv_sensor3Value = Timer_getTimerValue(TIMER2_ID);
+				/*disable pin detection*/
+				EXTI_DeInit();
+			}
+			priv_sensor3Stat = SENSOR_INPUT_FALLED;
+		}
+
+		/* Clear the  EXTI line pending bit */
+		EXTI_ClearITPendingBit(GPIO_table[URF3_ECHO].exti);
 	}
 }
 
 void Sensor_TASK_startMeasurement1(void)
 {
 	priv_sensor1Stat = SENSOR_INPUT_IDLE;
-	// enable input pin for sensor 1
-	initDistanceSensor(URF_SENSOR1);
+	// set trigger output high
+	GPIO_outputOn(URF1_TRIG);
+	Timer_startTimer(TIMER2_ID);
+	// keep output high for 20 us
+	while (Timer_getTimerValue(TIMER2_ID) < 20);
+	Timer_stopTimer(TIMER2_ID);
+	// set trigger output low
+	GPIO_outputOff(URF1_TRIG);
+	// enable input pin for sensor 2
+	initDistanceSensor(URF1_ECHO);
 }
 
 void Sensor_TASK_readDistance1(void)
@@ -165,15 +241,15 @@ void Sensor_TASK_startMeasurement2(void)
 {
 	priv_sensor2Stat = SENSOR_INPUT_IDLE;
 	// set trigger output high
-	GPIO_outputOn(URF_TRIGGER_OUT);
+	GPIO_outputOn(URF2_TRIG);
 	Timer_startTimer(TIMER2_ID);
 	// keep output high for 20 us
 	while (Timer_getTimerValue(TIMER2_ID) < 20);
 	Timer_stopTimer(TIMER2_ID);
 	// set trigger output low
-	GPIO_outputOff(URF_TRIGGER_OUT);
+	GPIO_outputOff(URF2_TRIG);
 	// enable input pin for sensor 2
-	initDistanceSensor(URF_SENSOR2);
+	initDistanceSensor(URF2_ECHO);
 }
 
 void Sensor_TASK_readDistance2(void)
@@ -195,3 +271,70 @@ void Sensor_TASK_readDistance2(void)
 	DL_setData(DLParamDistanceSensor2, &distance);
 }
 
+void Sensor_TASK_startMeasurement3(void)
+{
+	priv_sensor3Stat = SENSOR_INPUT_IDLE;
+	// set trigger output high
+	GPIO_outputOn(URF3_TRIG);
+	Timer_startTimer(TIMER2_ID);
+	// keep output high for 20 us
+	while (Timer_getTimerValue(TIMER2_ID) < 20);
+	Timer_stopTimer(TIMER2_ID);
+	// set trigger output low
+	GPIO_outputOff(URF3_TRIG);
+	// enable input pin for sensor 2
+	initDistanceSensor(URF3_ECHO);
+}
+
+void Sensor_TASK_readDistance3(void)
+{
+	uint16_t distance = 0;
+	// measurement has taken too long
+	if (priv_sensor3Stat == SENSOR_INPUT_RISED)
+	{
+		Timer_stopTimer(TIMER2_ID);
+		priv_sensor3Stat = SENSOR_INPUT_IDLE;
+		priv_sensor3Value = 0;
+	}
+	// disable pin detection anyway
+	EXTI_DeInit();
+	/*write distance result in cm to DL*/
+	distance = priv_sensor3Value / 58;  // 147 us equals 1 inch -> 147 / 2,54 = 57,8
+	if (distance > 255)
+		distance = 255;
+	DL_setData(DLParamDistanceSensor3, &distance);
+}
+
+void Sensor_TASK_startMeasurement4(void)
+{
+	priv_sensor4Stat = SENSOR_INPUT_IDLE;
+	// set trigger output high
+	GPIO_outputOn(URF4_TRIG);
+	Timer_startTimer(TIMER2_ID);
+	// keep output high for 20 us
+	while (Timer_getTimerValue(TIMER2_ID) < 20);
+	Timer_stopTimer(TIMER2_ID);
+	// set trigger output low
+	GPIO_outputOff(URF4_TRIG);
+	// enable input pin for sensor 2
+	initDistanceSensor(URF4_ECHO);
+}
+
+void Sensor_TASK_readDistance4(void)
+{
+	uint16_t distance = 0;
+	// measurement has taken too long
+	if (priv_sensor4Stat == SENSOR_INPUT_RISED)
+	{
+		Timer_stopTimer(TIMER2_ID);
+		priv_sensor4Stat = SENSOR_INPUT_IDLE;
+		priv_sensor4Value = 0;
+	}
+	// disable pin detection anyway
+	EXTI_DeInit();
+	/*write distance result in cm to DL*/
+	distance = priv_sensor4Value / 58;  // 147 us equals 1 inch -> 147 / 2,54 = 57,8
+	if (distance > 255)
+		distance = 255;
+	DL_setData(DLParamDistanceSensor4, &distance);
+}
