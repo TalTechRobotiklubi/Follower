@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;cxx;c;def</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{3fa590ba-6af7-4748-aef6-b17eb3a3d691}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{601d43ba-a973-46e4-917f-fdd82f615bb9}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{4d325256-5134-45ab-91d5-324449be8442}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Spine">
+      <UniqueIdentifier>{22764ec6-c8f5-4500-88f8-eb6b1baac7f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Class Forward Declarations">
+      <UniqueIdentifier>{16e72a1c-5165-4fce-add5-3cfc7f4f0022}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="followerui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_followerui.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_followerui.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_followerui.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Data\DataLayerCAN.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Data\DataLayerConfig.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Data\PacketConfig.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Data\PacketHandler.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Data\SpineCmd.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Data\SpineData.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Data\Typedef.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Spine\Serial.cpp">
+      <Filter>Spine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Spine\SpineCmdCAN.cpp">
+      <Filter>Spine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Spine\SpineCommCAN.cpp">
+      <Filter>Spine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Spine\SpineDataCAN.cpp">
+      <Filter>Spine</Filter>
+    </ClCompile>
+    <ClCompile Include="WorkerThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Follower.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="followerui.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="followerui.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="followerui.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GeneratedFiles\ui_followerui.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FwdDecl\DataLayerCAN_Fwd.h">
+      <Filter>Class Forward Declarations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FwdDecl\SpineCmd_Fwd.h">
+      <Filter>Class Forward Declarations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FwdDecl\SpineComm_Fwd.h">
+      <Filter>Class Forward Declarations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FwdDecl\SpineData_Fwd.h">
+      <Filter>Class Forward Declarations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Data\CANmessages.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Data\Data.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Data\DataLayerCAN.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Data\DataLayerConfig.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Data\PacketConfig.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Data\PacketHandler.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Data\SpineCmd.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Data\SpineData.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Data\Typedef.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Spine\CSpineComm.h">
+      <Filter>Spine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Spine\Serial.h">
+      <Filter>Spine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Spine\SpineCmdCAN.h">
+      <Filter>Spine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Spine\SpineCommCAN.h">
+      <Filter>Spine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Spine\SpineDataCAN.h">
+      <Filter>Spine</Filter>
+    </ClInclude>
+    <ClInclude Include="WorkerThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Follower.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
