@@ -1,10 +1,10 @@
 #include "Follower.h"
-#include "WorkerThread.h"
+#include "CANWorkerThread.h"
 
 
 Follower::Follower(void)
 {
-    workerThread = new WorkerThread();
+    workerThread = new CANWorkerThread();
 }
 
 

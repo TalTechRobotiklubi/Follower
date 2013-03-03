@@ -12,12 +12,25 @@ SpineDataCAN::SpineDataCAN() : SpineData()
     {
         buttonPresses_[i] = false;
     }
+
+    for(int i = 0; i < 6; i++)
+        sensors_[i] = 0;
+}
+
+void SpineDataCAN::GetSensorData(int *sensor_data)
+{
+    sensor_data[0] = sensors_[0];
+    sensor_data[1] = sensors_[1];
+    sensor_data[2] = sensors_[2];
+    sensor_data[3] = sensors_[3];
+    sensor_data[4] = sensors_[4];
+    sensor_data[5] = sensors_[5];
+
+
 }
 
 bool SpineDataCAN::SetReceivedDataToObject(DataLayerCAN* dataLayer)
 {	
-	// ball sensor
-	dataLayer->DL_getData(DLParamBallContact, &ballSensed_);
 	// motor speeds
     dataLayer->DL_getData(DLParamMotor1ActualSpeed, &motorSpeed1_);
     dataLayer->DL_getData(DLParamMotor2ActualSpeed, &motorSpeed2_);
@@ -27,6 +40,14 @@ bool SpineDataCAN::SetReceivedDataToObject(DataLayerCAN* dataLayer)
     dataLayer->DL_getData(DLParamButtonTopRight, &buttonPresses_[Top_Right_Button]);
     dataLayer->DL_getData(DLParamButtonBottomLeft, &buttonPresses_[Bottom_Left_Button]);
     dataLayer->DL_getData(DLParamButtonBottomRight, &buttonPresses_[Bottom_Right_Button]);
+    /* sensor data */
+    dataLayer->DL_getData(DLParamDistanceSensor1, &sensors_[0]);
+    dataLayer->DL_getData(DLParamDistanceSensor2, &sensors_[1]);
+    dataLayer->DL_getData(DLParamDistanceSensor3, &sensors_[2]);
+    dataLayer->DL_getData(DLParamDistanceSensor4, &sensors_[3]);
+    dataLayer->DL_getData(DLParamDistanceSensor5, &sensors_[4]);
+    dataLayer->DL_getData(DLParamDistanceSensor6, &sensors_[5]);
+
     /*update also start button state */
     if (buttonPresses_[Top_Left_Button] == true)
     {

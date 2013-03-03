@@ -482,10 +482,6 @@ void SpineCommCAN::SetLogicDataToDataLayer( SpineCmd* spineCmd)
     dataLayerCAN_.DL_setData(DLParamMotor1RequestSpeed, &motor1);
     dataLayerCAN_.DL_setData(DLParamMotor2RequestSpeed, &motor2);
     dataLayerCAN_.DL_setData(DLParamMotor3RequestSpeed, &motor3);
-    dataLayerCAN_.DL_setData(DLParamBallCharge, &charge);
-    dataLayerCAN_.DL_setData(DLParamBallDribblerPower, &dribblerPower);
-    dataLayerCAN_.DL_setData(DLParamBallKickTime, &kickTime);
-    dataLayerCAN_.DL_setData(DLParamBallKick, &kick);
     dataLayerCAN_.DL_setData(DLParamScreenRow, &row);
     dataLayerCAN_.DL_setData(DLParamScreenColumn, &column);
     dataLayerCAN_.DL_setData(DLParamScreenTextLen, &length);

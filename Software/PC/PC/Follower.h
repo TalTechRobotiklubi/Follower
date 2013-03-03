@@ -1,6 +1,6 @@
 #pragma once
 #include "qobject.h"
-#include "WorkerThread.h"
+#include "CANWorkerThread.h"
 
 
 class Follower :
@@ -10,6 +10,6 @@ public:
     Follower(void);
     ~Follower(void);
 
-    WorkerThread *workerThread;
+    CANWorkerThread *workerThread;
 };
 

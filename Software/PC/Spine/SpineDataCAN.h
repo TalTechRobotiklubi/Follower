@@ -22,6 +22,7 @@ public:
     bool                    GetRightUpButton() { return buttonPresses_[Top_Right_Button]; };
     bool                    GetRightBottomButton() { return buttonPresses_[Bottom_Right_Button]; };
 
+    void                    GetSensorData(int *sensor_data);
     static const int        SerialPacketSize = 13; // 0xAA, id, dlc, 8 bytes data, 2 bytes crc 
 
     void                    SetDummyData();
@@ -30,4 +31,5 @@ private:
     int                     motorSpeed2_;
     int                     motorSpeed3_;
     bool                    buttonPresses_[4];
+    int                     sensors_[6];
 };

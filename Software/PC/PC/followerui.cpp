@@ -15,5 +15,5 @@ FollowerUi::~FollowerUi()
 }
 
 void FollowerUi::connectSpine() {
-    workerThread_->start();
+    workerThread_->Start();
 }

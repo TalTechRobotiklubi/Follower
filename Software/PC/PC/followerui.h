@@ -3,7 +3,6 @@
 
 #include <QtGui/QMainWindow>
 #include "ui_followerui.h"
-#include "WorkerThread.h"
 #include "Follower.h"
 
 class FollowerUi : public QMainWindow
@@ -17,7 +16,7 @@ public:
 
 private:
     Ui::FollowerUiClass ui;
-    WorkerThread*		workerThread_;
+    CANWorkerThread*		workerThread_;
 
 private slots:
     void connectSpine();

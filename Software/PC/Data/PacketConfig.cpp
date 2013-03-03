@@ -51,16 +51,6 @@ const PacketParameter psPacketMotor3StatusParameterList[6] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "BallStatus" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketBallStatusParameterList[3] = 
-{
-	{ DLParamBallContact,          0, 1 },
-	{ DLParamBallInSight,          1, 1 },
-	{ DLParamBallCapacitorCharged, 2, 1 }
-};
-
-// ----------------------------------------------------------------------------
 // Packet "UIControls" parameters table
 // ----------------------------------------------------------------------------
 const PacketParameter psPacketUIControlsParameterList[4] = 
@@ -69,6 +59,19 @@ const PacketParameter psPacketUIControlsParameterList[4] =
 	{ DLParamButtonTopRight,    1, 1 },
 	{ DLParamButtonBottomLeft,  2, 1 },
 	{ DLParamButtonBottomRight, 3, 1 }
+};
+
+// ----------------------------------------------------------------------------
+// Packet "Sensors" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter psPacketSensorsParameterList[6] = 
+{
+	{ DLParamDistanceSensor1,  0, 8 },
+	{ DLParamDistanceSensor2,  8, 8 },
+	{ DLParamDistanceSensor3, 16, 8 },
+	{ DLParamDistanceSensor4, 24, 8 },
+	{ DLParamDistanceSensor5, 32, 8 },
+	{ DLParamDistanceSensor6, 40, 8 }
 };
 
 // ----------------------------------------------------------------------------
@@ -82,17 +85,6 @@ const PacketParameter psPacketMotorSpeedsParameterList[3] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "BallControl" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketBallControlParameterList[4] = 
-{
-	{ DLParamBallCharge,         0,  1 },
-	{ DLParamBallDribblerPower,  1,  7 },
-	{ DLParamBallKickTime,       8, 10 },
-	{ DLParamBallKick,          18,  1 }
-};
-
-// ----------------------------------------------------------------------------
 // Packet "UIScreenWrite" parameters table
 // ----------------------------------------------------------------------------
 const PacketParameter psPacketUIScreenWriteParameterList[9] = 
@@ -100,12 +92,12 @@ const PacketParameter psPacketUIScreenWriteParameterList[9] =
 	{ DLParamScreenRow,        0, 4 },
 	{ DLParamScreenColumn,     4, 4 },
 	{ DLParamScreenTextLen,    8, 4 },
-	{ DLParamScreenTextChar0, 16, 8 },
-	{ DLParamScreenTextChar1, 24, 8 },
-	{ DLParamScreenTextChar2, 32, 8 },
-	{ DLParamScreenTextChar3, 40, 8 },
-	{ DLParamScreenTextChar4, 48, 8 },
-	{ DLParamScreenTextChar5, 56, 8 }
+	{ DLParamScreenTextChar0, 12, 8 },
+	{ DLParamScreenTextChar1, 20, 8 },
+	{ DLParamScreenTextChar2, 28, 8 },
+	{ DLParamScreenTextChar3, 36, 8 },
+	{ DLParamScreenTextChar4, 44, 8 },
+	{ DLParamScreenTextChar5, 52, 8 }
 };
 
 // ----------------------------------------------------------------------------
@@ -125,11 +117,10 @@ const PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
 	/* Motor1Status  */ { 0xD1, 0, psPacketMotor1StatusParameterList,  6, 7 },
 	/* Motor2Status  */ { 0xD2, 0, psPacketMotor2StatusParameterList,  6, 7 },
 	/* Motor3Status  */ { 0xD3, 0, psPacketMotor3StatusParameterList,  6, 7 },
-	/* BallStatus    */ { 0xB1, 0, psPacketBallStatusParameterList,    3, 1 },
 	/* UIControls    */ { 0xC0, 0, psPacketUIControlsParameterList,    4, 1 },
-	/* MotorSpeeds   */ { 0xD0, -1, psPacketMotorSpeedsParameterList,   3, 6 },
-	/* BallControl   */ { 0xB0, -1, psPacketBallControlParameterList,   4, 3 },
-	/* UIScreenWrite */ { 0xC3, -1, psPacketUIScreenWriteParameterList, 9, 8 },
+	/* Sensors       */ { 0xF0, 0, psPacketSensorsParameterList,       6, 6 },
+	/* MotorSpeeds   */ { 0xD0, 0, psPacketMotorSpeedsParameterList,   3, 6 },
+	/* UIScreenWrite */ { 0xC3, 0, psPacketUIScreenWriteParameterList, 9, 8 },
 	/* MotorPID      */ { 0xD4, 0, psPacketMotorPIDParameterList,      2, 8 }
 };
 #define NUMBER_OF_PACKETS (sizeof(psPacketDescriptorList)/sizeof(Packet))
