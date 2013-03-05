@@ -47,6 +47,7 @@ void CANWorkerThread::onNewData(bool newSpineData, SpineData* spineData)
     }
     int sensors[6];
     remoteSpineData_->GetSensorData(sensors);
+
     qDebug() << sensors[0] << sensors[1];
 }
 

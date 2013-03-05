@@ -4,6 +4,7 @@
 #include <QtGui/QMainWindow>
 #include "ui_followerui.h"
 #include "Follower.h"
+#include "SpineDataCAN.h"
 
 class FollowerUi : public QMainWindow
 {
@@ -20,7 +21,7 @@ private:
 
 private slots:
     void connectSpine();
-    void newSensorData(int s1, int s2, int s3, int s4);
+    void newUiData(SpineDataCAN* spineData);
 };
 
 #endif // FOLLOWERUI_H
