@@ -20,6 +20,7 @@ private:
 
 private slots:
     void connectSpine();
+    void newSensorData(int s1, int s2, int s3, int s4);
 };
 
 #endif // FOLLOWERUI_H
