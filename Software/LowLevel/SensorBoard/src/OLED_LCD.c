@@ -569,7 +569,7 @@ void Set_NOP()
 
 void OLED_LCD_TASK(void)
 {
-	uint8_t distance1;
+	uint8_t distance1, distance2;
 
 	uint8_t row, column;
 	uint8_t string[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -577,11 +577,14 @@ void OLED_LCD_TASK(void)
 
 	//Fill_RAM(0x00);
 
-	/*write sensor distance to LCD*/
-	DL_peekData(DLParamDistanceSensor2, &distance1);
+	/*write sensors distances to LCD*/
+	DL_peekData(DLParamDistanceSensor1, &distance1);
+	DL_peekData(DLParamDistanceSensor2, &distance2);
 
 	intToASCIIchar(distance1, string);
 	Show_String(&string[0], 4, 5);
+	intToASCIIchar(distance2, string);
+	Show_String(&string[0], 5, 5);
 
 	/*write out received characters*/
 	if (DL_getData(DLParamScreenTextChar0, &string[0])) newText = TRUE;
