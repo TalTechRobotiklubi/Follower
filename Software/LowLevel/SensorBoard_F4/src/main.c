@@ -6,6 +6,7 @@
 #include "TypeDef.h"
 #include "Timer.h"
 #include "Sensor.h"
+#include "USART.h"
 
 /* Private macro */
 /* Private variables */
@@ -21,7 +22,9 @@ int main(void)
 	// initialize GPIOs
 	GPIO_init();
 	// initialize sensors
-	Sensor_init();
+//	Sensor_init();
+	// initialize USART communication
+//	USART_UART4_init();
 
 	//Turn LEDs on
 	GPIO_outputOff(LED_GREEN);

@@ -1,6 +1,6 @@
 #include "Sensor.h"
 #include "stm32f4xx.h"
-//#include "DataLayer.h"
+#include "DataLayer.h"
 #include "GPIO.h"
 #include "Timer.h"
 
@@ -70,7 +70,7 @@ void initDistanceSensor(GPIO_IdDef io)
 }
 
 /**
-* @brief  This function handles External line 0 interrupt request.
+* @brief  This function handles External line 0 interrupt request for URF1 echo pin.
 * @param  None
 * @retval None
 */
@@ -103,6 +103,43 @@ void EXTI0_IRQHandler(void)
 
 		/* Clear the  EXTI line pending bit */
 		EXTI_ClearITPendingBit(GPIO_table[URF1_ECHO].exti);
+	}
+}
+
+/**
+* @brief  This function handles External line 3 interrupt request for URF2 echo pin.
+* @param  None
+* @retval None
+*/
+void EXTI3_IRQHandler(void)
+{
+	/*handle URF2 echo interrupts*/
+	if(EXTI_GetITStatus(GPIO_table[URF2_ECHO].exti) != RESET)
+	{
+
+		if (GPIO_inputValue(URF2_ECHO) == INPUT_ON)
+		{
+			// rising edge, start to measure
+			Timer_startTimer(TIMER2_ID);
+			priv_sensor2Stat = SENSOR_INPUT_RISED;
+		}
+		else
+		{
+			// falling edge, check that rising was previously
+			if (priv_sensor2Stat == SENSOR_INPUT_RISED)
+			{
+				/*stop timer*/
+				Timer_stopTimer(TIMER2_ID);
+				// read measurement result
+				priv_sensor2Value = Timer_getTimerValue(TIMER2_ID);
+				/*disable pin detection*/
+				EXTI_DeInit();
+			}
+			priv_sensor2Stat = SENSOR_INPUT_FALLED;
+		}
+
+		/* Clear the  EXTI line pending bit */
+		EXTI_ClearITPendingBit(GPIO_table[URF2_ECHO].exti);
 	}
 }
 
@@ -268,7 +305,7 @@ void Sensor_TASK_readDistance1(void)
 	distance = priv_sensor1Value / 58;  // 147 us equals 1 inch -> 147 / 2,54 = 57,8
 	if (distance > 255)
 		distance = 255;
-	//DL_setData(DLParamDistanceSensor1, &distance);
+	DL_setData(DLParamDistanceSensor1, &distance);
 }
 
 void Sensor_TASK_startMeasurement2(void)
@@ -302,7 +339,7 @@ void Sensor_TASK_readDistance2(void)
 	distance = priv_sensor2Value / 58;  // 147 us equals 1 inch -> 147 / 2,54 = 57,8
 	if (distance > 255)
 		distance = 255;
-	//DL_setData(DLParamDistanceSensor2, &distance);
+	DL_setData(DLParamDistanceSensor2, &distance);
 }
 
 void Sensor_TASK_startMeasurement3(void)
