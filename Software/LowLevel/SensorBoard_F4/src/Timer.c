@@ -6,7 +6,7 @@ void Timer_setOneShotCounter(Timer_IdDef timer, uint32_t timeus, Boolean enableI
 {
 	NVIC_InitTypeDef 		 NVIC_InitStruct;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStruct;
-	uint16_t PrescalerValue = (SystemCoreClock / 1000000) - 1; // counter resolution 1 micro sec
+	uint16_t PrescalerValue; //= (SystemCoreClock / 1000000) - 1; // counter resolution 1 micro sec
 
 	//Interrupt initialization
 	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0;
@@ -31,6 +31,7 @@ void Timer_setOneShotCounter(Timer_IdDef timer, uint32_t timeus, Boolean enableI
 			}
 
 			TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStruct);
+			PrescalerValue = ((SystemCoreClock / 2) / 1000000) - 1; // counter resolution 1 micro sec
 			TIM_PrescalerConfig(TIM2, PrescalerValue, TIM_PSCReloadMode_Immediate);
 			TIM_SelectOnePulseMode(TIM2, TIM_OPMode_Single);
 			Timer_stopTimer(TIMER2_ID);
@@ -45,6 +46,7 @@ void Timer_setOneShotCounter(Timer_IdDef timer, uint32_t timeus, Boolean enableI
 			}
 
 			TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStruct);
+			PrescalerValue = ((SystemCoreClock / 2) / 1000000) - 1; // counter resolution 1 micro sec
 			TIM_PrescalerConfig(TIM3, PrescalerValue, TIM_PSCReloadMode_Immediate);
 			TIM_SelectOnePulseMode(TIM3, TIM_OPMode_Single);
 			Timer_stopTimer(TIMER3_ID);
@@ -59,6 +61,7 @@ void Timer_setOneShotCounter(Timer_IdDef timer, uint32_t timeus, Boolean enableI
 			}
 
 			TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStruct);
+			PrescalerValue = ((SystemCoreClock / 2) / 1000000) - 1; // counter resolution 1 micro sec
 			TIM_PrescalerConfig(TIM4, PrescalerValue, TIM_PSCReloadMode_Immediate);
 			TIM_SelectOnePulseMode(TIM4, TIM_OPMode_Single);
 			Timer_stopTimer(TIMER4_ID);

@@ -19,9 +19,9 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_SENSOR3_READ,		  200,		  149,			Sensor_TASK_readDistance3			},
 		{TASK_SENSOR4_START,	  200,		  150,			Sensor_TASK_startMeasurement4		},
 		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			},
-		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			}//,
+		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			},
 	//	{TASK_DATA,		  		   10,		    4,			DataHandler_TASK					},
-	//	{TASK_USART,		  	  200,		   20,			USART_TASK_sendDistances			}
+		{TASK_USART,		  	  200,		   20,			USART_TASK_sendDistances			}
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))
 

@@ -37,6 +37,10 @@ void GPIO_init(void)
 	initOutput(LED_GREEN);
 	initOutput(LED_RED);
 	initOutput(LED_BLUE);
+	initOutput(URF1_TRIG);
+	initOutput(URF2_TRIG);
+	initOutput(URF3_TRIG);
+	initOutput(URF4_TRIG);
 }
 
 void initOutput(GPIO_IdDef io)
@@ -107,15 +111,12 @@ GPIO_InputDef GPIO_inputValue(GPIO_IdDef io)
 void GPIO_TASK_blinkLED(void)
 {
 	static uint8_t state = 0;
-	static unsigned char temp = 0;
 
 	// blink LED
 	if (state == 0)
 	{
 		GPIO_outputOn(LED_RED);
 		GPIO_outputOn(LED_BLUE);
-		temp++;
-		//USART_SendChar(temp);
 		state = 1;
 	}
 	else

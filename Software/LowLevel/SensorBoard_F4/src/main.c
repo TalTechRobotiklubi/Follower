@@ -22,9 +22,9 @@ int main(void)
 	// initialize GPIOs
 	GPIO_init();
 	// initialize sensors
-//	Sensor_init();
+	Sensor_init();
 	// initialize USART communication
-//	USART_UART4_init();
+	USART_UART4_init();
 
 	//Turn LEDs on
 	GPIO_outputOff(LED_GREEN);
@@ -33,7 +33,7 @@ int main(void)
 	GPIO_outputOff(LED_BLUE);
 	// init timers with max counting time 40 ms
 	Timer_setOneShotCounter(TIMER2_ID, 40000, FALSE);
-	Timer_setOneShotCounter(TIMER3_ID, 40000, FALSE);
+	//Timer_setOneShotCounter(TIMER3_ID, 40000, FALSE);
 
 	//Initialize task handler timer
 	TaskHandler_init();
