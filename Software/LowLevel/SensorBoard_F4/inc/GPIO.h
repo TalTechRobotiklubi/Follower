@@ -26,6 +26,8 @@ typedef enum
 	URF4_TRIG,
 	UART4_Tx,
 	UART4_Rx,
+	CAN1_Tx,
+	CAN1_Rx,
 	NUM_OF_GPIOS
 }
 GPIO_IdDef;

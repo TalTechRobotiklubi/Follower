@@ -57,18 +57,20 @@ void USART_UART4_init(void)
 // send distances
 void USART_TASK_sendDistances(void)
 {
-	uint8_t distance2, distance3, distance4;
+	uint8_t distance1, distance2, distance3, distance4;
 	//uint8_t const* delimiter = " ";
-	uint8_t string[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\n', 0};
+	uint8_t string[26] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	/*send sensors distances to UART*/
+	DL_peekData(DLParamDistanceSensor1, &distance1);
 	DL_peekData(DLParamDistanceSensor2, &distance2);
 	DL_peekData(DLParamDistanceSensor3, &distance3);
 	DL_peekData(DLParamDistanceSensor4, &distance4);
 
-	intToASCIIchar(distance2, string);
-	intToASCIIchar(distance3, &string[6]);
-	intToASCIIchar(distance4, &string[12]);
+	intToASCIIchar(distance1, string);
+	intToASCIIchar(distance2, &string[6]);
+	intToASCIIchar(distance3, &string[12]);
+	intToASCIIchar(distance4, &string[18]);
 	USART_SendString(string);
 	//USART_SendChar(*delimiter);
 	//USART_SendInt(distance1);

@@ -23,6 +23,9 @@ const GPIO_Struct GPIO_table[] = {
 /*USART*/
 	{UART4_Tx,				GPIOC,	GPIO_Pin_10,	RCC_AHB1Periph_GPIOC,	EXTI_Line10, 	EXTI_PortSourceGPIOC,	GPIO_PinSource10,	EXTI15_10_IRQn},  //PC10
 	{UART4_Rx,				GPIOC,	GPIO_Pin_11,	RCC_AHB1Periph_GPIOC,	EXTI_Line11, 	EXTI_PortSourceGPIOC,	GPIO_PinSource11,	EXTI15_10_IRQn},  //PC11
+/*CAN1*/
+	{CAN1_Tx,				GPIOD,	GPIO_Pin_1,		RCC_AHB1Periph_GPIOD,	EXTI_Line1, 	EXTI_PortSourceGPIOD,	GPIO_PinSource0,	EXTI15_10_IRQn},  //PD1
+	{CAN1_Rx,				GPIOD,	GPIO_Pin_0,		RCC_AHB1Periph_GPIOD,	EXTI_Line0, 	EXTI_PortSourceGPIOD,	GPIO_PinSource1,	CAN1_RX0_IRQn},  //PD0
 };
 
 

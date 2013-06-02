@@ -4,6 +4,7 @@
 #include "Sensor.h"
 #include "USART.h"
 #include "DataHandler.h"
+#include "CAN.h"
 
 /*Task table. Add new task here if necessary. When adding period then be
  *convince that period is not bigger than TIMER_EXCEED_VALUE and divides with it.
@@ -21,7 +22,8 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			},
 		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			},
 	//	{TASK_DATA,		  		   10,		    4,			DataHandler_TASK					},
-		{TASK_USART,		  	  200,		   20,			USART_TASK_sendDistances			}
+		{TASK_USART,		  	  200,		   20,			USART_TASK_sendDistances			},
+		{TASK_CAN,		  	  	  500,		   70,			CAN_TASK							}
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))
 

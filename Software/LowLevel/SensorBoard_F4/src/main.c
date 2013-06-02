@@ -7,6 +7,7 @@
 #include "Timer.h"
 #include "Sensor.h"
 #include "USART.h"
+#include "CAN.h"
 
 /* Private macro */
 /* Private variables */
@@ -31,6 +32,8 @@ int main(void)
 	GPIO_outputOff(LED_ORANGE);
 	GPIO_outputOff(LED_RED);
 	GPIO_outputOff(LED_BLUE);
+
+	CAN_CAN1Init();
 	// init timers with max counting time 40 ms
 	Timer_setOneShotCounter(TIMER2_ID, 40000, FALSE);
 	//Timer_setOneShotCounter(TIMER3_ID, 40000, FALSE);
