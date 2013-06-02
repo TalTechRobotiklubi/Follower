@@ -28,8 +28,9 @@
 
 extern int16_t value;
 //Initialization functions
-void USART_UART4_init(void);
-void USART_TASK_sendDistances(void);
+extern void USART_UART4_init(void);
+//void USART_TASK_sendDistances(void);
+extern void USART_TASK(void);
 //Interrupt handler
 void UART4_IRQHandler(void);
 

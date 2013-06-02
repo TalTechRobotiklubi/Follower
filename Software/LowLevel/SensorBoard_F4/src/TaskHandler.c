@@ -11,6 +11,8 @@
  *With adding new task check that id is corresponding to enum value.*/
 const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		/*id              	  period (ms)   offset (ms)   taskPointer */
+		{TASK_CAN,		  	  	  	5,		    0,			CAN_TASK							},
+		{TASK_USART,		  	    5,		    2,			USART_TASK							},
 		{TASK_LED,				  400,			0,			GPIO_TASK_blinkLED	    },
 		{TASK_SENSOR1_START,	  200,			0,			Sensor_TASK_startMeasurement1		},
 		{TASK_SENSOR1_READ,		  200,		   49,			Sensor_TASK_readDistance1			},
@@ -20,10 +22,8 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_SENSOR3_READ,		  200,		  149,			Sensor_TASK_readDistance3			},
 		{TASK_SENSOR4_START,	  200,		  150,			Sensor_TASK_startMeasurement4		},
 		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			},
-		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			},
+		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			}
 	//	{TASK_DATA,		  		   10,		    4,			DataHandler_TASK					},
-		{TASK_USART,		  	  200,		   20,			USART_TASK_sendDistances			},
-		{TASK_CAN,		  	  	  500,		   70,			CAN_TASK							}
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))
 

@@ -36,7 +36,7 @@ static CAN_MessageBox priv_CANmessageBoxes[NumberOfPackets];
 void CAN1_NVIC_Config(void);
 void initializeRxMessage(CanRxMsg *priv_RxMessage, uint32_t id, uint8_t dlc);
 void initializeTxMessage(CanTxMsg *priv_TxMessage, uint32_t id, uint8_t dlc);
-uint8_t GetBitmaskForCANmessage(uint8_t bitPosition, int16_t length);
+uint8_t getBitmaskForCANmessage(uint8_t bitPosition, int16_t length);
 void sendDataLayerDataToCAN(PacketWithIndex *packet);
 void storeCANDataToDataLayer(PacketWithIndex *packet);
 void storeReceivedDataToMessageBox(Packet index);
@@ -93,7 +93,7 @@ void initializeMessageBoxes(void)
  Params: bitPosition - bit position in byte, NB! not absolute position in message
  	 	 length - remaining data length
  */
-uint8_t GetBitmaskForCANmessage(uint8_t bitPosition, int16_t length)
+uint8_t getBitmaskForCANmessage(uint8_t bitPosition, int16_t length)
 {
   uint8_t mask = 0xFF;
   uint8_t zerosFromRight, i;
@@ -119,7 +119,7 @@ uint8_t GetBitmaskForCANmessage(uint8_t bitPosition, int16_t length)
   return mask;
 }
 
-#define CANx                       CAN1
+/*#define CANx                       CAN1
   #define CAN_CLK                    RCC_APB1Periph_CAN1
   #define CAN_RX_PIN                 GPIO_Pin_0
   #define CAN_TX_PIN                 GPIO_Pin_1
@@ -128,7 +128,7 @@ uint8_t GetBitmaskForCANmessage(uint8_t bitPosition, int16_t length)
   #define CAN_AF_PORT                GPIO_AF_CAN1
   #define CAN_RX_SOURCE              GPIO_PinSource0
   #define CAN_TX_SOURCE              GPIO_PinSource1
-
+*/
 
 void CAN1_NVIC_Config(void)
 {
@@ -152,28 +152,32 @@ void CAN_CAN1Init()
 	/* CAN GPIOs configuration **************************************************/
 
 	/* Enable GPIO clock */
-	RCC_AHB1PeriphClockCmd( CAN_GPIO_CLK, ENABLE);
-	//RCC_AHB1PeriphClockCmd(GPIO_table[CAN1_Rx].clk, ENABLE);
+	//RCC_AHB1PeriphClockCmd( CAN_GPIO_CLK, ENABLE);
+	RCC_AHB1PeriphClockCmd(GPIO_table[CAN1_Rx].clk, ENABLE);
 
 	/* Connect CAN pins to AF9 */
-	GPIO_PinAFConfig(CAN_GPIO_PORT, CAN_RX_SOURCE, CAN_AF_PORT);
-	GPIO_PinAFConfig(CAN_GPIO_PORT, CAN_TX_SOURCE, CAN_AF_PORT);
+	//GPIO_PinAFConfig(CAN_GPIO_PORT, CAN_RX_SOURCE, CAN_AF_PORT);
+	//GPIO_PinAFConfig(CAN_GPIO_PORT, CAN_TX_SOURCE, CAN_AF_PORT);
+	GPIO_PinAFConfig(GPIO_table[CAN1_Rx].port, GPIO_table[CAN1_Rx].pinSource, GPIO_AF_CAN1);
+	GPIO_PinAFConfig(GPIO_table[CAN1_Tx].port, GPIO_table[CAN1_Tx].pinSource, GPIO_AF_CAN1);
 
 	/* Configure CAN RX and TX pins */
-	GPIO_InitStructure.GPIO_Pin = CAN_RX_PIN | CAN_TX_PIN;
+	//GPIO_InitStructure.GPIO_Pin = CAN_RX_PIN | CAN_TX_PIN;
+	GPIO_InitStructure.GPIO_Pin = GPIO_table[CAN1_Rx].pin | GPIO_table[CAN1_Tx].pin;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
-	GPIO_Init(CAN_GPIO_PORT, &GPIO_InitStructure);
+	//GPIO_Init(CAN_GPIO_PORT, &GPIO_InitStructure);
+	GPIO_Init(GPIO_table[CAN1_Rx].port, &GPIO_InitStructure);
 
 	/* CAN configuration ********************************************************/
 	/* Enable CAN clock,
 	 * APB1 clock is system clock / prescale -> 168 Mhz / 4 -> 42 Mhz */
-	RCC_APB1PeriphClockCmd(CAN_CLK, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
 
 	/* CAN register init */
-	CAN_DeInit(CANx);
+	CAN_DeInit(CAN1);
 
 	/* CAN cell init */
 	CAN_InitStructure.CAN_TTCM = DISABLE;
@@ -190,7 +194,7 @@ void CAN_CAN1Init()
 	CAN_InitStructure.CAN_BS1 = CAN_BS1_5tq;
 	CAN_InitStructure.CAN_BS2 = CAN_BS2_2tq;
 	CAN_InitStructure.CAN_Prescaler = 41;
-	CAN_Init(CANx, &CAN_InitStructure);
+	CAN_Init(CAN1, &CAN_InitStructure);
 
 	/* CAN filter init */
 	CAN_FilterInitStructure.CAN_FilterNumber = 0;
@@ -212,7 +216,7 @@ void CAN_CAN1Init()
 	TxMessage.DLC = 1;
 
 	/* Enable FIFO 0 message pending Interrupt */
-	CAN_ITConfig(CANx, CAN_IT_FMP0, ENABLE);
+	CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
 
 	/*message box init*/
 	//initializeMessageBoxes();
@@ -300,10 +304,8 @@ void storeReceivedDataToMessageBox(Packet index)
 /*Execution period -> check from TASK table*/
 void CAN_TASK(void)
 {
-	//handleTransmitData();
-	//handleReceivedData();
-	TxMessage.Data[0] = 34;
-	CAN_Transmit(CANx, &TxMessage);
+	handleTransmitData();
+	handleReceivedData();
 }
 
 /*check CAN message boxes and stores data to data layer if something new*/
@@ -517,7 +519,7 @@ void sendDataLayerDataToCAN(PacketWithIndex *packet)
 			case TypeU8:
 			case TypeS8:
 				/*involves only one byte */
-				bitmask = GetBitmaskForCANmessage(bitPosition, length);
+				bitmask = getBitmaskForCANmessage(bitPosition, length);
 				//data = *((uint8_t*)(DL_GET_POINTER_TO_DATA(packet->psParameterList[j].eParam)));
 				DL_getDataByComm((Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
 				priv_TxMessage.Data[byteIndex] |= (((((uint8_t)data) & 0xFF) << (8 - length - bitPosition)) & bitmask);
@@ -530,7 +532,7 @@ void sendDataLayerDataToCAN(PacketWithIndex *packet)
 				/*first byte, bit position is assumed to be 0 and the byte is fully for this parameter*/
 				priv_TxMessage.Data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
 				/*second byte, bit position is still 0*/
-				bitmask = GetBitmaskForCANmessage(0, length - 8);
+				bitmask = getBitmaskForCANmessage(0, length - 8);
 				priv_TxMessage.Data[byteIndex + 1] |= (uint8_t)(((data & 0xFF) << (16 - length)) & bitmask);
 				break;
 			case TypeU32:
