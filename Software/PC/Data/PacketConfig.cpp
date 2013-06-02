@@ -119,7 +119,7 @@ const PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
 	/* Motor3Status  */ { 0xD3, 0, psPacketMotor3StatusParameterList,  6, 7 },
 	/* UIControls    */ { 0xC0, 0, psPacketUIControlsParameterList,    4, 1 },
 	/* Sensors       */ { 0xF0, 0, psPacketSensorsParameterList,       6, 6 },
-	/* MotorSpeeds   */ { 0xD0, 0, psPacketMotorSpeedsParameterList,   3, 6 },
+	/* MotorSpeeds   */ { 0xD0, -1, psPacketMotorSpeedsParameterList,   3, 6 },
 	/* UIScreenWrite */ { 0xC3, 0, psPacketUIScreenWriteParameterList, 9, 8 },
 	/* MotorPID      */ { 0xD4, 0, psPacketMotorPIDParameterList,      2, 8 }
 };

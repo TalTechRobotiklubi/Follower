@@ -15,7 +15,12 @@ public:
     FollowerUi(QWidget *parent = 0, Qt::WFlags flags = 0);
     ~FollowerUi();
 
+protected:
+    virtual void keyPressEvent ( QKeyEvent * event );
+
 private:
+    void sendCmd( int w1, int  w2, int w3 );
+
     Ui::FollowerUiClass ui;
     CANWorkerThread*		workerThread_;
 
