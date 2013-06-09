@@ -399,7 +399,7 @@ void USART_ReceiveInt(void)
 void USART_TASK(void)
 {
 	analyzeRecieveBuffer();
-	//sendUARTpackages();
+	sendUARTpackages();
 }
 
 void analyzeRecieveBuffer(void)

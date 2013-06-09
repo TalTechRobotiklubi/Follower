@@ -70,11 +70,11 @@ void initDistanceSensor(GPIO_IdDef io)
 }
 
 /**
-* @brief  This function handles External line 0 interrupt request for URF1 echo pin.
+* @brief  This function handles External line 15 - 10 interrupt request for URF1 echo pin PC14.
 * @param  None
 * @retval None
 */
-void EXTI0_IRQHandler(void)
+void EXTI15_10_IRQHandler(void)
 {
 	/*handle URF1 echo interrupts*/
 	if(EXTI_GetITStatus(GPIO_table[URF1_ECHO].exti) != RESET)
@@ -107,11 +107,11 @@ void EXTI0_IRQHandler(void)
 }
 
 /**
-* @brief  This function handles External line 3 interrupt request for URF2 echo pin.
+* @brief  This function handles External lines 9 to 5 interrupt request for URF3 echo pin PE6.
 * @param  None
 * @retval None
 */
-void EXTI2_IRQHandler(void)
+void EXTI9_5_IRQHandler(void)
 {
 	/*handle URF2 echo interrupts*/
 	if(EXTI_GetITStatus(GPIO_table[URF2_ECHO].exti) != RESET)
@@ -143,8 +143,9 @@ void EXTI2_IRQHandler(void)
 	}
 }
 
+
 /**
-* @brief  This function handles External line 4 interrupt request for URF3 echo pin..
+* @brief  This function handles External line 4 interrupt request for URF3 echo pin PE4.
 * @param  None
 * @retval None
 */
@@ -180,11 +181,11 @@ void EXTI4_IRQHandler(void)
 }
 
 /**
-* @brief  This function handles External lines 9 to 5 interrupt request for URF4 echo pin..
+* @brief  This function handles External line 2 interrupt request for URF4 echo pin PE2.
 * @param  None
 * @retval None
 */
-void EXTI9_5_IRQHandler(void)
+void EXTI2_IRQHandler(void)
 {
 	if(EXTI_GetITStatus(GPIO_table[URF4_ECHO].exti) != RESET)
     {

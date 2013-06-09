@@ -26,7 +26,7 @@ private:
 
 private slots:
     void connectSpine();
-    void newUiData(SpineDataCAN* spineData);
+    void newUiData(SpineData* spineData);
 };
 
 #endif // FOLLOWERUI_H

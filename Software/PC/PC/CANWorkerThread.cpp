@@ -32,8 +32,10 @@ void CANWorkerThread::onNewSpineCmd(SpineCmd* spineCmd)
 
 void CANWorkerThread::onNewData(bool newSpineData, SpineData* spineData)
 {
+#if 0
     *remoteSpineData_ = *dynamic_cast<SpineDataCAN*>(spineData);
     emit update_UIdata(remoteSpineData_);
+    spineDataChanged
     // set attacking goal if any of the right side buttons have been pressed. Send info to LCD.
     if (remoteSpineData_->GetRightBottomButton() == true)
     {
@@ -49,6 +51,8 @@ void CANWorkerThread::onNewData(bool newSpineData, SpineData* spineData)
     remoteSpineData_->GetSensorData(sensors);
 
     qDebug() << sensors[0] << sensors[1];
+#endif
+    emit spineDataChanged(spineData);
 }
 
 void CANWorkerThread::onAlgorithmStart()

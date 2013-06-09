@@ -1,6 +1,7 @@
 #include <QKeyEvent>
 #include "followerui.h"
 #include "SpineCmdCAN.h"
+#include "SpineDataCAN.h"
 
 FollowerUi::FollowerUi(Follower *robot)
 	: QMainWindow()
@@ -8,7 +9,7 @@ FollowerUi::FollowerUi(Follower *robot)
 	ui.setupUi(this);
     workerThread_ = robot->workerThread;
 
-    connect(workerThread_, SIGNAL(newSensorData()), this, SLOT(newSensorData()));
+    connect(workerThread_, SIGNAL(spineDataChanged(SpineData*)), this, SLOT(newUiData(SpineData*)));
     connect(ui.btnConnect, SIGNAL(clicked()), this, SLOT(connectSpine()));
 }
 
@@ -21,15 +22,20 @@ void FollowerUi::connectSpine() {
     workerThread_->Start();
 }
 
-void FollowerUi::newUiData(SpineDataCAN* spineData) {
+void FollowerUi::newUiData(SpineData* spineData) {
     int sensors[6];
 
-    spineData->GetSensorData(sensors);
+    SpineDataCAN* spineDataCAN = dynamic_cast<SpineDataCAN*>(spineData);
 
-    ui.lbl_andur1->setText(QString(sensors[0]));
-    ui.lbl_andur1->setText(QString(sensors[1]));
-    ui.lbl_andur1->setText(QString(sensors[2]));
-    ui.lbl_andur1->setText(QString(sensors[3]));
+    if (spineDataCAN != NULL)
+    {
+        spineDataCAN->GetSensorData(sensors);
+        
+        ui.lbl_andur1->setText(QString::number(sensors[0]));
+        ui.lbl_andur2->setText(QString::number(sensors[1]));
+        ui.lbl_andur3->setText(QString::number(sensors[2]));
+        ui.lbl_andur4->setText(QString::number(sensors[3]));
+    }
 }
 
 void FollowerUi::keyPressEvent ( QKeyEvent * event )
