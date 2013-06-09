@@ -40,8 +40,8 @@ typedef enum
 MessageAnalyseState;
 
 /*function declarations*/
-void UART4_GPIO_init(void);
-void UART4_IRQ_init(void);
+GPIO_IdDef UART_GPIO_init(USART_TypeDef *uartX);
+void UART_IRQ_init(GPIO_IdDef);
 uint32_t intToASCIIchar(int32_t value, uint8_t *string);
 void analyzeRecieveBuffer(void);
 void storeDataToDataLayer(UART_CANmessage *message, PacketWithIndex *packet);
@@ -60,14 +60,20 @@ static unsigned char USART_TxBuf[USART_TX_BUFFER_SIZE];
 static volatile uint8_t USART_TxHead;
 static volatile uint8_t USART_TxTail;
 
-int16_t value = 0;
+USART_TypeDef *activeUART = UART4; // from default set UART4 as active
 
 
-// initialization function over UART4
-void USART_UART4_init(void)
+// initialization of USART/UART
+void USART_init(USART_TypeDef *uartX)
 {
-	UART4_GPIO_init();
-	UART4_IRQ_init();
+	GPIO_IdDef io;
+
+	io = UART_GPIO_init(uartX);
+	if (io == NUM_OF_GPIOS)
+	{
+		return;
+	}
+	UART_IRQ_init(io);
 	USART_RxTail = 0;
 	USART_RxHead = 0;
 	USART_TxTail = 0;
@@ -85,84 +91,76 @@ void USART_UART4_init(void)
 	USART_InitStruct.USART_Parity = USART_Parity_No;
 	USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	USART_InitStruct.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-	//Configure UART4
-	USART_Init(UART4, &USART_InitStruct);
-	//Enable UART4 receive interrupts
-	USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
-	USART_ITConfig(UART4, USART_IT_TXE, ENABLE);
-	//Enable UART4
-	USART_Cmd(UART4, ENABLE);
+	//Configure UARTx
+	USART_Init(uartX, &USART_InitStruct);
+	//Enable UARTx receive interrupts
+	USART_ITConfig(uartX, USART_IT_RXNE, ENABLE);
+	USART_ITConfig(uartX, USART_IT_TXE, ENABLE);
+	//Enable UARTx
+	USART_Cmd(uartX, ENABLE);
+	// currently only 1 UART supported at a time
+	activeUART = uartX;
 }
 
-/*
-// send distances
-void USART_TASK_sendDistances(void)
-{
-	uint8_t distance1, distance2, distance3, distance4;
-	//uint8_t const* delimiter = " ";
-	uint8_t string[26] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-	//send sensors distances to UART
-	DL_peekData(DLParamDistanceSensor1, &distance1);
-	DL_peekData(DLParamDistanceSensor2, &distance2);
-	DL_peekData(DLParamDistanceSensor3, &distance3);
-	DL_peekData(DLParamDistanceSensor4, &distance4);
-
-	intToASCIIchar(distance1, string);
-	intToASCIIchar(distance2, &string[6]);
-	intToASCIIchar(distance3, &string[12]);
-	intToASCIIchar(distance4, &string[18]);
-	USART_SendString(string);
-	//USART_SendChar(*delimiter);
-	//USART_SendInt(distance1);
-	//USART_SendChar(*delimiter);
-}*/
-
-
-// initialize UART4 GPIO pins
-void UART4_GPIO_init(void)
+// initialize UARTx GPIO pins
+GPIO_IdDef UART_GPIO_init(USART_TypeDef *uartX)
 {
 	GPIO_InitTypeDef GPIO_InitStruct;
+	GPIO_IdDef ioRx;
+	GPIO_IdDef ioTx;
 
-	//Enable GPIO clock
-	RCC_AHB1PeriphClockCmd(GPIO_table[UART4_Rx].clk, ENABLE);
-	//Enable UART4 clock
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
+	//Enable UARTx clock and connect UARTx to pin source
+	if (uartX == UART4)
+	{
+		ioRx = UART4_Rx;
+		ioTx = UART4_Tx;
+		//Enable GPIO clock
+		RCC_AHB1PeriphClockCmd(GPIO_table[ioRx].clk, ENABLE);
+		RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
+		GPIO_PinAFConfig(GPIO_table[ioRx].port, GPIO_table[ioRx].pinSource, GPIO_AF_UART4);
+		GPIO_PinAFConfig(GPIO_table[ioTx].port, GPIO_table[ioTx].pinSource, GPIO_AF_UART4);
+	}
+	else if (uartX == USART2)
+	{
+		ioRx = USART2_Rx;
+		ioTx = USART2_Tx;
+		//Enable GPIO clock
+		RCC_AHB1PeriphClockCmd(GPIO_table[ioRx].clk, ENABLE);
+		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+		GPIO_PinAFConfig(GPIO_table[ioRx].port, GPIO_table[ioRx].pinSource, GPIO_AF_USART2);
+		GPIO_PinAFConfig(GPIO_table[ioTx].port, GPIO_table[ioTx].pinSource, GPIO_AF_USART2);
+	}
+	else
+	{
+		return NUM_OF_GPIOS; // return enum value which should indicate that initialization went wrong
+	}
 
-	// connect UART4 to pin source
-	GPIO_PinAFConfig(GPIO_table[UART4_Rx].port, GPIO_table[UART4_Rx].pinSource, GPIO_AF_UART4);
-	GPIO_PinAFConfig(GPIO_table[UART4_Tx].port, GPIO_table[UART4_Tx].pinSource, GPIO_AF_UART4);
 
-	//Configure UART4 Rx as floating input
-	GPIO_InitStruct.GPIO_Pin = GPIO_table[UART4_Rx].pin;
+	//Configure UARTx Rx as floating input
+	GPIO_InitStruct.GPIO_Pin = GPIO_table[ioRx].pin;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIO_table[UART4_Rx].port, &GPIO_InitStruct);
+	GPIO_Init(GPIO_table[ioRx].port, &GPIO_InitStruct);
 
-	//Configure UART4 Tx as alternate function push-pull
-	GPIO_InitStruct.GPIO_Pin = GPIO_table[UART4_Tx].pin;
+	//Configure UARTx Tx as alternate function push-pull
+	GPIO_InitStruct.GPIO_Pin = GPIO_table[ioTx].pin;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_Init(GPIO_table[UART4_Tx].port, &GPIO_InitStruct);
-/*
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7; // Pins 6 (TX) and 7 (RX) are used
-		GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF; 			// the pins are configured as alternate function so the USART peripheral has access to them
-		GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;		// this defines the IO speed and has nothing to do with the baudrate!
-		GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;			// this defines the output type as push pull mode (as opposed to open drain)
-		GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;			// this activates the pullup resistors on the IO pins
-		GPIO_Init(GPIOB, &GPIO_InitStruct);					// now all the values are passed to the GPIO_Init() function which sets the GPIO registers
-*/
+	GPIO_Init(GPIO_table[ioTx].port, &GPIO_InitStruct);
+
+	return ioRx;
 }
 
-void UART4_IRQ_init(void)
+void UART_IRQ_init(GPIO_IdDef io)
 {
 	NVIC_InitTypeDef NVIC_InitStruct;
 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
-	NVIC_InitStruct.NVIC_IRQChannel = UART4_IRQn;
+	NVIC_InitStruct.NVIC_IRQChannel = GPIO_table[io].interrupt;
 	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 2;
 	NVIC_InitStruct.NVIC_IRQChannelSubPriority = 1;
 	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
@@ -186,7 +184,7 @@ void USART_SendChar(unsigned char data_char)
 	USART_TxBuf[tempHead] = data_char;
 	USART_TxHead = tempHead;
 
-	USART_ITConfig(UART4, USART_IT_TXE,ENABLE);
+	USART_ITConfig(activeUART, USART_IT_TXE,ENABLE);
 }
 
 void USART_SendString(unsigned char *data_string)
@@ -348,6 +346,52 @@ void UART4_IRQHandler(void)
 	}
 }
 
+void USART2_IRQHandler(void)
+{
+	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+	{
+		unsigned char rxdata;
+		uint8_t tempHead;
+
+		//Read one byte from receive data register
+		rxdata = USART_ReceiveData(USART2);
+		//Calculate buffer index
+		tempHead = (USART_RxHead + 1) & USART_RX_BUFFER_MASK;
+		USART_RxHead = tempHead;
+
+		if(tempHead == USART_RxTail)
+		{
+			//ERROR: buffer overflow
+			USART_RxOverflow = 1;
+		}
+		else
+		{
+			USART_RxBuf[tempHead] = rxdata;
+			USART_RxOverflow = 0;
+		}
+
+		//
+		if(rxdata == '\n') USART_ReceiveInt();
+		USART_ClearITPendingBit(USART2, USART_IT_RXNE);
+	}
+
+	if(USART_GetITStatus(USART2, USART_IT_TXE) != RESET)
+	{
+		uint8_t tempTail;
+		if(USART_TxHead != USART_TxTail)
+		{
+			tempTail = ((USART_TxTail + 1) & (USART_TX_BUFFER_MASK));
+			USART_TxTail = tempTail;
+			USART_SendData(USART2, USART_TxBuf[tempTail]);
+		}
+		else
+		{
+			USART_ITConfig(USART2, USART_IT_TXE,DISABLE);
+		}
+	}
+}
+
+
 void USART_ReceiveInt(void)
 {
 #if 0
@@ -415,10 +459,10 @@ void analyzeRecieveBuffer(void)
 	uint8_t numOfPackets, j;
 
 	/*save the buffer tail and head into local variable*/
-	USART_ITConfig(UART4, USART_IT_RXNE, DISABLE);  //disable UART receive interrupts
+	USART_ITConfig(activeUART, USART_IT_RXNE, DISABLE);  //disable UART receive interrupts
 	tempTail = USART_RxTail;
 	tempHead = USART_RxHead;
-	USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);  // enable UART receive interrupts
+	USART_ITConfig(activeUART, USART_IT_RXNE, ENABLE);  // enable UART receive interrupts
 
 
 	/*Analyze received data*/
@@ -765,27 +809,22 @@ void sendDataLayerDataToUART(PacketWithIndex *packet)
 				break;
 		}
 	}
-#if 1
 
-	// pass only GUI buttons and ball sensor
-	//if (message.canMessage.id == 0xb1 || message.canMessage.id == 0xc0)
+	/*send data*/
+	USART_SendChar(0xAA);
+	crc.u16 = 0xAA;
+	USART_SendChar(message.canMessage.id);
+	crc.u16 += message.canMessage.id;
+	USART_SendChar(message.canMessage.dlc);
+	crc.u16 += message.canMessage.dlc;
+	for (j = 0; j < message.canMessage.dlc; j++)
 	{
-		/*send data*/
-		USART_SendChar(0xAA);
-		crc.u16 = 0xAA;
-		USART_SendChar(message.canMessage.id);
-		crc.u16 += message.canMessage.id;
-		USART_SendChar(message.canMessage.dlc);
-		crc.u16 += message.canMessage.dlc;
-		for (j = 0; j < message.canMessage.dlc; j++)
-		{
-			USART_SendChar(message.canMessage.data[j]);
-			crc.u16 += message.canMessage.data[j];
-		}
-		USART_SendChar(crc.u8.byteHigh);
-		USART_SendChar(crc.u8.byteLow);
+		USART_SendChar(message.canMessage.data[j]);
+		crc.u16 += message.canMessage.data[j];
 	}
-#endif
+	USART_SendChar(crc.u8.byteHigh);
+	USART_SendChar(crc.u8.byteLow);
+
 }
 
 /*Finds which mask to use for data setting in message when bit position and data length is known

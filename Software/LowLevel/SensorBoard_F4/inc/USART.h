@@ -26,13 +26,14 @@
 	#error TX buffer size is not a power of 2
 #endif
 
-extern int16_t value;
+
 //Initialization functions
-extern void USART_UART4_init(void);
+extern void USART_init(USART_TypeDef *uartX);
 //void USART_TASK_sendDistances(void);
 extern void USART_TASK(void);
 //Interrupt handler
 void UART4_IRQHandler(void);
+void USART2_IRQHandler(void);
 
 //Functions for receiving and transmitting data
 uint8_t USART_DataInRxBuffer(void);

@@ -25,7 +25,7 @@ int main(void)
 	// initialize sensors
 	Sensor_init();
 	// initialize USART communication
-	USART_UART4_init();
+	USART_init(USART2);
 
 	//Turn LEDs on
 	GPIO_outputOff(LED_GREEN);
