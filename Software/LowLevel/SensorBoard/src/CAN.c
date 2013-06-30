@@ -31,7 +31,7 @@ static CAN_MessageBox priv_CANmessageBoxes[NumberOfPackets];
 
 void initializeRxMessage(CanRxMsg *priv_RxMessage, uint32_t id, uint8_t dlc);
 void initializeTxMessage(CanTxMsg *priv_TxMessage, uint32_t id, uint8_t dlc);
-uint8_t GetBitmaskForCANmessage(uint8_t bitPosition, int16_t length);
+uint8_t getBitmaskForCANmessage(uint8_t bitPosition, int16_t length);
 void sendDataLayerDataToCAN(PacketWithIndex *packet);
 void storeCANDataToDataLayer(PacketWithIndex *packet);
 void storeReceivedDataToMessageBox(Packet index);
@@ -88,7 +88,7 @@ void initializeMessageBoxes(void)
  Params: bitPosition - bit position in byte, NB! not absolute position in message
  	 	 length - remaining data length
  */
-uint8_t GetBitmaskForCANmessage(uint8_t bitPosition, int16_t length)
+uint8_t getBitmaskForCANmessage(uint8_t bitPosition, int16_t length)
 {
   uint8_t mask = 0xFF;
   uint8_t zerosFromRight, i;
@@ -309,9 +309,16 @@ void storeReceivedDataToMessageBox(Packet index)
 /*Execution period -> check from TASK table*/
 void CAN_TASK(void)
 {
+	uint8_t data;
 	handleTransmitData();
 	handleReceivedData();
-
+	DL_getData(DLParamButtonTopLeft, &data);
+	if (data == 1)
+	{
+		initializeTxMessage(&priv_TxMessage, 0xDF, 3);
+		priv_TxMessage.Data[0] = data;
+		CAN_Transmit(CAN1, &priv_TxMessage);
+	}
 }
 
 /*check CAN message boxes and stores data to data layer if something new*/
@@ -415,6 +422,26 @@ void storeCANDataToDataLayer(PacketWithIndex *packet)
 					/*second byte, bit position is still 0, shift if length is not full byte*/
 					data |= (priv_CANmessageBoxes[packet->index].data[byteIndex + 1] & 0xFF);
 					data = (uint16_t)(data >> (8 - length));
+					DL_setDataByComm((Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+					//*((uint16_t*)(DL_GET_POINTER_TO_DATA(packet->psParameterList[j].eParam))) = (uint16_t)data;
+					//DL_setDataValidity(packet->psParameterList[j].eParam, TRUE);
+					dataLayerOk++;
+				}
+				break;
+			case TypeU32:
+			case TypeS32:
+				/*sanity check*/
+				if ((length <= 32) && (length > 24) && (byteIndex < 5))
+				{
+					/*involves 4 bytes */
+					/*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
+					data = (priv_CANmessageBoxes[packet->index].data[byteIndex] << 24) & 0xFF000000;
+					data += (priv_CANmessageBoxes[packet->index].data[byteIndex + 1] << 16) & 0xFF0000;
+					data += (priv_CANmessageBoxes[packet->index].data[byteIndex + 2] << 8) & 0xFF00;
+					length = length - 24;
+					/*fourth byte, bit position is still 0, shift if length is not full byte*/
+					data |= (priv_CANmessageBoxes[packet->index].data[byteIndex + 3] & 0xFF);
+					data = (uint32_t)(data >> (8 - length));
 					DL_setDataByComm((Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
 					//*((uint16_t*)(DL_GET_POINTER_TO_DATA(packet->psParameterList[j].eParam))) = (uint16_t)data;
 					//DL_setDataValidity(packet->psParameterList[j].eParam, TRUE);
@@ -525,7 +552,7 @@ void sendDataLayerDataToCAN(PacketWithIndex *packet)
 			case TypeU8:
 			case TypeS8:
 				/*involves only one byte */
-				bitmask = GetBitmaskForCANmessage(bitPosition, length);
+				bitmask = getBitmaskForCANmessage(bitPosition, length);
 				//data = *((uint8_t*)(DL_GET_POINTER_TO_DATA(packet->psParameterList[j].eParam)));
 				DL_getDataByComm((Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
 				priv_TxMessage.Data[byteIndex] |= (((((uint8_t)data) & 0xFF) << (8 - length - bitPosition)) & bitmask);
@@ -538,11 +565,20 @@ void sendDataLayerDataToCAN(PacketWithIndex *packet)
 				/*first byte, bit position is assumed to be 0 and the byte is fully for this parameter*/
 				priv_TxMessage.Data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
 				/*second byte, bit position is still 0*/
-				bitmask = GetBitmaskForCANmessage(0, length - 8);
+				bitmask = getBitmaskForCANmessage(0, length - 8);
 				priv_TxMessage.Data[byteIndex + 1] |= (uint8_t)(((data & 0xFF) << (16 - length)) & bitmask);
 				break;
 			case TypeU32:
 			case TypeS32:
+				/*involves four bytes */
+				DL_getDataByComm((Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+				/*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
+				priv_TxMessage.Data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
+				priv_TxMessage.Data[byteIndex + 1] |= (uint8_t)((data >> (length - 16)) & 0xFF);
+				priv_TxMessage.Data[byteIndex + 2] |= (uint8_t)((data >> (length - 24)) & 0xFF);
+				/*fourth byte, bit position is still 0*/
+				bitmask = getBitmaskForCANmessage(0, length - 8);
+				priv_TxMessage.Data[byteIndex + 3] |= (uint8_t)(((data & 0xFF) << (32 - length)) & bitmask);
 				break;
 			default:
 				break;

@@ -15,14 +15,14 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_USART,		  	    5,		    2,			USART_TASK							},
 		{TASK_LED,				  400,			0,			GPIO_TASK_blinkLED	    },
 		{TASK_SENSOR1_START,	  200,			0,			Sensor_TASK_startMeasurement1		},
-		{TASK_SENSOR1_READ,		  200,		   49,			Sensor_TASK_readDistance1			},
+		{TASK_SENSOR1_READ,		  200,		   49,			Sensor_TASK_readDistance1			}/*,
 		{TASK_SENSOR2_START,	  200,		   50,			Sensor_TASK_startMeasurement2		},
 		{TASK_SENSOR2_READ,		  200,		   99,			Sensor_TASK_readDistance2			},
 		{TASK_SENSOR3_START,	  200,		  100,			Sensor_TASK_startMeasurement3		},
 		{TASK_SENSOR3_READ,		  200,		  149,			Sensor_TASK_readDistance3			},
 		{TASK_SENSOR4_START,	  200,		  150,			Sensor_TASK_startMeasurement4		},
 		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			},
-		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			}
+		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			}*/
 	//	{TASK_DATA,		  		   10,		    4,			DataHandler_TASK					},
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))

@@ -98,6 +98,10 @@ void EXTI15_10_IRQHandler(void)
 				/*disable pin detection*/
 				EXTI_DeInit();
 			}
+			else
+			{
+				priv_sensor1Value = 0;
+			}
 			priv_sensor1Stat = SENSOR_INPUT_FALLED;
 		}
 
@@ -229,7 +233,7 @@ void Sensor_TASK_startMeasurement1(void)
 	Timer_stopTimer(TIMER2_ID);
 	// set trigger output low
 	GPIO_outputOff(URF1_TRIG);
-	// enable input pin for sensor 2
+	// enable input pin for sensor 1
 	initDistanceSensor(URF1_ECHO);
 }
 
@@ -297,7 +301,7 @@ void Sensor_TASK_startMeasurement3(void)
 	Timer_stopTimer(TIMER2_ID);
 	// set trigger output low
 	GPIO_outputOff(URF3_TRIG);
-	// enable input pin for sensor 2
+	// enable input pin for sensor 3
 	initDistanceSensor(URF3_ECHO);
 }
 
@@ -331,7 +335,7 @@ void Sensor_TASK_startMeasurement4(void)
 	Timer_stopTimer(TIMER2_ID);
 	// set trigger output low
 	GPIO_outputOff(URF4_TRIG);
-	// enable input pin for sensor 2
+	// enable input pin for sensor 4
 	initDistanceSensor(URF4_ECHO);
 }
 

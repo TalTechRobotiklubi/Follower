@@ -5,6 +5,7 @@
 #include "TaskHandler.h"
 #include "GPIO.h"
 
+
 typedef enum
 {
 	CAN_Box_Not_Used,
@@ -32,6 +33,15 @@ CanTxMsg TxMessage;
 
 // every message has it's own message box
 static CAN_MessageBox priv_CANmessageBoxes[NumberOfPackets];
+static uint8_t  priv_bs1 = 7;
+static uint8_t  priv_bs2 = 4;
+// change prescaler to 6 if running test sequence
+//#define RUN_CAN_SPEED_CHECK_SEQUENCE
+#ifdef RUN_CAN_SPEED_CHECK_SEQUENCE
+static uint16_t priv_prescaler = 6;
+#else
+static uint16_t priv_prescaler = 24;
+#endif
 
 void CAN1_NVIC_Config(void);
 void initializeRxMessage(CanRxMsg *priv_RxMessage, uint32_t id, uint8_t dlc);
@@ -43,6 +53,7 @@ void storeReceivedDataToMessageBox(Packet index);
 void handleReceivedData(void);
 void handleTransmitData(void);
 void initializeMessageBoxes(void);
+void initCAN1parameters(uint8_t bs1, uint8_t bs2, uint16_t prescaler);
 
 /**
   * @brief  Initializes a Rx Message.
@@ -180,21 +191,7 @@ void CAN_CAN1Init()
 	CAN_DeInit(CAN1);
 
 	/* CAN cell init */
-	CAN_InitStructure.CAN_TTCM = DISABLE;
-	CAN_InitStructure.CAN_ABOM = DISABLE;
-	CAN_InitStructure.CAN_AWUM = DISABLE;
-	CAN_InitStructure.CAN_NART = DISABLE;
-	CAN_InitStructure.CAN_RFLM = DISABLE;
-	CAN_InitStructure.CAN_TXFP = DISABLE;
-	CAN_InitStructure.CAN_Mode = CAN_Mode_Normal;
-	CAN_InitStructure.CAN_SJW = CAN_SJW_1tq;
-
-	/* CAN Baudrate = 125 kbit/s
-	bit time = tq + tbs1 + tbs2 , where tq = (Prescale + 1) x APB1 clock*/
-	CAN_InitStructure.CAN_BS1 = CAN_BS1_5tq;
-	CAN_InitStructure.CAN_BS2 = CAN_BS2_2tq;
-	CAN_InitStructure.CAN_Prescaler = 41;
-	CAN_Init(CAN1, &CAN_InitStructure);
+	initCAN1parameters(priv_bs1, priv_bs2, priv_prescaler);
 
 	/* CAN filter init */
 	CAN_FilterInitStructure.CAN_FilterNumber = 0;
@@ -221,8 +218,36 @@ void CAN_CAN1Init()
 	/*message box init*/
 	//initializeMessageBoxes();
 
+}
 
+void initCAN1parameters(uint8_t bs1, uint8_t bs2, uint16_t prescaler)
+{
+	CAN_InitStructure.CAN_TTCM = DISABLE;
+	CAN_InitStructure.CAN_ABOM = DISABLE;
+	CAN_InitStructure.CAN_AWUM = DISABLE;
+	CAN_InitStructure.CAN_NART = DISABLE;
+	CAN_InitStructure.CAN_RFLM = DISABLE;
+	CAN_InitStructure.CAN_TXFP = DISABLE;
+	CAN_InitStructure.CAN_Mode = CAN_Mode_Normal;
+	CAN_InitStructure.CAN_SJW = CAN_SJW_1tq;
 
+	/* CAN Baudrate = 125 kbit/s
+	bit time = tq + tbs1 + tbs2 , where tq = (Prescale + 1) x APB1 clock*/
+	/*CAN_InitStructure.CAN_BS1 = CAN_BS1_5tq;
+	CAN_InitStructure.CAN_BS2 = CAN_BS2_3tq;
+	CAN_InitStructure.CAN_Prescaler = 38;*/
+/*
+	CAN_InitStructure.CAN_BS1 = CAN_BS1_7tq;
+	CAN_InitStructure.CAN_BS2 = CAN_BS2_4tq;
+	CAN_InitStructure.CAN_Prescaler = 57;*/
+	/*
+	CAN_InitStructure.CAN_BS1 = CAN_BS1_5tq;
+	CAN_InitStructure.CAN_BS2 = CAN_BS2_2tq;
+	CAN_InitStructure.CAN_Prescaler = 41;*/
+	CAN_InitStructure.CAN_BS1 = bs1;
+	CAN_InitStructure.CAN_BS2 = bs2;
+	CAN_InitStructure.CAN_Prescaler = prescaler;
+	CAN_Init(CAN1, &CAN_InitStructure);
 }
 
 /**
@@ -304,8 +329,31 @@ void storeReceivedDataToMessageBox(Packet index)
 /*Execution period -> check from TASK table*/
 void CAN_TASK(void)
 {
+
 	handleTransmitData();
 	handleReceivedData();
+
+	if (GPIO_inputValue(USER_BUTTON) == INPUT_ON)
+	{
+		// test sequence to find suitable prescaler value
+		initializeTxMessage(&priv_TxMessage, 0xDE, 2);
+		priv_TxMessage.Data[0] = 0xEE;
+#ifdef RUN_CAN_SPEED_CHECK_SEQUENCE
+		if (CAN_Transmit(CAN1, &priv_TxMessage) == CAN_TxStatus_NoMailBox)
+		{
+			if ((priv_prescaler + 1) < 1000)
+			{
+				priv_prescaler++;
+			}
+			CAN_CancelTransmit(CAN1, 0);
+			CAN_CancelTransmit(CAN1, 1);
+			CAN_CancelTransmit(CAN1, 2);
+			initCAN1parameters(priv_bs1, priv_bs2, priv_prescaler);
+		}
+#else
+		CAN_Transmit(CAN1, &priv_TxMessage);
+#endif
+	}
 }
 
 /*check CAN message boxes and stores data to data layer if something new*/
@@ -409,6 +457,26 @@ void storeCANDataToDataLayer(PacketWithIndex *packet)
 					/*second byte, bit position is still 0, shift if length is not full byte*/
 					data |= (priv_CANmessageBoxes[packet->index].data[byteIndex + 1] & 0xFF);
 					data = (uint16_t)(data >> (8 - length));
+					DL_setDataByComm((Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+					//*((uint16_t*)(DL_GET_POINTER_TO_DATA(packet->psParameterList[j].eParam))) = (uint16_t)data;
+					//DL_setDataValidity(packet->psParameterList[j].eParam, TRUE);
+					dataLayerOk++;
+				}
+				break;
+			case TypeU32:
+			case TypeS32:
+				/*sanity check*/
+				if ((length <= 32) && (length > 24) && (byteIndex < 5))
+				{
+					/*involves 4 bytes */
+					/*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
+					data = (priv_CANmessageBoxes[packet->index].data[byteIndex] << 24) & 0xFF000000;
+					data += (priv_CANmessageBoxes[packet->index].data[byteIndex + 1] << 16) & 0xFF0000;
+					data += (priv_CANmessageBoxes[packet->index].data[byteIndex + 2] << 8) & 0xFF00;
+					length = length - 24;
+					/*fourth byte, bit position is still 0, shift if length is not full byte*/
+					data |= (priv_CANmessageBoxes[packet->index].data[byteIndex + 3] & 0xFF);
+					data = (uint32_t)(data >> (8 - length));
 					DL_setDataByComm((Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
 					//*((uint16_t*)(DL_GET_POINTER_TO_DATA(packet->psParameterList[j].eParam))) = (uint16_t)data;
 					//DL_setDataValidity(packet->psParameterList[j].eParam, TRUE);
@@ -537,6 +605,15 @@ void sendDataLayerDataToCAN(PacketWithIndex *packet)
 				break;
 			case TypeU32:
 			case TypeS32:
+				/*involves four bytes */
+				DL_getDataByComm((Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+				/*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
+				priv_TxMessage.Data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
+				priv_TxMessage.Data[byteIndex + 1] |= (uint8_t)((data >> (length - 16)) & 0xFF);
+				priv_TxMessage.Data[byteIndex + 2] |= (uint8_t)((data >> (length - 24)) & 0xFF);
+				/*fourth byte, bit position is still 0*/
+				bitmask = getBitmaskForCANmessage(0, length - 8);
+				priv_TxMessage.Data[byteIndex + 3] |= (uint8_t)(((data & 0xFF) << (32 - length)) & bitmask);
 				break;
 			default:
 				break;
@@ -544,5 +621,6 @@ void sendDataLayerDataToCAN(PacketWithIndex *packet)
 	}
 	/*send data*/
 	CAN_Transmit(CAN1, &priv_TxMessage);
+
 	// TODO good to check if CAN_Transmit() is returning CAN_TxStatus_NoMailBox
 }

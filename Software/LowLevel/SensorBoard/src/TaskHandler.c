@@ -17,14 +17,14 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_CONTROL,			   10,          4,			GPIO_TASK_readButtons   },
 		{TASK_UART,				    5,		    2,			USART_TASK				},
 		{TASK_DATA,				   10,			4,          DataHandler_TASK		},
-		{TASK_SENSOR1_START,	  200,			0,			Sensor_TASK_startMeasurement1		},
+	/*	{TASK_SENSOR1_START,	  200,			0,			Sensor_TASK_startMeasurement1		},
 		{TASK_SENSOR1_READ,		  200,		   49,			Sensor_TASK_readDistance1			},
 		{TASK_SENSOR2_START,	  200,		   50,			Sensor_TASK_startMeasurement2		},
 		{TASK_SENSOR2_READ,		  200,		   99,			Sensor_TASK_readDistance2			},
 		{TASK_SENSOR3_START,	  200,		  100,			Sensor_TASK_startMeasurement3		},
 		{TASK_SENSOR3_READ,		  200,		  149,			Sensor_TASK_readDistance3			},
 		{TASK_SENSOR4_START,	  200,		  150,			Sensor_TASK_startMeasurement4		},
-		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			},
+		{TASK_SENSOR4_READ,		  200,		  199,			Sensor_TASK_readDistance4			},*/
 		{TASK_LCD,				  200,		    0,			OLED_LCD_TASK			} // Note: this task may take up to 10 ms
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))

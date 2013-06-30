@@ -669,6 +669,24 @@ void storeDataToDataLayer(UART_CANmessage *message, PacketWithIndex *packet)
 					dataLayerOk++;
 				}
 				break;
+			case TypeU32:
+			case TypeS32:
+				/*sanity check*/
+				if ((length <= 32) && (length > 24) && (byteIndex < 5))
+				{
+					/*involves 4 bytes */
+					/*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
+					data = (message->canMessage.data[byteIndex] << 24) & 0xFF000000;
+					data += (message->canMessage.data[byteIndex + 1] << 16) & 0xFF0000;
+					data += (message->canMessage.data[byteIndex + 2] << 8) & 0xFF00;
+					length = length - 24;
+					/*fourth byte, bit position is still 0, shift if length is not full byte*/
+					data |= (message->canMessage.data[byteIndex + 3] & 0xFF);
+					data = (uint32_t)(data >> (8 - length));
+					DL_setDataByComm((Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+					dataLayerOk++;
+				}
+				break;
 			default:
 				break;
 		}
@@ -804,6 +822,15 @@ void sendDataLayerDataToUART(PacketWithIndex *packet)
 				break;
 			case TypeU32:
 			case TypeS32:
+				/*involves four bytes */
+				DL_getDataByComm((Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+				/*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
+				message.canMessage.data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
+				message.canMessage.data[byteIndex + 1] |= (uint8_t)((data >> (length - 16)) & 0xFF);
+				message.canMessage.data[byteIndex + 2] |= (uint8_t)((data >> (length - 24)) & 0xFF);
+				/*fourth byte, bit position is still 0*/
+				bitmask = getBitmaskForUARTmessage(0, length - 8);
+				message.canMessage.data[byteIndex + 3] |= (uint8_t)(((data & 0xFF) << (32 - length)) & bitmask);
 				break;
 			default:
 				break;
