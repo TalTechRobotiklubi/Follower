@@ -2,6 +2,7 @@
 #include "followerui.h"
 #include "SpineCmdCAN.h"
 #include "SpineDataCAN.h"
+#include "TRobot.h"
 
 FollowerUi::FollowerUi(Follower *robot)
 	: QMainWindow()
@@ -11,11 +12,24 @@ FollowerUi::FollowerUi(Follower *robot)
 
     connect(workerThread_, SIGNAL(spineDataChanged(SpineData*)), this, SLOT(newUiData(SpineData*)));
     connect(ui.btnConnect, SIGNAL(clicked()), this, SLOT(connectSpine()));
+
+	// added 16.07.2013 Arthur Randjärv ->
+	robotgui = new TRobot();
+	scene = new QGraphicsScene(this);
+	scene->setBackgroundBrush(QBrush(Qt::black));
+	ui.graphicsView->setScene(scene);
+	ui.graphicsView->setRenderHint(QPainter::Antialiasing);
+	scene->addItem(robotgui);
+	//<- added 16.07.2013 Arthur Randjärv 
 }
 
 FollowerUi::~FollowerUi()
 {
-
+	// added 16.07.2013 Arthur Randjärv ->
+	scene->clear(); // delete all objects on scene 
+	robotgui = NULL; 
+	delete scene;
+	//<- added 16.07.2013 Arthur Randjärv
 }
 
 void FollowerUi::connectSpine() {
@@ -30,6 +44,8 @@ void FollowerUi::newUiData(SpineData* spineData) {
     if (spineDataCAN != NULL)
     {
         spineDataCAN->GetSensorData(sensors);
+
+		robotgui->SetSensors(sensors,6); // added 16.07.2013 Arthur Randjärv 
         
         ui.lbl_andur1->setText(QString::number(sensors[0]));
         ui.lbl_andur2->setText(QString::number(sensors[1]));
