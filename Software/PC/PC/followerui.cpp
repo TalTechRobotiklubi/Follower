@@ -40,17 +40,19 @@ void FollowerUi::newUiData(SpineData* spineData) {
     int sensors[6];
 
     SpineDataCAN* spineDataCAN = dynamic_cast<SpineDataCAN*>(spineData);
-
-    if (spineDataCAN != NULL)
+	
+	if (spineDataCAN != NULL)
     {
         spineDataCAN->GetSensorData(sensors);
 
 		robotgui->SetSensors(sensors,6); // added 16.07.2013 Arthur Randjärv 
-        
-        ui.lbl_andur1->setText(QString::number(sensors[0]));
-        ui.lbl_andur2->setText(QString::number(sensors[1]));
-        ui.lbl_andur3->setText(QString::number(sensors[2]));
-        ui.lbl_andur4->setText(QString::number(sensors[3]));
+		
+        ui.lbl_andur1->setText(QString("Andur1: %1cm").arg(sensors[0]));
+        ui.lbl_andur2->setText(QString("Andur2: %1cm").arg(sensors[1]));
+        ui.lbl_andur3->setText(QString("Andur3: %1cm").arg(sensors[2]));
+        ui.lbl_andur4->setText(QString("Andur4: %1cm").arg(sensors[3]));
+		ui.lbl_andur5->setText(QString("Andur5: %1cm").arg(sensors[4]));
+		ui.lbl_andur6->setText(QString("Andur6: %1cm").arg(sensors[5]));
     }
 }
 

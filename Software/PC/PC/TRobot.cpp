@@ -4,12 +4,14 @@
 #include <QGraphicsScene>
 
 
+
 TRobot::TRobot(void)
 {
 	for (int i = 0; i< 8;i++)
 	{
 		sonarlen[i] = -1;
 	}
+
 }
 
 
@@ -19,7 +21,7 @@ TRobot::~TRobot(void)
 
 QRectF TRobot::boundingRect() const
 {
-	return QRect(-getsize()/2,-getsize()/2,getsize(),getsize());
+	return QRect(-getsize()/2-256,-getsize()/2-256,getsize()+512,getsize()+512);
 }
 
 
