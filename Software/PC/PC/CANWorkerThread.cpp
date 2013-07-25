@@ -7,7 +7,7 @@
 
 CANWorkerThread::CANWorkerThread(void)
 {
-	serialPortNumber_ = 5;
+	serialPortNumber_ = 5; 
 }
 
 

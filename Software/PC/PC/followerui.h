@@ -5,6 +5,7 @@
 #include "ui_followerui.h"
 #include "Follower.h"
 #include "SpineDataCAN.h"
+#include "TRobot.h"
 
 class FollowerUi : public QMainWindow
 {
@@ -23,6 +24,8 @@ private:
 
     Ui::FollowerUiClass ui;
     CANWorkerThread*		workerThread_;
+	TRobot *robotgui;
+	QGraphicsScene *scene;
 
 private slots:
     void connectSpine();

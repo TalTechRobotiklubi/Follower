@@ -113,6 +113,9 @@
     <ClCompile Include="WorkerThreadBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TRobot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="followerui.h">
@@ -190,6 +193,9 @@
       <Filter>Spine</Filter>
     </ClInclude>
     <ClInclude Include="Follower.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TRobot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

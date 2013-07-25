@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>400</height>
+    <height>525</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <widget class="QPushButton" name="btnConnect">
     <property name="geometry">
      <rect>
-      <x>110</x>
-      <y>40</y>
+      <x>510</x>
+      <y>10</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -30,105 +30,89 @@
    <widget class="QLabel" name="lbl_andur1">
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>30</y>
-      <width>46</width>
-      <height>13</height>
+      <x>510</x>
+      <y>40</y>
+      <width>81</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string/>
+     <string>Andur1:  0cm</string>
     </property>
    </widget>
    <widget class="QLabel" name="lbl_andur2">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>510</x>
       <y>60</y>
-      <width>46</width>
-      <height>13</height>
+      <width>81</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string/>
+     <string>Andur2:  0cm</string>
     </property>
    </widget>
    <widget class="QLabel" name="lbl_andur3">
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>90</y>
-      <width>46</width>
-      <height>13</height>
+      <x>510</x>
+      <y>80</y>
+      <width>81</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string/>
+     <string>Andur3:  0cm</string>
     </property>
    </widget>
    <widget class="QLabel" name="lbl_andur4">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>510</x>
+      <y>100</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Andur4:  0cm</string>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="graphicsView">
+    <property name="geometry">
+     <rect>
+      <x>4</x>
+      <y>4</y>
+      <width>500</width>
+      <height>500</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_andur5">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
       <y>120</y>
-      <width>46</width>
-      <height>13</height>
+      <width>81</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string/>
+     <string>Andur5:  0cm</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_5">
+   <widget class="QLabel" name="lbl_andur6">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>30</y>
-      <width>46</width>
-      <height>13</height>
+      <x>510</x>
+      <y>140</y>
+      <width>81</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Andur 1</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_6">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>60</y>
-      <width>46</width>
-      <height>13</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Andur 2</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_7">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>90</y>
-      <width>46</width>
-      <height>13</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Andur 3</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_8">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>120</y>
-      <width>46</width>
-      <height>13</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Andur 4</string>
+     <string>Andur6:  0cm</string>
     </property>
    </widget>
   </widget>

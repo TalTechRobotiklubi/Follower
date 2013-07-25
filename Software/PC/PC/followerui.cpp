@@ -2,6 +2,7 @@
 #include "followerui.h"
 #include "SpineCmdCAN.h"
 #include "SpineDataCAN.h"
+#include "TRobot.h"
 
 FollowerUi::FollowerUi(Follower *robot)
 	: QMainWindow()
@@ -11,11 +12,24 @@ FollowerUi::FollowerUi(Follower *robot)
 
     connect(workerThread_, SIGNAL(spineDataChanged(SpineData*)), this, SLOT(newUiData(SpineData*)));
     connect(ui.btnConnect, SIGNAL(clicked()), this, SLOT(connectSpine()));
+
+	// added 16.07.2013 Arthur Randjärv ->
+	robotgui = new TRobot();
+	scene = new QGraphicsScene(this);
+	scene->setBackgroundBrush(QBrush(Qt::black));
+	ui.graphicsView->setScene(scene);
+	ui.graphicsView->setRenderHint(QPainter::Antialiasing);
+	scene->addItem(robotgui);
+	//<- added 16.07.2013 Arthur Randjärv 
 }
 
 FollowerUi::~FollowerUi()
 {
-
+	// added 16.07.2013 Arthur Randjärv ->
+	scene->clear(); // delete all objects on scene 
+	robotgui = NULL; 
+	delete scene;
+	//<- added 16.07.2013 Arthur Randjärv
 }
 
 void FollowerUi::connectSpine() {
@@ -26,15 +40,19 @@ void FollowerUi::newUiData(SpineData* spineData) {
     int sensors[6];
 
     SpineDataCAN* spineDataCAN = dynamic_cast<SpineDataCAN*>(spineData);
-
-    if (spineDataCAN != NULL)
+	
+	if (spineDataCAN != NULL)
     {
         spineDataCAN->GetSensorData(sensors);
-        
-        ui.lbl_andur1->setText(QString::number(sensors[0]));
-        ui.lbl_andur2->setText(QString::number(sensors[1]));
-        ui.lbl_andur3->setText(QString::number(sensors[2]));
-        ui.lbl_andur4->setText(QString::number(sensors[3]));
+
+		robotgui->SetSensors(sensors,6); // added 16.07.2013 Arthur Randjärv 
+		
+        ui.lbl_andur1->setText(QString("Andur1: %1cm").arg(sensors[0]));
+        ui.lbl_andur2->setText(QString("Andur2: %1cm").arg(sensors[1]));
+        ui.lbl_andur3->setText(QString("Andur3: %1cm").arg(sensors[2]));
+        ui.lbl_andur4->setText(QString("Andur4: %1cm").arg(sensors[3]));
+		ui.lbl_andur5->setText(QString("Andur5: %1cm").arg(sensors[4]));
+		ui.lbl_andur6->setText(QString("Andur6: %1cm").arg(sensors[5]));
     }
 }
 
