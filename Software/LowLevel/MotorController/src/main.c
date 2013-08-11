@@ -6,6 +6,8 @@
 #include "MODULATION.h"
 #include "ANALOG.h"
 #include "CAN.h"
+#include "GPIO.h"
+
 void init(void)
 {
 	//Enable AFIO (Alternate Function IO) clock
@@ -28,7 +30,7 @@ int main()
 
 
   	//Structure for GPIO initialization
-  	GPIO_InitTypeDef GPIO_InitStructure;
+  /*	GPIO_InitTypeDef GPIO_InitStructure;
 
   	//Enable clock on pin
   	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);
@@ -56,7 +58,9 @@ int main()
 
   	//Initialize pin
   	GPIO_Init(GPIOA,&GPIO_InitStructure);
-	GPIOA->BRR = GPIO_Pin_15;
+	GPIOA->BRR = GPIO_Pin_15;*/
+  	GPIO_init();
+
 	TaskHandler_run();
   	while(1)
   	{

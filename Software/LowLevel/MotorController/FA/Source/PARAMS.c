@@ -160,11 +160,18 @@ uint32_t* pu32ParameterTable[35][4] =
 {(uint32_t*)&g_fEncoderDutyCycle, 		(uint32_t*)F, 	(uint32_t*)132, (uint32_t*)234}
 };
 
+typedef union
+{
+	float floatVal;
+	uint32_t uintValue;
+} paramUnion;
+
 //----------------------------------------------------------------------------------------------------------------------------
 //
 //----------------------------------------------------------------------------------------------------------------------------
 void vParametersInit(void)
 {
+#if 0
   int i=0;
   uint16_t u16Data = 0;
   uint32_t u32Data = 0;
@@ -189,6 +196,41 @@ void vParametersInit(void)
 	}
 	
   }
+#endif
+
+  paramUnion val;
+
+  vParameterWrite((uint32_t)pu32ParameterTable[0][0],(uint8_t)0,U8); //g_u8UniqueID
+  vParameterWrite((uint32_t)pu32ParameterTable[1][0],(uint8_t)0xD1,U8); //g_u8ControllerID
+  val.floatVal = 0.0;
+  vParameterWrite((uint32_t)pu32ParameterTable[8][0],val.uintValue,F); //g_fKf
+  val.floatVal = 0.0061035;
+  vParameterWrite((uint32_t)pu32ParameterTable[9][0], val.uintValue, F); //g_fKp
+  val.floatVal = 0.0183105;
+  vParameterWrite((uint32_t)pu32ParameterTable[10][0], val.uintValue, F); //g_fKi
+  val.floatVal = 0.0001526;
+  vParameterWrite((uint32_t)pu32ParameterTable[11][0], val.uintValue,F); //g_fKd
+  val.floatVal = 0.0001526;
+  vParameterWrite((uint32_t)pu32ParameterTable[12][0], val.uintValue, F); //g_fMinimumError
+  vParameterWrite((uint32_t)pu32ParameterTable[13][0], 100, U32); //g_u32PidTimelevel
+  val.floatVal = 50.0;
+  vParameterWrite((uint32_t)pu32ParameterTable[14][0], val.uintValue, F); //g_fOutputLimit
+  val.floatVal = 0.0;
+  vParameterWrite((uint32_t)pu32ParameterTable[17][0], val.uintValue, F); //g_fRampStepUp
+  val.floatVal = 0.0;
+  vParameterWrite((uint32_t)pu32ParameterTable[18][0], val.uintValue, F); //g_fRampStepDown
+  val.floatVal = 100.0;
+  vParameterWrite((uint32_t)pu32ParameterTable[19][0], val.uintValue, F); //g_fRampSlopeUp
+  val.floatVal = 100.0;
+  vParameterWrite((uint32_t)pu32ParameterTable[20][0],val.uintValue, F); //g_fRampSlopeDown
+  vParameterWrite((uint32_t)pu32ParameterTable[21][0], 10000, U32); //g_u32RampTimelevel
+  val.floatVal = 0.0;
+  vParameterWrite((uint32_t)pu32ParameterTable[22][0], val.uintValue, F); //g_fTemperatureHighLimit
+  val.floatVal = 0.0;
+  vParameterWrite((uint32_t)pu32ParameterTable[23][0],val.uintValue, F); //g_fCurrentHighLimit
+  vParameterWrite((uint32_t)pu32ParameterTable[30][0], 10, U32); //g_u32ZeroSpeed
+  val.floatVal = 39.0;
+  vParameterWrite((uint32_t)pu32ParameterTable[34][0], val.uintValue, F); //g_fEncoderDutyCycle
 }
 //----------------------------------------------------------------------------------------------------------------------------
 //

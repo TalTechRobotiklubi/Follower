@@ -5,7 +5,7 @@
 
 enum TASKS
 {
-	TASK_UART,
+	TASK_LED,
 	TASK_CAN,
 	TASK_RAMP,
 	TASK_QEI,

@@ -1,18 +1,19 @@
 #include "stm32f10x.h"
 #include "TASK_HANDLER.h"
 #include "PARAMS.h"
-
+#include "GPIO.h"
 
 /*Task table. Add new task here if necessary. When adding period then be
  *convince that period is not bigger than TIMER_EXCEED_VALUE and divides with it*/
 const struct TASK_STRUCT TaskHandler_tableOfTasks[] = {
-		/*id              	  period (*100us)   offset (*100us)   taskPointer */
-		{TASK_CAN,		  1000,           0,            CAN_TASK 	},
-		{TASK_RAMP,		  100,           0,            RAMP_TASK 	},
-		{TASK_QEI,	          20,            0,         QEI_TASK   },
-		{TASK_ANALOG,	          100,           0,          ANALOG_TASK   },
-		{TASK_PID,	          20,            0,         PID_TASK   },
-		{TASK_MODULATION,	  20,            0,         MODULATION_TASK   }
+		/*id              period (*100us)   offset (*100us)   taskPointer */
+		{TASK_LED,		  	2000,            0,            	GPIO_TASK_blinkLED 	},
+		{TASK_CAN,		  	1000,            0,            	CAN_TASK 	},
+		{TASK_RAMP,		  	 100,            0,            	RAMP_TASK 	},
+		{TASK_QEI,	          20,            1,         	QEI_TASK   },
+		{TASK_ANALOG,	     100,            0,          	ANALOG_TASK   },
+		{TASK_PID,	          20,            2,         	PID_TASK   },
+		{TASK_MODULATION,	  20,            3,         	MODULATION_TASK   }
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(struct TASK_STRUCT))
 

@@ -1,5 +1,6 @@
 #include "CAN.h"
 #include "PARAMS.h"
+#include "EEPROM.h"
 
 #define ABS(A)	((A)<(0) ? (-A) : (A))			//!< Calculateas absolute value of a value
 #define RX_MESSAGE_DLC  		6
@@ -124,6 +125,7 @@ void vCanHardwareInit(void)
 
 	/*Status transmit message*/
 	priv_TxMessage.StdId = g_u8ControllerID;
+	//priv_TxMessage.StdId = 0xD1;
 	priv_TxMessage.RTR = CAN_RTR_DATA;
 	priv_TxMessage.IDE = CAN_ID_STD;
 	priv_TxMessage.DLC = TX_MESSAGE_DLC;
@@ -178,30 +180,20 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 	  (priv_RxMessage.StdId == MEM_ACCESS_ID) &&
       (priv_RxMessage.DLC == MEM_MESSAGE_DLC))
   {
-	  uint8_t u8Count;
-	  uint32_t u32Value;
-	  uint32_t u32Addr;
-	  for(u8Count = 0; u8Count < 8; u8Count++)
+	  int8_t count;
+	  uint32_t u32Value = 0;
+	  uint32_t u32Addr = 0;
+	  for(count = 3; count >= 0; count--)
 	  {
-		if (u8Count < 4)
-		{
-			u32Addr |= priv_RxMessage.Data[u8Count];
-			if(u8Count < 3)
-			{
-			  u32Value = (u32Value << 8);
-			}
-		}
-		else
-		{
-			u32Value |= priv_RxMessage.Data[u8Count];
-			if(u8Count < 11)
-			{
-			  u32Value = (u32Value << 8);
-			}
-		}
+		  u32Addr |= priv_RxMessage.Data[3 - count] << (count * 8);
+	  }
+	  for(count = 3; count >= 0; count--)
+	  {
+		  u32Value |= priv_RxMessage.Data[7 - count] << (count * 8);
 	  }
 
 	  vParameterWrite(u32Addr,u32Value,U32);
+	  //write(u32Addr, u32Value);
   }
 }
 
