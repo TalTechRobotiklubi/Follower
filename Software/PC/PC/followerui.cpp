@@ -7,33 +7,44 @@
 FollowerUi::FollowerUi(Follower *robot)
 	: QMainWindow()
 {
-	ui.setupUi(this);
-    workerThread_ = robot->workerThread;
+	ui.setupUi(this); 
+	workerThread_ = robot->workerThread;
 
     connect(workerThread_, SIGNAL(spineDataChanged(SpineData*)), this, SLOT(newUiData(SpineData*)));
     connect(ui.btnConnect, SIGNAL(clicked()), this, SLOT(connectSpine()));
 
-	// added 16.07.2013 Arthur Randjärv ->
 	robotgui = new TRobot();
 	scene = new QGraphicsScene(this);
 	scene->setBackgroundBrush(QBrush(Qt::black));
 	ui.graphicsView->setScene(scene);
 	ui.graphicsView->setRenderHint(QPainter::Antialiasing);
 	scene->addItem(robotgui);
-	//<- added 16.07.2013 Arthur Randjärv 
 }
 
 FollowerUi::~FollowerUi()
 {
-	// added 16.07.2013 Arthur Randjärv ->
-	scene->clear(); // delete all objects on scene 
+
+	scene->clear();
 	robotgui = NULL; 
 	delete scene;
-	//<- added 16.07.2013 Arthur Randjärv
+
 }
 
 void FollowerUi::connectSpine() {
-    workerThread_->Start();
+
+	if (workerThread_->isRunning()){
+		workerThread_->Stop();
+	}else{
+		workerThread_->Start();
+	}
+
+	_sleep(1000);
+
+	if (workerThread_->isRunning()){
+		ui.btnConnect->setText("Disconnect");
+	}else{
+		ui.btnConnect->setText("Connect");
+	}
 }
 
 void FollowerUi::newUiData(SpineData* spineData) {
@@ -45,8 +56,9 @@ void FollowerUi::newUiData(SpineData* spineData) {
     {
         spineDataCAN->GetSensorData(sensors);
 
-		robotgui->SetSensors(sensors,6); // added 16.07.2013 Arthur Randjärv 
-		
+		robotgui->SetSensors(sensors,6);
+		scene->update();
+
         ui.lbl_andur1->setText(QString("Andur1: %1cm").arg(sensors[0]));
         ui.lbl_andur2->setText(QString("Andur2: %1cm").arg(sensors[1]));
         ui.lbl_andur3->setText(QString("Andur3: %1cm").arg(sensors[2]));

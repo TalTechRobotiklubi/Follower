@@ -9,7 +9,7 @@ TRobot::TRobot(void)
 {
 	for (int i = 0; i< 8;i++)
 	{
-		sonarlen[i] = -1;
+		sonarlen_[i] = -1;
 	}
 
 }
@@ -21,14 +21,14 @@ TRobot::~TRobot(void)
 
 QRectF TRobot::boundingRect() const
 {
-	return QRect(-getsize()/2-256,-getsize()/2-256,getsize()+512,getsize()+512);
+	return QRect(-GetSize()/2,-GetSize()/2,GetSize(),GetSize());
 }
 
 
 void TRobot::paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWidget *widget)
 {
 
-	int sidelen = int (getsize()/2.42);
+	int sidelen = int (GetSize()/2.42);
 
 	int s2 = sidelen>>1;
 	int s3 =s2+int (sidelen*0.71);
@@ -55,14 +55,14 @@ void TRobot::paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWid
 
 	// draws sonar signal 
 
-	PaintSonar(s3,0,sonarlen[0],0,painter);
-	PaintSonar(s4,-s4,sonarlen[1],45,painter);
-	PaintSonar(0,s0,sonarlen[2],90,painter);
-	PaintSonar(-s4,-s4,sonarlen[3],135,painter);
-	PaintSonar(s0,0,sonarlen[4],180,painter);
-	PaintSonar(-s4,s4,sonarlen[5],225,painter);
-	PaintSonar(0,s3,sonarlen[6],270,painter);
-	PaintSonar(s4,s4,sonarlen[7],315,painter);
+	PaintSonar(s3,0,sonarlen_[0],0,painter);
+	PaintSonar(s4,-s4,sonarlen_[1],45,painter);
+	PaintSonar(0,s0,sonarlen_[2],90,painter);
+	PaintSonar(-s4,-s4,sonarlen_[3],135,painter);
+	PaintSonar(s0,0,sonarlen_[4],180,painter);
+	PaintSonar(-s4,s4,sonarlen_[5],225,painter);
+	PaintSonar(0,s3,sonarlen_[6],270,painter);
+	PaintSonar(s4,s4,sonarlen_[7],315,painter);
 	
 
 
@@ -82,7 +82,7 @@ void TRobot::PaintSonar(int x,int y,int len,int deg,QPainter *painter)
 	}
 }
 
-int TRobot::getsize(void) const
+int TRobot::GetSize(void) const
 {
 	return 80;
 }
@@ -124,10 +124,10 @@ void TRobot::SetSensors(int *sensors,int count)
 
 	for (i = 0; i<count; i++)
 	{
-		if (*sensors != sonarlen[i])
+		if (*sensors != sonarlen_[i])
 		{
 			update = 1;
-			sonarlen[i] = *sensors;
+			sonarlen_[i] = *sensors;
 		}
 		sensors++;
 	}
