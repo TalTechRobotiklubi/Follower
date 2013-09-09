@@ -107,3 +107,15 @@ void FollowerUi::sendCmd( int w1, int  w2, int w3 )
     spineCmd->SetWheelSpeeds(w1, w2, w3);
     workerThread_->SendSpineCmd(spineCmd);
 }
+
+void FollowerUi::wheelEvent (QWheelEvent* event)
+{
+	int steps = event->delta()/120;
+
+	if (steps > 0){
+		robotgui->zoom *= 0.9;
+	}else if (steps < 0){
+		robotgui->zoom *= 1.1;
+	}
+	 scene->update();
+}

@@ -18,6 +18,7 @@ public:
 
 protected:
     virtual void keyPressEvent ( QKeyEvent * event );
+	virtual void wheelEvent (QWheelEvent* event);
 
 private:
     void sendCmd( int w1, int  w2, int w3 );
