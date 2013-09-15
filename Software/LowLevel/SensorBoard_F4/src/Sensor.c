@@ -27,6 +27,8 @@ uint16_t 					priv_sensor4Value = 0;
 
 /*private function declarations*/
 void initDistanceSensor(GPIO_IdDef io);
+//void enableSensorInterrupt(GPIO_IdDef io);
+void disableSensorInterrupt(GPIO_IdDef io);
 
 /*function definitions*/
 void Sensor_init(void)
@@ -70,6 +72,16 @@ void initDistanceSensor(GPIO_IdDef io)
 }
 
 /**
+ * disable Exti interrupt for sensor IO
+ */
+void disableSensorInterrupt(GPIO_IdDef io)
+{
+	EXTI_InitStructure.EXTI_Line = GPIO_table[io].exti;
+	EXTI_InitStructure.EXTI_LineCmd = DISABLE;
+	EXTI_Init(&EXTI_InitStructure);
+}
+
+/**
 * @brief  This function handles External line 15 - 10 interrupt request for URF1 echo pin PC14.
 * @param  None
 * @retval None
@@ -96,7 +108,8 @@ void EXTI15_10_IRQHandler(void)
 				// read measurement result
 				priv_sensor1Value = Timer_getTimerValue(TIMER2_ID);
 				/*disable pin detection*/
-				EXTI_DeInit();
+				//EXTI_DeInit();
+				disableSensorInterrupt(URF1_ECHO);
 			}
 			else
 			{
@@ -124,7 +137,7 @@ void EXTI9_5_IRQHandler(void)
 		if (GPIO_inputValue(URF2_ECHO) == INPUT_ON)
 		{
 			// rising edge, start to measure
-			Timer_startTimer(TIMER2_ID);
+			Timer_startTimer(TIMER3_ID);
 			priv_sensor2Stat = SENSOR_INPUT_RISED;
 		}
 		else
@@ -133,11 +146,12 @@ void EXTI9_5_IRQHandler(void)
 			if (priv_sensor2Stat == SENSOR_INPUT_RISED)
 			{
 				/*stop timer*/
-				Timer_stopTimer(TIMER2_ID);
+				Timer_stopTimer(TIMER3_ID);
 				// read measurement result
-				priv_sensor2Value = Timer_getTimerValue(TIMER2_ID);
+				priv_sensor2Value = Timer_getTimerValue(TIMER3_ID);
 				/*disable pin detection*/
-				EXTI_DeInit();
+				//EXTI_DeInit();
+				disableSensorInterrupt(URF2_ECHO);
 			}
 			priv_sensor2Stat = SENSOR_INPUT_FALLED;
 		}
@@ -161,7 +175,7 @@ void EXTI4_IRQHandler(void)
 		if (GPIO_inputValue(URF3_ECHO) == INPUT_ON)
 		{
 			// rising edge, start to measure
-			Timer_startTimer(TIMER2_ID);
+			Timer_startTimer(TIMER4_ID);
 			priv_sensor3Stat = SENSOR_INPUT_RISED;
 		}
 		else
@@ -170,11 +184,12 @@ void EXTI4_IRQHandler(void)
 			if (priv_sensor3Stat == SENSOR_INPUT_RISED)
 			{
 				/*stop timer*/
-				Timer_stopTimer(TIMER2_ID);
+				Timer_stopTimer(TIMER4_ID);
 				// read measurement result
-				priv_sensor3Value = Timer_getTimerValue(TIMER2_ID);
+				priv_sensor3Value = Timer_getTimerValue(TIMER4_ID);
 				/*disable pin detection*/
-				EXTI_DeInit();
+				//EXTI_DeInit();
+				disableSensorInterrupt(URF3_ECHO);
 			}
 			priv_sensor3Stat = SENSOR_INPUT_FALLED;
 		}
@@ -210,7 +225,8 @@ void EXTI2_IRQHandler(void)
 				// read measurement result
 				priv_sensor4Value = Timer_getTimerValue(TIMER2_ID);
 				/*disable pin detection*/
-				EXTI_DeInit();
+				//EXTI_DeInit();
+				disableSensorInterrupt(URF4_ECHO);
 			}
 			priv_sensor4Stat = SENSOR_INPUT_FALLED;
 		}
@@ -261,10 +277,10 @@ void Sensor_TASK_startMeasurement2(void)
 	priv_sensor2Stat = SENSOR_INPUT_IDLE;
 	// set trigger output high
 	GPIO_outputOn(URF2_TRIG);
-	Timer_startTimer(TIMER2_ID);
+	Timer_startTimer(TIMER3_ID);
 	// keep output high for 20 us
-	while (Timer_getTimerValue(TIMER2_ID) < 20);
-	Timer_stopTimer(TIMER2_ID);
+	while (Timer_getTimerValue(TIMER3_ID) < 20);
+	Timer_stopTimer(TIMER3_ID);
 	// set trigger output low
 	GPIO_outputOff(URF2_TRIG);
 	// enable input pin for sensor 2
@@ -277,7 +293,7 @@ void Sensor_TASK_readDistance2(void)
 	// measurement has taken too long, set max distance
 	if (priv_sensor2Stat == SENSOR_INPUT_RISED)
 	{
-		Timer_stopTimer(TIMER2_ID);
+		Timer_stopTimer(TIMER3_ID);
 		priv_sensor2Stat = SENSOR_INPUT_IDLE;
 		priv_sensor2Value = 255;
 	}
@@ -295,10 +311,10 @@ void Sensor_TASK_startMeasurement3(void)
 	priv_sensor3Stat = SENSOR_INPUT_IDLE;
 	// set trigger output high
 	GPIO_outputOn(URF3_TRIG);
-	Timer_startTimer(TIMER2_ID);
+	Timer_startTimer(TIMER4_ID);
 	// keep output high for 20 us
-	while (Timer_getTimerValue(TIMER2_ID) < 20);
-	Timer_stopTimer(TIMER2_ID);
+	while (Timer_getTimerValue(TIMER4_ID) < 20);
+	Timer_stopTimer(TIMER4_ID);
 	// set trigger output low
 	GPIO_outputOff(URF3_TRIG);
 	// enable input pin for sensor 3
@@ -311,7 +327,7 @@ void Sensor_TASK_readDistance3(void)
 	// measurement has taken too long, set max distance
 	if (priv_sensor3Stat == SENSOR_INPUT_RISED)
 	{
-		Timer_stopTimer(TIMER2_ID);
+		Timer_stopTimer(TIMER4_ID);
 		priv_sensor3Stat = SENSOR_INPUT_IDLE;
 		priv_sensor3Value = 255;
 	}

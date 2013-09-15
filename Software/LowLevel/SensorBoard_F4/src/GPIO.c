@@ -122,13 +122,13 @@ void GPIO_TASK_blinkLED(void)
 	// blink LED
 	if (state == 0)
 	{
-		GPIO_outputOn(LED_RED);
+		//GPIO_outputOn(LED_RED);
 		GPIO_outputOn(LED_BLUE);
 		state = 1;
 	}
 	else
 	{
-		GPIO_outputOff(LED_RED);
+		//GPIO_outputOff(LED_RED);
 		GPIO_outputOff(LED_BLUE);
 		state = 0;
 	}
