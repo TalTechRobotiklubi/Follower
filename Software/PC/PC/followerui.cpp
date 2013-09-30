@@ -48,7 +48,7 @@ void FollowerUi::connectSpine() {
 }
 
 void FollowerUi::newUiData(SpineData* spineData) {
-    int sensors[6];
+    int sensors[8];
 
     SpineDataCAN* spineDataCAN = dynamic_cast<SpineDataCAN*>(spineData);
 	
@@ -56,7 +56,7 @@ void FollowerUi::newUiData(SpineData* spineData) {
     {
         spineDataCAN->GetSensorData(sensors);
 
-		robotgui->SetSensors(sensors,6);
+		robotgui->SetSensors(sensors,8);
 		scene->update();
 
         ui.lbl_andur1->setText(QString("Andur1: %1cm").arg(sensors[0]));

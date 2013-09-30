@@ -13,7 +13,7 @@ SpineDataCAN::SpineDataCAN() : SpineData()
         buttonPresses_[i] = false;
     }
 
-    for(int i = 0; i < 6; i++)
+    for(int i = 0; i < 8; i++)
         sensors_[i] = 0;
 }
 
@@ -25,8 +25,8 @@ void SpineDataCAN::GetSensorData(int *sensor_data)
     sensor_data[3] = sensors_[3];
     sensor_data[4] = sensors_[4];
     sensor_data[5] = sensors_[5];
-
-
+    sensor_data[6] = sensors_[6];
+    sensor_data[7] = sensors_[7];
 }
 
 bool SpineDataCAN::SetReceivedDataToObject(DataLayerCAN* dataLayer)
@@ -47,6 +47,8 @@ bool SpineDataCAN::SetReceivedDataToObject(DataLayerCAN* dataLayer)
     dataLayer->DL_getData(DLParamDistanceSensor4, &sensors_[3]);
     dataLayer->DL_getData(DLParamDistanceSensor5, &sensors_[4]);
     dataLayer->DL_getData(DLParamDistanceSensor6, &sensors_[5]);
+    dataLayer->DL_getData(DLParamDistanceSensor7, &sensors_[6]);
+    dataLayer->DL_getData(DLParamDistanceSensor8, &sensors_[7]);
 
     /*update also start button state */
     if (buttonPresses_[Top_Left_Button] == true)

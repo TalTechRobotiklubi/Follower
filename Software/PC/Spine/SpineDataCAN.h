@@ -31,5 +31,5 @@ private:
     int                     motorSpeed2_;
     int                     motorSpeed3_;
     bool                    buttonPresses_[4];
-    int                     sensors_[6];
+    int                     sensors_[8];
 };

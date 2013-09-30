@@ -14,7 +14,7 @@
 // ----------------------------------------------------------------------------
 Bool  pDLValueBool[10];
 U4    pDLValueU4[3];
-U8    pDLValueU8[18];
+U8    pDLValueU8[20];
 S16   pDLValueS16[9];
 U32   pDLValueU32[2];
 
@@ -64,6 +64,8 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* DistanceSensor3     */ { TypeU8,   &pDLValueU8[14]  },
 	/* DistanceSensor4     */ { TypeU8,   &pDLValueU8[15]  },
 	/* DistanceSensor5     */ { TypeU8,   &pDLValueU8[16]  },
-	/* DistanceSensor6     */ { TypeU8,   &pDLValueU8[17]  }
+	/* DistanceSensor6     */ { TypeU8,   &pDLValueU8[17]  },
+	/* DistanceSensor7     */ { TypeU8,   &pDLValueU8[18]  },
+	/* DistanceSensor8     */ { TypeU8,   &pDLValueU8[19]  }
 };
 

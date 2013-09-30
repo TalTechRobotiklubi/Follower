@@ -97,14 +97,16 @@ const PacketParameter psPacketUIControlsParameterList[4] =
 // ----------------------------------------------------------------------------
 // Packet "Sensors" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter psPacketSensorsParameterList[6] = 
+const PacketParameter psPacketSensorsParameterList[8] = 
 {
 	{ DLParamDistanceSensor1,  0, 8 },
 	{ DLParamDistanceSensor2,  8, 8 },
 	{ DLParamDistanceSensor3, 16, 8 },
 	{ DLParamDistanceSensor4, 24, 8 },
 	{ DLParamDistanceSensor5, 32, 8 },
-	{ DLParamDistanceSensor6, 40, 8 }
+	{ DLParamDistanceSensor6, 40, 8 },
+	{ DLParamDistanceSensor7, 48, 8 },
+	{ DLParamDistanceSensor8, 56, 8 }
 };
 
 // ----------------------------------------------------------------------------
@@ -119,7 +121,7 @@ const PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
 	/* UIScreenWrite */ { 0xC3,  -1, psPacketUIScreenWriteParameterList, 9, 8 },
 	/* MotorPID      */ { 0xD4,  -1, psPacketMotorPIDParameterList,      2, 8 },
 	/* UIControls    */ { 0xC0,  -1, psPacketUIControlsParameterList,    4, 1 },
-	/* Sensors       */ { 0xF0,  -1, psPacketSensorsParameterList,       6, 6 }
+	/* Sensors       */ { 0xF0,  -1, psPacketSensorsParameterList,       8, 8 }
 };
 #define NUMBER_OF_PACKETS (sizeof(psPacketDescriptorList)/sizeof(Packet))
 

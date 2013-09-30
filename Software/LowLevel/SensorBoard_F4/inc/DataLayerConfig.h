@@ -58,7 +58,9 @@ typedef enum
 	DLParamDistanceSensor4,     // 39
 	DLParamDistanceSensor5,     // 40
 	DLParamDistanceSensor6,     // 41
-	// Count of items is 42
+	DLParamDistanceSensor7,     // 42
+	DLParamDistanceSensor8,     // 43
+	// Count of items is 44
 	DLNumberOfParams
 }
 DLParam;
