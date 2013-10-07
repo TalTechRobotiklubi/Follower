@@ -28,7 +28,7 @@ const GPIO_Struct GPIO_table[] = {
 	{URF7_ECHO,				GPIOE,	GPIO_Pin_7,		RCC_AHB1Periph_GPIOE,	EXTI_Line7, 	EXTI_PortSourceGPIOE,	EXTI_PinSource7,	EXTI9_5_IRQn},  //PE7
 	{URF7_TRIG,				GPIOE,	GPIO_Pin_8,		RCC_AHB1Periph_GPIOE,	EXTI_Line8, 	EXTI_PortSourceGPIOE,	EXTI_PinSource8,	EXTI9_5_IRQn},  //PE8
 	{URF8_ECHO,				GPIOE,	GPIO_Pin_9,		RCC_AHB1Periph_GPIOE,	EXTI_Line9, 	EXTI_PortSourceGPIOE,	EXTI_PinSource9,	EXTI9_5_IRQn},    //PE9
-	{URF8_TRIG,				GPIOB,	GPIO_Pin_10,	RCC_AHB1Periph_GPIOB,	EXTI_Line10, 	EXTI_PortSourceGPIOB,	EXTI_PinSource10,	EXTI15_10_IRQn},  //PB10
+	{URF8_TRIG,				GPIOE,	GPIO_Pin_10,	RCC_AHB1Periph_GPIOE,	EXTI_Line10, 	EXTI_PortSourceGPIOE,	EXTI_PinSource10,	EXTI15_10_IRQn},  //PE10
 /*UART4*/
 	{UART4_Tx,				GPIOC,	GPIO_Pin_10,	RCC_AHB1Periph_GPIOC,	EXTI_Line10, 	EXTI_PortSourceGPIOC,	GPIO_PinSource10,	UART4_IRQn},  //PC10
 	{UART4_Rx,				GPIOC,	GPIO_Pin_11,	RCC_AHB1Periph_GPIOC,	EXTI_Line11, 	EXTI_PortSourceGPIOC,	GPIO_PinSource11,	UART4_IRQn},  //PC11
@@ -56,6 +56,10 @@ void GPIO_init(void)
 	initOutput(URF2_TRIG);
 	initOutput(URF3_TRIG);
 	initOutput(URF4_TRIG);
+	initOutput(URF5_TRIG);
+	initOutput(URF6_TRIG);
+	initOutput(URF7_TRIG);
+	initOutput(URF8_TRIG);
 }
 
 void initOutput(GPIO_IdDef io)

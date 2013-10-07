@@ -34,31 +34,33 @@ typedef enum
 	DLParamMotor3DriverTemp,    // 15
 	DLParamMotor3BridgeAFault,  // 16
 	DLParamMotor3BridgeBFault,  // 17
-	DLParamButtonTopLeft,       // 18
-	DLParamButtonTopRight,      // 19
-	DLParamButtonBottomLeft,    // 20
-	DLParamButtonBottomRight,   // 21
-	DLParamDistanceSensor1,     // 22
-	DLParamDistanceSensor2,     // 23
-	DLParamDistanceSensor3,     // 24
-	DLParamDistanceSensor4,     // 25
-	DLParamDistanceSensor5,     // 26
-	DLParamDistanceSensor6,     // 27
-	DLParamMotor1RequestSpeed,  // 28
-	DLParamMotor2RequestSpeed,  // 29
-	DLParamMotor3RequestSpeed,  // 30
-	DLParamScreenRow,           // 31
-	DLParamScreenColumn,        // 32
-	DLParamScreenTextLen,       // 33
-	DLParamScreenTextChar0,     // 34
-	DLParamScreenTextChar1,     // 35
-	DLParamScreenTextChar2,     // 36
-	DLParamScreenTextChar3,     // 37
-	DLParamScreenTextChar4,     // 38
-	DLParamScreenTextChar5,     // 39
-	DLParamConstantAddress,     // 40
-	DLParamConstantValue,       // 41
-	// Count of items is 42
+	DLParamMotor1RequestSpeed,  // 18
+	DLParamMotor2RequestSpeed,  // 19
+	DLParamMotor3RequestSpeed,  // 20
+	DLParamScreenRow,           // 21
+	DLParamScreenColumn,        // 22
+	DLParamScreenTextLen,       // 23
+	DLParamScreenTextChar0,     // 24
+	DLParamScreenTextChar1,     // 25
+	DLParamScreenTextChar2,     // 26
+	DLParamScreenTextChar3,     // 27
+	DLParamScreenTextChar4,     // 28
+	DLParamScreenTextChar5,     // 29
+	DLParamConstantAddress,     // 30
+	DLParamConstantValue,       // 31
+	DLParamButtonTopLeft,       // 32
+	DLParamButtonTopRight,      // 33
+	DLParamButtonBottomLeft,    // 34
+	DLParamButtonBottomRight,   // 35
+	DLParamDistanceSensor1,     // 36
+	DLParamDistanceSensor2,     // 37
+	DLParamDistanceSensor3,     // 38
+	DLParamDistanceSensor4,     // 39
+	DLParamDistanceSensor5,     // 40
+	DLParamDistanceSensor6,     // 41
+	DLParamDistanceSensor7,     // 42
+	DLParamDistanceSensor8,     // 43
+	// Count of items is 44
 	DLNumberOfParams
 }
 DLParam;

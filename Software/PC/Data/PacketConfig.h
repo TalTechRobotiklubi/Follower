@@ -20,11 +20,11 @@ typedef enum
 	PacketMotor1Status,  // 0
 	PacketMotor2Status,  // 1
 	PacketMotor3Status,  // 2
-	PacketUIControls,    // 3
-	PacketSensors,       // 4
-	PacketMotorSpeeds,   // 5
-	PacketUIScreenWrite, // 6
-	PacketMotorPID,      // 7
+	PacketMotorSpeeds,   // 3
+	PacketUIScreenWrite, // 4
+	PacketMotorPID,      // 5
+	PacketUIControls,    // 6
+	PacketSensors,       // 7
 	// Count of items is 8
 	NumberOfPackets
 }

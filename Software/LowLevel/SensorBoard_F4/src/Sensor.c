@@ -225,6 +225,34 @@ void EXTI9_5_IRQHandler(void)
 		/* Clear the  EXTI line pending bit */
 		EXTI_ClearITPendingBit(GPIO_table[URF7_ECHO].exti);
 	}
+	/*handle URF8 echo interrupts*/
+	if(EXTI_GetITStatus(GPIO_table[URF8_ECHO].exti) != RESET)
+	{
+
+		if (GPIO_inputValue(URF8_ECHO) == INPUT_ON)
+		{
+			// rising edge, start to measure
+			Timer_startTimer(TIMER3_ID);
+			priv_sensorStat[7] = SENSOR_INPUT_RISED;
+		}
+		else
+		{
+			// falling edge, check that rising was previously
+			if (priv_sensorStat[7] == SENSOR_INPUT_RISED)
+			{
+				/*stop timer*/
+				Timer_stopTimer(TIMER3_ID);
+				// read measurement result
+				priv_sensorValue[7] = Timer_getTimerValue(TIMER3_ID);
+				/*disable pin detection*/
+				disableSensorInterrupt(URF8_ECHO);
+			}
+			priv_sensorStat[7] = SENSOR_INPUT_FALLED;
+		}
+
+		/* Clear the  EXTI line pending bit */
+		EXTI_ClearITPendingBit(GPIO_table[URF8_ECHO].exti);
+	}
 }
 
 
@@ -579,7 +607,7 @@ void Sensor_TASK_readDistance7(void)
 	distance = priv_sensorValue[6] / 58;  // 147 us equals 1 inch -> 147 / 2,54 = 57,8
 	if (distance > 255)
 		distance = 255;
-	//DL_setData(DLParamDistanceSensor7, &distance);
+	DL_setData(DLParamDistanceSensor7, &distance);
 }
 
 void Sensor_TASK_startMeasurement8(void)
@@ -613,5 +641,5 @@ void Sensor_TASK_readDistance8(void)
 	distance = priv_sensorValue[7] / 58;  // 147 us equals 1 inch -> 147 / 2,54 = 57,8
 	if (distance > 255)
 		distance = 255;
-	//DL_setData(DLParamDistanceSensor8, &distance);
+	DL_setData(DLParamDistanceSensor8, &distance);
 }

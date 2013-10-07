@@ -169,6 +169,14 @@
       <Name>DistanceSensor6</Name>
       <Type>U8</Type>
     </Parameter>
+    <Parameter>
+      <Name>DistanceSensor7</Name>
+      <Type>U8</Type>
+    </Parameter>
+    <Parameter>
+      <Name>DistanceSensor8</Name>
+      <Type>U8</Type>
+    </Parameter>
   </Parameters>
   <Packets>
     <Packet>
@@ -350,6 +358,12 @@
         </PacketParameter>
         <PacketParameter>
           <Parameter>DistanceSensor6</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>DistanceSensor7</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>DistanceSensor8</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
