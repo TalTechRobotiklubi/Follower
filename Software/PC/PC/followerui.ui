@@ -72,6 +72,20 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="lbl_andur7">
+          <property name="text">
+           <string>Andur7:  0cm</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lbl_andur8">
+          <property name="text">
+           <string>Andur8:  0cm</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>

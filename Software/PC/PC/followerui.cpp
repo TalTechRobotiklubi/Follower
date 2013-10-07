@@ -66,6 +66,8 @@ void FollowerUi::newUiData(SpineData* spineData) {
         ui.lbl_andur4->setText(QString("Andur4: %1cm").arg(sensors[3]));
 		ui.lbl_andur5->setText(QString("Andur5: %1cm").arg(sensors[4]));
 		ui.lbl_andur6->setText(QString("Andur6: %1cm").arg(sensors[5]));
+		ui.lbl_andur7->setText(QString("Andur7: %1cm").arg(sensors[6]));
+		ui.lbl_andur8->setText(QString("Andur8: %1cm").arg(sensors[7]));
     }
 }
 
@@ -135,5 +137,5 @@ void FollowerUi::mousePressEvent(QMouseEvent *event)
 }
 void FollowerUi::mouseMoveEvent(QMouseEvent *event)
 {
-ui.lbl_andur1->setText(QString("move %1 %2").arg(event->x()).arg(event->y()));
+//ui.lbl_andur1->setText(QString("move %1 %2").arg(event->x()).arg(event->y()));
 }
