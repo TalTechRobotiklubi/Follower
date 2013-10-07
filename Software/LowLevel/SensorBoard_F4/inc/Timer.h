@@ -20,5 +20,7 @@ extern void 	Timer_stopTimer(Timer_IdDef timer);
 extern uint16_t Timer_getTimerValue(Timer_IdDef timer);
 
 void TIM2_IRQHandler(void);
+void TIM3_IRQHandler(void);
+void TIM4_IRQHandler(void);
 
 #endif /*Timer_H_*/
