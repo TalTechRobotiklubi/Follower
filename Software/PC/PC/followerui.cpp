@@ -19,6 +19,7 @@ FollowerUi::FollowerUi(Follower *robot)
 	ui.graphicsView->setScene(scene);
 	ui.graphicsView->setRenderHint(QPainter::Antialiasing);
 	scene->addItem(robotgui);
+
 }
 
 FollowerUi::~FollowerUi()
@@ -118,4 +119,21 @@ void FollowerUi::wheelEvent (QWheelEvent* event)
 		robotgui->zoom *= 1.1;
 	}
 	 scene->update();
+}
+
+
+void FollowerUi::mousePressEvent(QMouseEvent *event)
+{
+	
+	
+	if ((event->x() < ui.graphicsView->width()+12)&&(event->x()> 12)){
+		if ((event->y() < ui.graphicsView->height()+12)&&(event->y()> 12)){
+			robotgui->MousePressEvent(event->x()-12-ui.graphicsView->width()/2,event->y()-12-ui.graphicsView->height()/2,event->buttons());
+			scene->update();
+		}
+	}
+}
+void FollowerUi::mouseMoveEvent(QMouseEvent *event)
+{
+ui.lbl_andur1->setText(QString("move %1 %2").arg(event->x()).arg(event->y()));
 }

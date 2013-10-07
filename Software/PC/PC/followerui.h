@@ -19,6 +19,9 @@ public:
 protected:
     virtual void keyPressEvent ( QKeyEvent * event );
 	virtual void wheelEvent (QWheelEvent* event);
+	virtual void mousePressEvent(QMouseEvent *event);
+	//void mouseReleaseEvent(QMouseEvent *event);
+	virtual void mouseMoveEvent(QMouseEvent *event);
 
 private:
     void sendCmd( int w1, int  w2, int w3 );
@@ -31,6 +34,8 @@ private:
 private slots:
     void connectSpine();
     void newUiData(SpineData* spineData);
+
+
 };
 
 #endif // FOLLOWERUI_H

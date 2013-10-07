@@ -3,22 +3,42 @@
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 
+
+
 class TRobot : public QGraphicsItem
 {
+
+
+
 public:
 	TRobot(void);
 	~TRobot(void);
 	double zoom; 
+	
 	virtual QRectF boundingRect() const;
 	virtual void paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWidget *widget);
 	void SetSensors(int *sensors,int count);
 	QPoint RotatePoint(QPoint P,double degree);
-protected: 
-	int sonarlen_[8];
-	void PaintSonar(int x,int y,int len,int deg,QPainter *painter,double size);
-	void PaintSensor(int x,int y,int deg,QPainter *painter,double size,int state);
+	void MousePressEvent(int x,int y,int button);
+protected:
+	struct Tsensor {
+		int x;
+		int y;
+		int deg;
+		int state;
+		int sonarlen;
+		char id;
+		};
+	Tsensor sensor[8];
+
+	void PaintSonar(Tsensor *sen,QPainter *painter,double size);
+	void PaintSensor(Tsensor *sen,QPainter *painter,double size);
+	int IsThereSonar(int x,int y,Tsensor *sen);
 	int GetSize(void) const;
 	int GetDisdanceColor(int distance);
+	int GetAngle(int x1,int y1,int x2,int y2);
+	void SaveToFile(void);
+	int TRobot::LoadFromFile(void);
 	
 };
 
