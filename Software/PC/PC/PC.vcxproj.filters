@@ -116,6 +116,27 @@
     <ClCompile Include="TRobot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WorkerObjectBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_WorkerObjectBase.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_WorkerObjectBase.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="WorkerObjectCAN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_WorkerObjectCAN.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_WorkerObjectCAN.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Data\DataLayerBase.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="followerui.h">
@@ -131,6 +152,12 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="WorkerThreadBase.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="WorkerObjectBase.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="WorkerObjectCAN.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -197,6 +224,9 @@
     </ClInclude>
     <ClInclude Include="TRobot.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Data\DataLayerBase.h">
+      <Filter>Data</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

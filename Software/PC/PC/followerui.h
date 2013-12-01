@@ -4,8 +4,10 @@
 #include <QtGui/QMainWindow>
 #include "ui_followerui.h"
 #include "Follower.h"
-#include "SpineDataCAN.h"
 #include "TRobot.h"
+
+class DataLayerBase;
+class WorkerObjectBase;
 
 class FollowerUi : public QMainWindow
 {
@@ -23,17 +25,29 @@ protected:
 	//void mouseReleaseEvent(QMouseEvent *event);
 	virtual void mouseMoveEvent(QMouseEvent *event);
 
+signals:
+    void startCommunication(void);
+    void stopCommunication(void);
+    void newCommands(void);
+
+public slots:
+    void connectSpine();
+    //  it is called to give feedback about connection success
+    void startCommStatus(bool status);
+    void stopCommStatus(bool status);
+    //void newUiData(SpineData* spineData);
+    void newUiData();
+
 private:
     void sendCmd( int w1, int  w2, int w3 );
 
-    Ui::FollowerUiClass ui;
-    CANWorkerThread*		workerThread_;
-	TRobot *robotgui;
-	QGraphicsScene *scene;
+    Ui::FollowerUiClass     ui;
+    WorkerThreadBase*		workerThread_;
+    DataLayerBase*          dataLayer_;
+    WorkerObjectBase*       workerObject_;
+	TRobot *                robotgui_;
+	QGraphicsScene*         scene_;
 
-private slots:
-    void connectSpine();
-    void newUiData(SpineData* spineData);
 
 
 };

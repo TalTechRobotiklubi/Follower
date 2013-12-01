@@ -1,21 +1,24 @@
 #pragma once
 
-#include "SpineCmd_Fwd.h"
-#include "SpineData_Fwd.h"
+//#include "SpineCmd_Fwd.h"
+//#include "SpineData_Fwd.h"
 
 #include "Serial.h"
+
+class DataLayerBase;
 
 class SpineComm : public CSerial
 {
 public:
-	virtual void	Communicate() = 0;
+    SpineComm() {};
+    virtual ~SpineComm() {}
 
-	virtual bool	HasNewData() const = 0;
-	virtual void	ClearNewData() = 0;
+    virtual int             GetPeriodInMs() { return 10; }
+	virtual void	        Communicate() = 0;
 
-	virtual void	GetData(SpineData* out_data) const = 0;
-
-	virtual bool	SendControllerCommands( SpineCmd* spineCmd ) = 0;
-
-    void            DummyFunction(void)  {};
+	virtual bool	        HasNewData() const = 0;
+	virtual void	        ClearNewData() = 0;
+	virtual bool	        SendControllerCommands() = 0;
+    virtual DataLayerBase*  getDataLayer() = 0;
+    void                    DummyFunction(void)  {}
 };

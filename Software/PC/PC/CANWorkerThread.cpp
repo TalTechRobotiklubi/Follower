@@ -27,7 +27,7 @@ void CANWorkerThread::initData(void)
 
 void CANWorkerThread::onNewSpineCmd(SpineCmd* spineCmd)
 {
-    dynamic_cast<SpineCommCAN*>(spineComm_)->SetLogicDataToDataLayer(spineCmd);
+//    dynamic_cast<SpineCommCAN*>(spineComm_)->SetLogicDataToDataLayer(spineCmd);
 }
 
 void CANWorkerThread::onNewData(bool newSpineData, SpineData* spineData)
@@ -51,8 +51,9 @@ void CANWorkerThread::onNewData(bool newSpineData, SpineData* spineData)
     remoteSpineData_->GetSensorData(sensors);
 
     qDebug() << sensors[0] << sensors[1];
-#endif
+
     emit spineDataChanged(spineData);
+#endif
 }
 
 void CANWorkerThread::onAlgorithmStart()

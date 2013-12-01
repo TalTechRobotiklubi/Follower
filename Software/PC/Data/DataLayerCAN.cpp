@@ -26,6 +26,8 @@ bool DataLayerCAN::DL_getData(DLParam param, DLValuePointer pValue)
 	bool valid = FALSE;
 	bool asyncData = FALSE;
 
+    QMutexLocker locker(&mutex_);
+
 	GetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
 	/*check if parameter is part of any async UART packets*/
@@ -83,6 +85,8 @@ void DataLayerCAN::DL_setData(DLParam param, DLValuePointer pValue)
 	uint8_t numOfPackets, i, j;
 	PacketWithIndex *packet;
     Type type;
+
+    QMutexLocker locker(&mutex_);
 
     /*format data so they are comparable*/
 	type = psDLParamDescriptorList[param].eType;
@@ -200,4 +204,10 @@ void DataLayerCAN::DL_setDefaultValuesForParameters(void)
     {
         SetDataAccordingToType((DLParam)i, &defaultVal, psDLParamDescriptorList[((DLParam)i)].eType);
     }
+}
+
+
+QMutex& DataLayerCAN::getMutex()
+{
+    return mutex_; 
 }

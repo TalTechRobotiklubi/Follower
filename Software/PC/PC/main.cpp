@@ -5,8 +5,8 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    Follower *follower = new Follower();
-    FollowerUi w(follower);
+    Follower follower;
+    FollowerUi w(&follower);
     w.show();
     return a.exec();
 }

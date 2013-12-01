@@ -1,8 +1,10 @@
 #pragma once
 #include "qobject.h"
-#include "CANWorkerThread.h"
 
-
+class WorkerThreadBase;
+class WorkerObjectBase;
+class DataLayerBase;
+class SpineCommCAN;
 
 class Follower :
     public QObject
@@ -10,8 +12,12 @@ class Follower :
 public:
     Follower(void);
     ~Follower(void);
-	CANWorkerThread *workerThread;
 
-
+    WorkerThreadBase    *getWorkerThread() { return workerThread_; }
+    WorkerObjectBase    *getWorkerObject() { return workerObject_; }
+private:
+	WorkerThreadBase    *workerThread_;
+    WorkerObjectBase    *workerObject_;
+    SpineCommCAN        *spineComm_;
 };
 

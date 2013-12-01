@@ -14,7 +14,8 @@
 WorkerThreadBase::WorkerThreadBase(QObject *parent)	: QThread(parent)
 {
 	dataInited_			= false;
-    serialPortNumber_   = 0;   
+    serialPortNumber_   = 0;
+    periodOver_         = true;
 }
 
 bool WorkerThreadBase::Start()
@@ -25,8 +26,11 @@ bool WorkerThreadBase::Start()
 	return true;
 }
 
+#if 0
 void WorkerThreadBase::run()
 {
+    exec();
+
 	if (!dataInited_)
 	{
 		initData();
@@ -48,8 +52,12 @@ void WorkerThreadBase::run()
 
 	onSpineConnected();
 
+    // start main loop periodic timer
+    timerId_ = startTimer(10);
+
 	do 
 	{
+    #if 0
 		spineComm_->Communicate();
 
 		newSpineData_ = spineComm_->HasNewData();
@@ -109,24 +117,44 @@ void WorkerThreadBase::run()
 		}
 
 		spineCmd_->ClearCommands();
+        #endif
+        if (periodOver_)
+        {
+            periodOver_ = false;
+            // do algorithm
+            // ....
+            spineComm_->SendControllerCommands();
+        }
+        else
+        {
+            // check received data
+            spineComm_->Communicate();
+        }
 	}
 	while(spineComm_->IsOpen() && !threadStopCmd_);
+
+    killTimer(timerId_);
 
 	onSpineDisconnected();
 
 	if(spineComm_->IsOpen())
 	{
 		spineCmd_->Stop();
-		spineComm_->SendControllerCommands(spineCmd_);
+		spineComm_->SendControllerCommands();
 	}
 
 }
+#endif
 
 void WorkerThreadBase::Stop()
 {
+    emit stopped();
 	threadStopCmd_ = true;
+    exit();
+    wait();
 }
 
+#if 0
 void WorkerThreadBase::SendSpineCmd( SpineCmd* spineCmd )
 {
 	if (serialPortNumber_ == 0) return;
@@ -136,6 +164,8 @@ void WorkerThreadBase::SendSpineCmd( SpineCmd* spineCmd )
 	remoteSpineCmd_->Copy(spineCmd);
 	newRemoteSpineCmd_	= true;
 }
+#endif
+
 
 WorkerThreadBase::~WorkerThreadBase()
 {

@@ -4,7 +4,8 @@
 #include <assert.h>
 #include <cstdio>
 #include <string>
-
+#include <qdebug.h>
+//#include <qmutex.h>
 
 // splitted u16 type, which can be accessed in separate byte manner
 typedef union
@@ -36,14 +37,16 @@ enum MessageAnalyseState
 	messageOk
 };
 
+//const int SpineCommCAN::PERIOD_IN_MS = 10;
+
 SpineCommCAN::SpineCommCAN(void)
 {
-	readBufSize_	= 20 * SpineDataCAN::SerialPacketSize;
+	readBufSize_	= 20 * 12;//SpineDataCAN::SerialPacketSize;
 	readBuf_		= new unsigned char[readBufSize_];
 	bytesInBuf_		= 0;
 	hasNewData_		= false;
     //dataLayerCAN_.DL_setDefaultValuesForParameters();
-	timer_.start();
+	//timer_.start();
 }
 
 void SpineCommCAN::Communicate()
@@ -65,7 +68,7 @@ void SpineCommCAN::Communicate()
     static PacketWithIndex *packet;
 	uint8_t numOfPackets;
     
-    do 
+    //do 
 	{
 		if(!IsOpen()) return;
 	
@@ -201,11 +204,11 @@ void SpineCommCAN::Communicate()
 		if (hasNewData_)
 		{
 			// copy data to SpineData
-			spineDataCAN_.SetReceivedDataToObject(&dataLayerCAN_);		
+			//spineDataCAN_.SetReceivedDataToObject(&dataLayerCAN_);		
 		}
 	}
-	while (!timer_.hasExpired(20));
-	timer_.start();
+	//while (!timer_.hasExpired(PERIOD_IN_MS));
+	//timer_.start();
 }
 
 // clears the element from UART_CAN Rx message storage
@@ -230,6 +233,8 @@ void SpineCommCAN::storeDataToDataLayer(UART_CANmessage *message, PacketWithInde
 	int16_t length;
 	uint16_t dataLayerOk;
 	uint32_t data;
+
+    QMutexLocker locker(&dataLayerCAN_.getMutex());
 
 	dataLayerOk = 0;
 	/*go through all the parameters in the message and store them into data layer*/
@@ -299,14 +304,16 @@ void SpineCommCAN::storeDataToDataLayer(UART_CANmessage *message, PacketWithInde
 	}
 }
 
-// Get SpineData object to fill it in with new data
-void SpineCommCAN::GetData( SpineData* out_data ) const
+
+
+DataLayerBase* SpineCommCAN::getDataLayer() 
 {
-	*(dynamic_cast<SpineDataCAN*>(out_data)) = spineDataCAN_;
+	return &dataLayerCAN_;
 }
 
+
 // send data to UART
-bool SpineCommCAN::SendControllerCommands( SpineCmd* spineCmd )
+bool SpineCommCAN::SendControllerCommands()
 {
 	int numOfPackets, i;
     PacketWithIndex* packet;
@@ -320,8 +327,8 @@ bool SpineCommCAN::SendControllerCommands( SpineCmd* spineCmd )
 		/*is it a periodic message?*/
 		if ((packet[i].iperiod >= 0) && (packethandler_.Packet_getMessagePeriod(packet[i].index) >= 0))
 		{
-			/*yes, increase the period counter by UART_TASK period*/
-			packet[i].iperiod += 10;
+			/*yes, increase the period counter by timer period*/
+			packet[i].iperiod += GetPeriodInMs();
 			/*check periodic messages, if the period is full*/
 			if (packet[i].iperiod >= packethandler_.Packet_getMessagePeriod(packet[i].index))
 			{
@@ -366,6 +373,8 @@ bool SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
 	splitU16 crc;
     uint8_t buffer[20];
     DLParam param;
+
+    QMutexLocker locker(&dataLayerCAN_.getMutex());
 
 	/*set id and DLC, empty data*/
 	message.canMessage.id = packet->uiID;
@@ -432,6 +441,7 @@ bool SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
     // j is increased here
     buffer[3 + j] = crc.u8.byteHigh;
     buffer[3 + j + 1] = crc.u8.byteLow;
+    qDebug() << buffer[0] << buffer[1] << buffer[2] << buffer[3] << buffer[4] << buffer[5] << buffer[6] << buffer[7];
 	return SendData((const char*)buffer, message.canMessage.dlc + 5);
 }
 
@@ -464,6 +474,7 @@ uint8_t SpineCommCAN::getBitmaskForUARTmessage(uint8_t bitPosition, int16_t leng
   return mask;
 }
 
+#if 0
 // data changed on logic layer is stored into data layer
 void SpineCommCAN::SetLogicDataToDataLayer( SpineCmd* spineCmd)
 {
@@ -494,6 +505,7 @@ void SpineCommCAN::SetLogicDataToDataLayer( SpineCmd* spineCmd)
         }
     }
 }
+#endif
 
 SpineCommCAN::~SpineCommCAN(void)
 {

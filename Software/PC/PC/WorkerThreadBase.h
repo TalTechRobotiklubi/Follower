@@ -10,6 +10,7 @@
 #include "SpineComm_Fwd.h"
 
 class LogWindow;
+class DataLayerCAN;
 
 class WorkerThreadBase : public QThread
 {
@@ -18,12 +19,13 @@ class WorkerThreadBase : public QThread
 public:
 
 signals:
-	void				spineStateChanged(int state);
+	/*void				spineStateChanged(int state);
 	void				speedCmdChanged(double absSpeed, double dir, double turnRate);
-	void				spineDataChanged(SpineData* spineData);
-
+	void				spineDataChanged(SpineData* spineData);*/
+    void                stopped();
 
 protected:
+
 	virtual void		onNewData(bool newSpineData, SpineData* spineData)	{};
 	virtual void		onNewSpineCmd(SpineCmd* spineCmd) {};
     virtual void		onSpineConnected() {};
@@ -41,20 +43,21 @@ public:
 
 	bool				Start();
 	void				Stop();
+    void                SetDataLayer(DataLayerCAN* dataLayer) { dataLayer_ = dataLayer; }
 
-	void				SendSpineCmd(SpineCmd* spineCmd);
+	//void				SendSpineCmd(SpineCmd* spineCmd);
 
-	int					GetState() { return state_; }
+	//int					GetState() { return state_; }
 
-	void				SetLogWindow(LogWindow* logWindow);
-    SpineCmd*           GetRemoteSpineCmd() { return remoteSpineCmd_; }
+	//void				SetLogWindow(LogWindow* logWindow);
+    //SpineCmd*           GetRemoteSpineCmd() { return remoteSpineCmd_; }
 
 protected:
-	int					state_;
+	//int					state_;
 	bool				threadStopCmd_;
     unsigned int        serialPortNumber_;
 
-	virtual void		run();
+	//virtual void		run();
 
     SpineComm*          spineComm_;
 	SpineCmd*			spineCmd_;
@@ -66,4 +69,7 @@ protected:
 	bool				newRemoteSpineCmd_;
 
 	bool				dataInited_;
+    bool                periodOver_;
+    int                 timerId_;
+    DataLayerCAN*       dataLayer_;
 };
