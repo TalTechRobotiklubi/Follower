@@ -39,9 +39,6 @@
     <Filter Include="Spine">
       <UniqueIdentifier>{22764ec6-c8f5-4500-88f8-eb6b1baac7f9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Class Forward Declarations">
-      <UniqueIdentifier>{16e72a1c-5165-4fce-add5-3cfc7f4f0022}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -71,25 +68,13 @@
     <ClCompile Include="..\Data\PacketHandler.cpp">
       <Filter>Data</Filter>
     </ClCompile>
-    <ClCompile Include="..\Data\SpineCmd.cpp">
-      <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Data\SpineData.cpp">
-      <Filter>Data</Filter>
-    </ClCompile>
     <ClCompile Include="..\Data\Typedef.cpp">
       <Filter>Data</Filter>
     </ClCompile>
     <ClCompile Include="..\Spine\Serial.cpp">
       <Filter>Spine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Spine\SpineCmdCAN.cpp">
-      <Filter>Spine</Filter>
-    </ClCompile>
     <ClCompile Include="..\Spine\SpineCommCAN.cpp">
-      <Filter>Spine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Spine\SpineDataCAN.cpp">
       <Filter>Spine</Filter>
     </ClCompile>
     <ClCompile Include="Follower.cpp">
@@ -165,18 +150,6 @@
     <ClInclude Include="GeneratedFiles\ui_followerui.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\FwdDecl\DataLayerCAN_Fwd.h">
-      <Filter>Class Forward Declarations</Filter>
-    </ClInclude>
-    <ClInclude Include="..\FwdDecl\SpineCmd_Fwd.h">
-      <Filter>Class Forward Declarations</Filter>
-    </ClInclude>
-    <ClInclude Include="..\FwdDecl\SpineComm_Fwd.h">
-      <Filter>Class Forward Declarations</Filter>
-    </ClInclude>
-    <ClInclude Include="..\FwdDecl\SpineData_Fwd.h">
-      <Filter>Class Forward Declarations</Filter>
-    </ClInclude>
     <ClInclude Include="..\Data\CANmessages.h">
       <Filter>Data</Filter>
     </ClInclude>
@@ -195,12 +168,6 @@
     <ClInclude Include="..\Data\PacketHandler.h">
       <Filter>Data</Filter>
     </ClInclude>
-    <ClInclude Include="..\Data\SpineCmd.h">
-      <Filter>Data</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Data\SpineData.h">
-      <Filter>Data</Filter>
-    </ClInclude>
     <ClInclude Include="..\Data\Typedef.h">
       <Filter>Data</Filter>
     </ClInclude>
@@ -210,13 +177,7 @@
     <ClInclude Include="..\Spine\Serial.h">
       <Filter>Spine</Filter>
     </ClInclude>
-    <ClInclude Include="..\Spine\SpineCmdCAN.h">
-      <Filter>Spine</Filter>
-    </ClInclude>
     <ClInclude Include="..\Spine\SpineCommCAN.h">
-      <Filter>Spine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Spine\SpineDataCAN.h">
       <Filter>Spine</Filter>
     </ClInclude>
     <ClInclude Include="Follower.h">

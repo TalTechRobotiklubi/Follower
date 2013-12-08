@@ -185,7 +185,7 @@ int TRobot::GetDisdanceColor(int distance)
 	}
 }
 
-void TRobot::SetSensors(int *sensors,int count)
+void TRobot::SetSensors(unsigned char *sensors,int count)
 {
 	int i;
 	int update = 0;

@@ -441,7 +441,7 @@ bool SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
     // j is increased here
     buffer[3 + j] = crc.u8.byteHigh;
     buffer[3 + j + 1] = crc.u8.byteLow;
-    qDebug() << buffer[0] << buffer[1] << buffer[2] << buffer[3] << buffer[4] << buffer[5] << buffer[6] << buffer[7];
+    //qDebug() << buffer[0] << buffer[1] << buffer[2] << buffer[3] << buffer[4] << buffer[5] << buffer[6] << buffer[7];
 	return SendData((const char*)buffer, message.canMessage.dlc + 5);
 }
 

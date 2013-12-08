@@ -1,7 +1,5 @@
 #include <QKeyEvent>
 #include "followerui.h"
-//#include "SpineCmdCAN.h"
-//#include "SpineDataCAN.h"
 #include "WorkerThreadBase.h"
 #include "WorkerObjectBase.h"
 #include "DataLayerBase.h"
@@ -47,10 +45,6 @@ void FollowerUi::connectSpine() {
 
 	if (workerThread_->isRunning())
     {
-        /*workerThread_->Stop();
-		workerThread_->quit();
-        workerThread_->wait();
-        ui.btnConnect->setText("Connect");*/
         emit stopCommunication();
 	}
     else
@@ -59,15 +53,6 @@ void FollowerUi::connectSpine() {
         // open communication
         emit startCommunication();
 	}
-/*
-	_sleep(1000);
-
-	if (workerThread_->isRunning()){
-		ui.btnConnect->setText("Disconnect");
-	}else{
-		ui.btnConnect->setText("Connect");
-	}*/
-    //workerThread_->start();
 }
 
 void FollowerUi::startCommStatus(bool status)
@@ -75,7 +60,6 @@ void FollowerUi::startCommStatus(bool status)
     //connection failed. Stop thread.
     if (!status)
     {
-        //workerThread_->Stop();
         workerThread_->exit();
         workerThread_->wait();
     }
@@ -96,34 +80,10 @@ void FollowerUi::stopCommStatus(bool status)
     ui.btnConnect->setText("Connect");
 }
 
-#if 0
-void FollowerUi::newUiData(SpineData* spineData) {
-    int sensors[8];
-
-    SpineDataCAN* spineDataCAN = dynamic_cast<SpineDataCAN*>(spineData);
-	
-	if (spineDataCAN != NULL)
-    {
-        spineDataCAN->GetSensorData(sensors);
-
-		robotgui->SetSensors(sensors,8);
-		scene_->update();
-
-        ui.lbl_andur1->setText(QString("Andur1: %1cm").arg(sensors[0]));
-        ui.lbl_andur2->setText(QString("Andur2: %1cm").arg(sensors[1]));
-        ui.lbl_andur3->setText(QString("Andur3: %1cm").arg(sensors[2]));
-        ui.lbl_andur4->setText(QString("Andur4: %1cm").arg(sensors[3]));
-		ui.lbl_andur5->setText(QString("Andur5: %1cm").arg(sensors[4]));
-		ui.lbl_andur6->setText(QString("Andur6: %1cm").arg(sensors[5]));
-		ui.lbl_andur7->setText(QString("Andur7: %1cm").arg(sensors[6]));
-		ui.lbl_andur8->setText(QString("Andur8: %1cm").arg(sensors[7]));
-    }
-}
-#endif
 
 void FollowerUi::newUiData() 
 {
-    int sensors[8];
+    unsigned char sensors[8];
 
     dataLayer_->DL_getData(DLParamDistanceSensor1, sensors);
     dataLayer_->DL_getData(DLParamDistanceSensor2, sensors + 1);
@@ -144,7 +104,11 @@ void FollowerUi::newUiData()
 	ui.lbl_andur5->setText(QString("Andur5: %1cm").arg(sensors[4]));
 	ui.lbl_andur6->setText(QString("Andur6: %1cm").arg(sensors[5]));
 	ui.lbl_andur7->setText(QString("Andur7: %1cm").arg(sensors[6]));
-	ui.lbl_andur8->setText(QString("Andur8: %1cm").arg(sensors[7]));  
+	ui.lbl_andur8->setText(QString("Andur8: %1cm").arg(sensors[7]));
+
+    int speed;
+    dataLayer_->DL_getData(DLParamMotor1ActualSpeed, &speed);
+    qDebug() << speed;
 }
 
 void FollowerUi::keyPressEvent ( QKeyEvent * event )
@@ -160,25 +124,26 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
 	{
 	case Qt::Key_A:
 		//KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0 , -M_PI/2, 0, speeds);
-        qDebug() << "A";
+        //qDebug() << "A";
         sendCmd(-1000, 1000, 0);
 		break;
 	case Qt::Key_D:
         //KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0, M_PI/2, 0, speeds);
-		qDebug() << "D";
+		//qDebug() << "D";
         sendCmd(1000, -1000, 0);
 		break;
 	case Qt::Key_W:
         //KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0, 0, 0, speeds);
-		qDebug() << "W";
+		//qDebug() << "W";
         sendCmd(1000, 1000, 0);
 		break;
 	case Qt::Key_Z:
         //KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0, M_PI, 0, speeds);
+        //qDebug() << "Z";
 		sendCmd(-1000, -1000, 0);
         break;
     case Qt::Key_S:
-        qDebug() << "S";
+        //qDebug() << "S";
 		sendCmd(0, 0, 0);
 		break;
 	}
@@ -186,9 +151,6 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
 
 void FollowerUi::sendCmd( int w1, int  w2, int w3 )
 {
-    /*SpineCmdCAN* spineCmd = (SpineCmdCAN*)workerThread_->GetRemoteSpineCmd();
-    spineCmd->SetWheelSpeeds(w1, w2, w3);
-    workerThread_->SendSpineCmd(spineCmd);*/
     dataLayer_->DL_setData(DLParamMotor1RequestSpeed, &w1);
     dataLayer_->DL_setData(DLParamMotor2RequestSpeed, &w2);
     dataLayer_->DL_setData(DLParamMotor3RequestSpeed, &w3);
@@ -210,10 +172,10 @@ void FollowerUi::wheelEvent (QWheelEvent* event)
 
 void FollowerUi::mousePressEvent(QMouseEvent *event)
 {
-	
-	
-	if ((event->x() < ui.graphicsView->width()+12)&&(event->x()> 12)){
-		if ((event->y() < ui.graphicsView->height()+12)&&(event->y()> 12)){
+	if ((event->x() < ui.graphicsView->width()+12)&&(event->x()> 12))
+    {
+		if ((event->y() < ui.graphicsView->height()+12)&&(event->y()> 12))
+        {
 			robotgui_->MousePressEvent(event->x()-12-ui.graphicsView->width()/2,event->y()-12-ui.graphicsView->height()/2,event->buttons());
 			scene_->update();
 		}

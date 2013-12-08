@@ -78,13 +78,9 @@
     <ClCompile Include="..\Data\DataLayerConfig.cpp" />
     <ClCompile Include="..\Data\PacketConfig.cpp" />
     <ClCompile Include="..\Data\PacketHandler.cpp" />
-    <ClCompile Include="..\Data\SpineCmd.cpp" />
-    <ClCompile Include="..\Data\SpineData.cpp" />
     <ClCompile Include="..\Data\Typedef.cpp" />
     <ClCompile Include="..\Spine\Serial.cpp" />
-    <ClCompile Include="..\Spine\SpineCmdCAN.cpp" />
     <ClCompile Include="..\Spine\SpineCommCAN.cpp" />
-    <ClCompile Include="..\Spine\SpineDataCAN.cpp" />
     <ClCompile Include="CANWorkerThread.cpp" />
     <ClCompile Include="Follower.cpp" />
     <ClCompile Include="followerui.cpp" />
@@ -163,18 +159,10 @@
     <ClInclude Include="..\Data\DataLayerConfig.h" />
     <ClInclude Include="..\Data\PacketConfig.h" />
     <ClInclude Include="..\Data\PacketHandler.h" />
-    <ClInclude Include="..\Data\SpineCmd.h" />
-    <ClInclude Include="..\Data\SpineData.h" />
     <ClInclude Include="..\Data\Typedef.h" />
-    <ClInclude Include="..\FwdDecl\DataLayerCAN_Fwd.h" />
-    <ClInclude Include="..\FwdDecl\SpineCmd_Fwd.h" />
-    <ClInclude Include="..\FwdDecl\SpineComm_Fwd.h" />
-    <ClInclude Include="..\FwdDecl\SpineData_Fwd.h" />
     <ClInclude Include="..\Spine\CSpineComm.h" />
     <ClInclude Include="..\Spine\Serial.h" />
-    <ClInclude Include="..\Spine\SpineCmdCAN.h" />
     <ClInclude Include="..\Spine\SpineCommCAN.h" />
-    <ClInclude Include="..\Spine\SpineDataCAN.h" />
     <ClInclude Include="TRobot.h" />
     <CustomBuild Include="WorkerObjectCAN.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

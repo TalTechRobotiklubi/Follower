@@ -17,7 +17,7 @@ public:
 	
 	virtual QRectF boundingRect() const;
 	virtual void paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWidget *widget);
-	void SetSensors(int *sensors,int count);
+	void SetSensors(unsigned char *sensors,int count);
 	QPoint RotatePoint(QPoint P,double degree);
 	void MousePressEvent(int x,int y,int button);
 protected:
