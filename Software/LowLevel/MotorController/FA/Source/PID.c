@@ -59,7 +59,7 @@ void vPid(T_PID* ptPid)
 	fError = *ptPid->pfSetpoint - *ptPid->pfSpeedAct;
 	
 	//------------------------------------------------------------------------------------------------------------------------
-	//	Eroor threshold. There is no need to correct very small errors. Integral term is reset
+	//	Error threshold. There is no need to correct very small errors. Integral term is reset
 	//------------------------------------------------------------------------------------------------------------------------
 	if((fError >= 0) && (fError < *ptPid->pfMinErr))
 	{

@@ -1,7 +1,7 @@
 #include "MODULATION.h"
 
 #define MODULATING          0
-#define POSITIVE_DIRECTION  1
+#define POSITIVE_DIRECTION  0
 TIM_OCInitTypeDef	    TIM_OCInitStruct;
 
 float fPwmScaling = 192;

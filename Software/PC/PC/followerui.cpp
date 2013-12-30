@@ -6,6 +6,7 @@
 #include "TRobot.h"
 #include <qdebug.h>
 
+
 FollowerUi::FollowerUi(Follower *robot)
 	: QMainWindow()
 {
@@ -106,9 +107,14 @@ void FollowerUi::newUiData()
 	ui.lbl_andur7->setText(QString("Andur7: %1cm").arg(sensors[6]));
 	ui.lbl_andur8->setText(QString("Andur8: %1cm").arg(sensors[7]));
 
-    int speed;
-    dataLayer_->DL_getData(DLParamMotor1ActualSpeed, &speed);
-    qDebug() << speed;
+    // speed is int16 value
+    int16_t speed1 = 0;
+    int16_t speed2 = 0;
+    dataLayer_->DL_getData(DLParamMotor1ActualSpeed, &speed1);
+    dataLayer_->DL_getData(DLParamMotor2ActualSpeed, &speed2);
+
+    ui.lbl_leftSpeed->setText(QString("Vasak: %1m/s").arg(speed1));
+    ui.lbl_rightSpeed->setText(QString("Parem: %1m/s").arg(speed2));
 }
 
 void FollowerUi::keyPressEvent ( QKeyEvent * event )
@@ -119,33 +125,40 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
 	}
 
 	int key = event->key();
+    int setSpeed = ui.sb_setSpeed->value();
 
 	switch(key)
 	{
 	case Qt::Key_A:
 		//KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0 , -M_PI/2, 0, speeds);
         //qDebug() << "A";
-        sendCmd(-1000, 1000, 0);
+        sendCmd(-setSpeed, -setSpeed, 0);
 		break;
 	case Qt::Key_D:
         //KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0, M_PI/2, 0, speeds);
 		//qDebug() << "D";
-        sendCmd(1000, -1000, 0);
+        sendCmd(setSpeed, setSpeed, 0);
 		break;
 	case Qt::Key_W:
         //KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0, 0, 0, speeds);
 		//qDebug() << "W";
-        sendCmd(1000, 1000, 0);
+        sendCmd(-setSpeed, setSpeed, 0);
 		break;
 	case Qt::Key_Z:
         //KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0, M_PI, 0, speeds);
         //qDebug() << "Z";
-		sendCmd(-1000, -1000, 0);
+		sendCmd(setSpeed, -setSpeed, 0);
         break;
     case Qt::Key_S:
         //qDebug() << "S";
 		sendCmd(0, 0, 0);
 		break;
+    case Qt::Key_I:
+        ui.sb_setSpeed->setValue(setSpeed + 100);
+        break;
+    case Qt::Key_O:
+        ui.sb_setSpeed->setValue(setSpeed - 100);
+        break;
 	}
  }
 

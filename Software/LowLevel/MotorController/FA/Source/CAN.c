@@ -17,6 +17,7 @@ uint8_t motCurr = 0;
 static CanRxMsg priv_RxMessage;
 static CanTxMsg priv_TxMessage;
 static int16_t priv_requestedSpeed = 0;
+static int16_t priv_timeoutCounter = 0;
 /**
   * @brief  Initializes a Rx Message.
   * @param  CanRxMsg *priv_RxMessage.
@@ -166,13 +167,21 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 	  (priv_RxMessage.StdId == RX_MESSAGE_ID) &&
       (priv_RxMessage.DLC == RX_MESSAGE_DLC))
   {
-  if(g_u8ControllerID == 0xD1)
-	  priv_requestedSpeed = (int16_t)(((uint16_t)priv_RxMessage.Data[0] << 8) | (uint16_t)priv_RxMessage.Data[1]);
-  else if(g_u8ControllerID == 0xD2)
-	  priv_requestedSpeed = (int16_t)(((uint16_t)priv_RxMessage.Data[2] << 8) | (uint16_t)priv_RxMessage.Data[3]);
-  else if(g_u8ControllerID == 0xD3)
-	  priv_requestedSpeed = (int16_t)(((uint16_t)priv_RxMessage.Data[4] << 8) | (uint16_t)priv_RxMessage.Data[5]);
-
+	  if(g_u8ControllerID == 0xD1)
+	  {
+		  priv_requestedSpeed = (int16_t)(((uint16_t)priv_RxMessage.Data[0] << 8) | (uint16_t)priv_RxMessage.Data[1]);
+		  priv_timeoutCounter = 0;
+	  }
+	  else if(g_u8ControllerID == 0xD2)
+	  {
+		  priv_requestedSpeed = (int16_t)(((uint16_t)priv_RxMessage.Data[2] << 8) | (uint16_t)priv_RxMessage.Data[3]);
+		  priv_timeoutCounter = 0;
+	  }
+	  else if(g_u8ControllerID == 0xD3)
+	  {
+		  priv_requestedSpeed = (int16_t)(((uint16_t)priv_RxMessage.Data[4] << 8) | (uint16_t)priv_RxMessage.Data[5]);
+		  priv_timeoutCounter = 0;
+	  }
   }
 
 
@@ -199,14 +208,25 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 
 void vCan(T_CAN* tCan)
 {
-	//Set new speed reference
-	tCan->fCanSpeedReference = (float)priv_requestedSpeed;
-	//Send actual speed
 	float sendSpeed = ABS(*tCan->pfMotorSpeed);
 	int16_t tempSpeed2 = (int16_t)sendSpeed;
     uint8_t motTemp = 0;
     
+    // increase timeout counter for requested speed. If no new message received during 10 cycles
+    // for requested speed then stop motors
+    priv_timeoutCounter++;
+
+    if (priv_timeoutCounter >= 10)
+    {
+    	priv_timeoutCounter = 10;  // to prevent overflow
+    	tCan->fCanSpeedReference = 0;
+    }
+    else
+    {
+    	tCan->fCanSpeedReference = (float)priv_requestedSpeed;
+    }
     
+    // update Tx message, send actual speed
     if(*tCan->pu8MotorDirection == 0)
     {
       priv_TxMessage.Data[0] = (int8_t)(tempSpeed2 >> 8);

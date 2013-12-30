@@ -156,8 +156,6 @@ void CAN1_NVIC_Config(void)
 /*Initialized CAN1 module.*/
 void CAN_CAN1Init()
 {
-	void CAN1_NVIC_Config(void);
-
 	GPIO_InitTypeDef  GPIO_InitStructure;
 
 	/* CAN GPIOs configuration **************************************************/
@@ -212,11 +210,14 @@ void CAN_CAN1Init()
 	TxMessage.IDE = CAN_ID_STD;
 	TxMessage.DLC = 1;
 
+	/*message box init*/
+	initializeMessageBoxes();
+
+	/* Configure interrupt*/
+	CAN1_NVIC_Config();
+
 	/* Enable FIFO 0 message pending Interrupt */
 	CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
-
-	/*message box init*/
-	//initializeMessageBoxes();
 
 }
 

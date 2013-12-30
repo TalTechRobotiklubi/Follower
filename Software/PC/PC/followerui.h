@@ -40,7 +40,7 @@ public slots:
 
 private:
     void sendCmd( int w1, int  w2, int w3 );
-
+ 
     Ui::FollowerUiClass     ui;
     WorkerThreadBase*		workerThread_;
     DataLayerBase*          dataLayer_;

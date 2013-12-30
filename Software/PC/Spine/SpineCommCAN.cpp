@@ -1,5 +1,4 @@
 #include "SpineCommCAN.h"
-#include "SpineCmdCAN.h"
 
 #include <assert.h>
 #include <cstdio>
