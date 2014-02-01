@@ -3,6 +3,7 @@
 #include "WorkerThreadBase.h"
 #include "WorkerObjectBase.h"
 #include "DataLayerBase.h"
+#include "Kinematics.h"
 #include "TRobot.h"
 #include <qdebug.h>
 
@@ -14,6 +15,7 @@ FollowerUi::FollowerUi(Follower *robot)
 	workerThread_ = robot->getWorkerThread();
     workerObject_ = robot->getWorkerObject();
     dataLayer_ = robot->getWorkerObject()->getDataLayer();
+    kinematics_ = robot->getKinematics();
 
     workerObject_->moveToThread(workerThread_);
     connect(this, SIGNAL(startCommunication()), workerObject_, SLOT(startCommunication()));
@@ -68,12 +70,16 @@ void FollowerUi::startCommStatus(bool status)
     {
         // set feedback to user that connection was ok
         ui.btnConnect->setText("Disconnect");
+        // start timer in kinematics
+        kinematics_->startTimer();
     }
 
 }
 
 void FollowerUi::stopCommStatus(bool status)
 {
+    // stop timer in kinematics
+    kinematics_->stopTimer();
     //stop thread anyway.
     workerThread_->exit();
     workerThread_->wait();
@@ -130,28 +136,24 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
 	switch(key)
 	{
 	case Qt::Key_A:
-		//KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0 , -M_PI/2, 0, speeds);
-        //qDebug() << "A";
-        sendCmd(-setSpeed, -setSpeed, 0);
+        //sendCmd(-setSpeed, -setSpeed, 0);
+        kinematics_->left(setSpeed);
 		break;
 	case Qt::Key_D:
-        //KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0, M_PI/2, 0, speeds);
-		//qDebug() << "D";
-        sendCmd(setSpeed, setSpeed, 0);
+        //sendCmd(setSpeed, setSpeed, 0);
+        kinematics_->right(setSpeed);
 		break;
 	case Qt::Key_W:
-        //KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0, 0, 0, speeds);
-		//qDebug() << "W";
-        sendCmd(-setSpeed, setSpeed, 0);
+        //sendCmd(-setSpeed, setSpeed, 0);
+        kinematics_->forward(setSpeed);
 		break;
 	case Qt::Key_Z:
-        //KookKinematics::MotorsSpeedsFromAbsSpeed(ui.horizontalSlider_M1->value() / 10.0, M_PI, 0, speeds);
-        //qDebug() << "Z";
-		sendCmd(setSpeed, -setSpeed, 0);
+		//sendCmd(setSpeed, -setSpeed, 0);
+        kinematics_->backward(setSpeed);
         break;
     case Qt::Key_S:
-        //qDebug() << "S";
-		sendCmd(0, 0, 0);
+		//sendCmd(0, 0, 0);
+        kinematics_->stop();
 		break;
     case Qt::Key_I:
         ui.sb_setSpeed->setValue(setSpeed + 100);

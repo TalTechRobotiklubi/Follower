@@ -2,7 +2,6 @@
 
 #include <QThread>
 
-class DataLayerCAN;
 
 class WorkerThreadBase : public QThread
 {
@@ -15,7 +14,6 @@ public:
 
 	void				StartThread();
 	void				StopThread();
-    void                SetDataLayer(DataLayerCAN* dataLayer) { dataLayer_ = dataLayer; }
 
 protected:
     virtual void        onStart() = 0;
@@ -23,5 +21,4 @@ protected:
 
 private:
 
-    DataLayerCAN*       dataLayer_;
 };

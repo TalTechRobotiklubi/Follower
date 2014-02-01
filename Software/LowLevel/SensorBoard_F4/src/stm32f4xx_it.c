@@ -141,10 +141,10 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-	taskHandler_timerTicks++;
-	if (taskHandler_timerTicks >= TIMER_EXCEED_VALUE)
+	taskHandler_systemTicks++;
+	if (taskHandler_systemTicks >= TIMER_EXCEED_VALUE)
 	{
-		taskHandler_timerTicks = 0;
+		taskHandler_systemTicks = 0;
 	}
 }
 

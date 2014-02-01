@@ -3,11 +3,15 @@
 
 #define TIMER_EXCEED_VALUE     400   //smallest value, which every task's period can be divided
 
+enum INITS
+{
+	INIT_ACCELERATION
+};
+
 enum TASKS
 {
 	TASK_CAN,
 	TASK_USART,
-	TASK_LED,
 	TASK_SENSOR1_START,
 	TASK_SENSOR1_READ,
 	TASK_SENSOR2_START,
@@ -23,9 +27,17 @@ enum TASKS
 	TASK_SENSOR7_START,
 	TASK_SENSOR7_READ,
 	TASK_SENSOR8_START,
-	TASK_SENSOR8_READ
-//	TASK_DATA,
+	TASK_SENSOR8_READ,
+	TASK_ACCELERATION,
+	TASK_LED
 };
+
+typedef struct
+{
+	enum INITS id;
+	void (*taskPointer)();
+}
+INIT_STRUCT;
 
 typedef struct
 {
@@ -37,8 +49,9 @@ typedef struct
 TASK_STRUCT;
 
 /*global variables*/
+extern const INIT_STRUCT TaskHandler_tableOfInits[];
 extern const TASK_STRUCT TaskHandler_tableOfTasks[];
-volatile extern uint16_t taskHandler_timerTicks;
+volatile extern uint16_t taskHandler_systemTicks;
 
 /*global functions*/
 extern void TaskHandler_init(void);

@@ -8,6 +8,7 @@
 
 class DataLayerBase;
 class WorkerObjectBase;
+class Kinematics;
 
 class FollowerUi : public QMainWindow
 {
@@ -45,7 +46,8 @@ private:
     WorkerThreadBase*		workerThread_;
     DataLayerBase*          dataLayer_;
     WorkerObjectBase*       workerObject_;
-	TRobot *                robotgui_;
+    Kinematics*             kinematics_;
+	TRobot*                 robotgui_;
 	QGraphicsScene*         scene_;
 
 

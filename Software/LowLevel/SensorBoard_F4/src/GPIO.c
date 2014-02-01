@@ -1,8 +1,7 @@
 #include "GPIO.h"
 #include "stm32f4xx.h"
 
-/*Four user LEDs, LD3 (orange), LD4
-(green), LD5 (red) and LD6 (blue
+/*Four user LEDs: green (PD12), orange (PD13), red (PD14) and blue (PD15)
 */
 const GPIO_Struct GPIO_table[] = {
 	/*id    				port    	pin   			clk						exti		port source				pin source			interrupt*/
@@ -38,6 +37,14 @@ const GPIO_Struct GPIO_table[] = {
 /*USART2*/
 	{USART2_Tx,				GPIOA,	GPIO_Pin_2,		RCC_AHB1Periph_GPIOA,	EXTI_Line2, 	EXTI_PortSourceGPIOA,	GPIO_PinSource2,	USART2_IRQn},  //PC10
 	{USART2_Rx,				GPIOA,	GPIO_Pin_3,		RCC_AHB1Periph_GPIOA,	EXTI_Line3, 	EXTI_PortSourceGPIOA,	GPIO_PinSource3,	USART2_IRQn},  //PC11
+/*Accelerator - GPIO init done in acceleration module, look also stm32f4_discovery_lis302dl.h file*/
+	// LIS302DL_SPI_SCK_PIN  - PA5
+	// LIS302DL_SPI_MISO_PIN - PA6
+	// LIS302DL_SPI_MOSI_PIN - PA7
+	// LIS302DL_SPI_CS_PIN   - PE3
+	// LIS302DL_SPI_INT1_PIN - PE0
+	// LIS302DL_SPI_INT2_PIN - PE1
+
 };
 
 
@@ -134,14 +141,18 @@ void GPIO_TASK_blinkLED(void)
 	// blink LED
 	if (state == 0)
 	{
-		//GPIO_outputOn(LED_RED);
-		GPIO_outputOn(LED_BLUE);
+		GPIO_outputOn(LED_RED);
+		/*GPIO_outputOn(LED_BLUE);
+		GPIO_outputOn(LED_GREEN);
+		GPIO_outputOn(LED_ORANGE);*/
 		state = 1;
 	}
 	else
 	{
-		//GPIO_outputOff(LED_RED);
-		GPIO_outputOff(LED_BLUE);
+		GPIO_outputOff(LED_RED);
+		/*GPIO_outputOff(LED_BLUE);
+		GPIO_outputOff(LED_GREEN);
+		GPIO_outputOff(LED_ORANGE);*/
 		state = 0;
 	}
 }

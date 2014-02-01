@@ -3,7 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FollowerRemote", "FollowerRemote\FollowerRemote.vcxproj", "{57A1D6AB-88FB-4045-AE9A-4E3B23B5FA65}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FollowerRemoteTests", "FollowerRemoteTests\FollowerRemoteTests.vcxproj", "{61C8170D-89BC-4775-A229-E75D1C6D863E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4C6FF7D1-89CA-4CE4-BD08-EF4189EC124D}"
+	ProjectSection(SolutionItems) = preProject
+		FollowerRemote.vsmdi = FollowerRemote.vsmdi
+		Local.testsettings = Local.testsettings
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = FollowerRemote.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
@@ -13,6 +25,10 @@ Global
 		{57A1D6AB-88FB-4045-AE9A-4E3B23B5FA65}.Debug|Win32.Build.0 = Debug|Win32
 		{57A1D6AB-88FB-4045-AE9A-4E3B23B5FA65}.Release|Win32.ActiveCfg = Release|Win32
 		{57A1D6AB-88FB-4045-AE9A-4E3B23B5FA65}.Release|Win32.Build.0 = Release|Win32
+		{61C8170D-89BC-4775-A229-E75D1C6D863E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{61C8170D-89BC-4775-A229-E75D1C6D863E}.Debug|Win32.Build.0 = Debug|Win32
+		{61C8170D-89BC-4775-A229-E75D1C6D863E}.Release|Win32.ActiveCfg = Release|Win32
+		{61C8170D-89BC-4775-A229-E75D1C6D863E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
