@@ -35,7 +35,7 @@ PacketWithIndex psCANTxPackets[] =
 // ----------------------------------------------------------------------------
 PacketWithIndex psUARTRxPackets[] =
 {
-	/* UIScreenWrite */ { 0xC3, -1, PacketUIScreenWrite }
+
 };
 #define NUMBER_OF_UART_RX_PACKETS (sizeof(psUARTRxPackets)/sizeof(PacketWithIndex))
 
@@ -44,8 +44,7 @@ PacketWithIndex psUARTRxPackets[] =
 // ----------------------------------------------------------------------------
 PacketWithIndex psUARTTxPackets[] =
 {
-	/* UIControls    */ { 0xC0, -1, PacketUIControls },
-	/* Sensors       */ { 0xF0, -1, PacketSensors    }
+	/* Sensors       */ { 0xF0, -1, PacketDistanceSensors }
 };
 #define NUMBER_OF_UART_TX_PACKETS (sizeof(psUARTTxPackets)/sizeof(PacketWithIndex))
 

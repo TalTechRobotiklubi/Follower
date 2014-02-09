@@ -177,6 +177,18 @@
       <Name>DistanceSensor8</Name>
       <Type>U8</Type>
     </Parameter>
+    <Parameter>
+      <Name>AccelerationX</Name>
+      <Type>S8</Type>
+    </Parameter>
+    <Parameter>
+      <Name>AccelerationY</Name>
+      <Type>S8</Type>
+    </Parameter>
+    <Parameter>
+      <Name>AccelerationZ</Name>
+      <Type>S8</Type>
+    </Parameter>
   </Parameters>
   <Packets>
     <Packet>
@@ -338,7 +350,7 @@
     </Packet>
     <Packet>
       <ID>240</ID>
-      <Name>Sensors</Name>
+      <Name>DistanceSensors</Name>
       <NominalPeriod>0</NominalPeriod>
       <PacketParameters>
         <PacketParameter>
@@ -367,6 +379,22 @@
         </PacketParameter>
       </PacketParameters>
     </Packet>
+    <Packet>
+      <ID>241</ID>
+      <Name>Acceleration</Name>
+      <NominalPeriod>0</NominalPeriod>
+      <PacketParameters>
+        <PacketParameter>
+          <Parameter>AccelerationX</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>AccelerationY</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>AccelerationZ</Parameter>
+        </PacketParameter>
+      </PacketParameters>
+    </Packet>
   </Packets>
   <Nodes>
     <Node>
@@ -389,21 +417,17 @@
               <Period>0</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>UIControls</Packet>
+              <Packet>DistanceSensors</Packet>
               <Period>0</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>Sensors</Packet>
+              <Packet>Acceleration</Packet>
               <Period>0</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>MotorSpeeds</Packet>
-              <Period>0</Period>
-            </TransmitPacket>
-            <TransmitPacket>
-              <Packet>UIScreenWrite</Packet>
               <Period>0</Period>
             </TransmitPacket>
             <TransmitPacket>
@@ -440,10 +464,6 @@
               <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>UIScreenWrite</Packet>
-              <Period>-1</Period>
-            </TransmitPacket>
-            <TransmitPacket>
               <Packet>MotorPID</Packet>
               <Period>-1</Period>
             </TransmitPacket>
@@ -451,19 +471,14 @@
         </Interface>
         <Interface>
           <Name>UART</Name>
-          <ReceivePackets>
-            <ReceivePacket>
-              <Packet>UIScreenWrite</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
-          </ReceivePackets>
+          <ReceivePackets />
           <TransmitPackets>
             <TransmitPacket>
-              <Packet>UIControls</Packet>
+              <Packet>DistanceSensors</Packet>
               <Period>100</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>Sensors</Packet>
+              <Packet>Acceleration</Packet>
               <Period>100</Period>
             </TransmitPacket>
           </TransmitPackets>

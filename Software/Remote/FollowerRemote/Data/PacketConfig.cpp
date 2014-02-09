@@ -51,55 +51,9 @@ const PacketParameter psPacketMotor3StatusParameterList[6] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "MotorSpeeds" parameters table
+// Packet "DistanceSensors" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter psPacketMotorSpeedsParameterList[3] = 
-{
-	{ DLParamMotor1RequestSpeed,  0, 16 },
-	{ DLParamMotor2RequestSpeed, 16, 16 },
-	{ DLParamMotor3RequestSpeed, 32, 16 }
-};
-
-// ----------------------------------------------------------------------------
-// Packet "UIScreenWrite" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketUIScreenWriteParameterList[9] = 
-{
-	{ DLParamScreenRow,        0, 4 },
-	{ DLParamScreenColumn,     4, 4 },
-	{ DLParamScreenTextLen,    8, 4 },
-	{ DLParamScreenTextChar0, 12, 8 },
-	{ DLParamScreenTextChar1, 20, 8 },
-	{ DLParamScreenTextChar2, 28, 8 },
-	{ DLParamScreenTextChar3, 36, 8 },
-	{ DLParamScreenTextChar4, 44, 8 },
-	{ DLParamScreenTextChar5, 52, 8 }
-};
-
-// ----------------------------------------------------------------------------
-// Packet "MotorPID" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketMotorPIDParameterList[2] = 
-{
-	{ DLParamConstantAddress,  0, 32 },
-	{ DLParamConstantValue,   32, 32 }
-};
-
-// ----------------------------------------------------------------------------
-// Packet "UIControls" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketUIControlsParameterList[4] = 
-{
-	{ DLParamButtonTopLeft,     0, 1 },
-	{ DLParamButtonTopRight,    1, 1 },
-	{ DLParamButtonBottomLeft,  2, 1 },
-	{ DLParamButtonBottomRight, 3, 1 }
-};
-
-// ----------------------------------------------------------------------------
-// Packet "Sensors" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketSensorsParameterList[8] = 
+const PacketParameter psPacketDistanceSensorsParameterList[8] = 
 {
 	{ DLParamDistanceSensor1,  0, 8 },
 	{ DLParamDistanceSensor2,  8, 8 },
@@ -112,18 +66,46 @@ const PacketParameter psPacketSensorsParameterList[8] =
 };
 
 // ----------------------------------------------------------------------------
+// Packet "Acceleration" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter psPacketAccelerationParameterList[3] = 
+{
+	{ DLParamAccelerationX,  0, 8 },
+	{ DLParamAccelerationY,  8, 8 },
+	{ DLParamAccelerationZ, 16, 8 }
+};
+
+// ----------------------------------------------------------------------------
+// Packet "MotorSpeeds" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter psPacketMotorSpeedsParameterList[3] = 
+{
+	{ DLParamMotor1RequestSpeed,  0, 16 },
+	{ DLParamMotor2RequestSpeed, 16, 16 },
+	{ DLParamMotor3RequestSpeed, 32, 16 }
+};
+
+// ----------------------------------------------------------------------------
+// Packet "MotorPID" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter psPacketMotorPIDParameterList[2] = 
+{
+	{ DLParamConstantAddress,  0, 32 },
+	{ DLParamConstantValue,   32, 32 }
+};
+
+// ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
 const PacketDescriptor psPacketDescriptorList[NumberOfPackets] = 
 {
-	/* Motor1Status  */ { 0xD1, 0, psPacketMotor1StatusParameterList,  6, 7 },
-	/* Motor2Status  */ { 0xD2, 0, psPacketMotor2StatusParameterList,  6, 7 },
-	/* Motor3Status  */ { 0xD3, 0, psPacketMotor3StatusParameterList,  6, 7 },
-	/* MotorSpeeds   */ { 0xD0, 15, psPacketMotorSpeedsParameterList,  3, 6 },
-	/* UIScreenWrite */ { 0xC3, 0, psPacketUIScreenWriteParameterList, 9, 8 },
-	/* MotorPID      */ { 0xD4, 0, psPacketMotorPIDParameterList,      2, 8 },
-	/* UIControls    */ { 0xC0, 0, psPacketUIControlsParameterList,    4, 1 },
-	/* Sensors       */ { 0xF0, 0, psPacketSensorsParameterList,       8, 8 }
+	/* Motor1Status    */ { 0xD1, 0, psPacketMotor1StatusParameterList,    6, 7 },
+	/* Motor2Status    */ { 0xD2, 0, psPacketMotor2StatusParameterList,    6, 7 },
+	/* Motor3Status    */ { 0xD3, 0, psPacketMotor3StatusParameterList,    6, 7 },
+	/* DistanceSensors */ { 0xF0, 0, psPacketDistanceSensorsParameterList, 8, 8 },
+	/* Acceleration    */ { 0xF1, 0, psPacketAccelerationParameterList,    3, 3 },
+	/* MotorSpeeds     */ { 0xD0, 15, psPacketMotorSpeedsParameterList,     3, 6 },
+	/* MotorPID        */ { 0xD4, 0, psPacketMotorPIDParameterList,        2, 8 }
 };
 #define NUMBER_OF_PACKETS (sizeof(psPacketDescriptorList)/sizeof(Packet))
 

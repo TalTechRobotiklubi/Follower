@@ -37,30 +37,20 @@ typedef enum
 	DLParamMotor1RequestSpeed,  // 18
 	DLParamMotor2RequestSpeed,  // 19
 	DLParamMotor3RequestSpeed,  // 20
-	DLParamScreenRow,           // 21
-	DLParamScreenColumn,        // 22
-	DLParamScreenTextLen,       // 23
-	DLParamScreenTextChar0,     // 24
-	DLParamScreenTextChar1,     // 25
-	DLParamScreenTextChar2,     // 26
-	DLParamScreenTextChar3,     // 27
-	DLParamScreenTextChar4,     // 28
-	DLParamScreenTextChar5,     // 29
-	DLParamConstantAddress,     // 30
-	DLParamConstantValue,       // 31
-	DLParamButtonTopLeft,       // 32
-	DLParamButtonTopRight,      // 33
-	DLParamButtonBottomLeft,    // 34
-	DLParamButtonBottomRight,   // 35
-	DLParamDistanceSensor1,     // 36
-	DLParamDistanceSensor2,     // 37
-	DLParamDistanceSensor3,     // 38
-	DLParamDistanceSensor4,     // 39
-	DLParamDistanceSensor5,     // 40
-	DLParamDistanceSensor6,     // 41
-	DLParamDistanceSensor7,     // 42
-	DLParamDistanceSensor8,     // 43
-	// Count of items is 44
+	DLParamConstantAddress,     // 21
+	DLParamConstantValue,       // 22
+	DLParamDistanceSensor1,     // 23
+	DLParamDistanceSensor2,     // 24
+	DLParamDistanceSensor3,     // 25
+	DLParamDistanceSensor4,     // 26
+	DLParamDistanceSensor5,     // 27
+	DLParamDistanceSensor6,     // 28
+	DLParamDistanceSensor7,     // 29
+	DLParamDistanceSensor8,     // 30
+	DLParamAccelerationX,       // 31
+	DLParamAccelerationY,       // 32
+	DLParamAccelerationZ,       // 33
+	// Count of items is 34
 	DLNumberOfParams
 }
 DLParam;

@@ -58,16 +58,16 @@ void Kinematics::move(Direction direction, int speed)
 void Kinematics::forward(int speed)
 {
     state_ = Forward;
-    requestM1_ = -speed;
-    requestM2_ = speed;
+    requestM1_ = speed;
+    requestM2_ = -speed;
     calculateAndSetSpeeds();
 }
 
 void Kinematics::backward(int speed)
 {
     state_ = Backward;
-    requestM1_ = speed;
-    requestM2_ = -speed;
+    requestM1_ = -speed;
+    requestM2_ = speed;
     calculateAndSetSpeeds();
 }
 
@@ -110,7 +110,7 @@ void Kinematics::calculateAndSetSpeeds()
     currentM2_ = calculateNewSpeed(currentM2_, requestM2_);
     dataLayer_->DL_setData(DLParamMotor1RequestSpeed, &currentM1_);
     dataLayer_->DL_setData(DLParamMotor2RequestSpeed, &currentM2_);
-    qDebug() << currentM1_ << currentM2_;
+    //qDebug() << currentM1_ << currentM2_;
 }
 
 int Kinematics::calculateNewSpeed(int currentSpeed, int requestedSpeed)

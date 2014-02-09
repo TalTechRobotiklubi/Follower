@@ -18,8 +18,7 @@ PacketWithIndex psUARTRxPackets[] =
 	/* Motor1Status  */ { 0xD1, 0, PacketMotor1Status },
 	/* Motor2Status  */ { 0xD2, 0, PacketMotor2Status },
 	/* Motor3Status  */ { 0xD3, 0, PacketMotor3Status },
-	/* Sensors */       { 0xF0, 0, PacketSensors },
-    /* UIControls    */ { 0xC0, 0, PacketUIControls   }  
+	/* Sensors */       { 0xF0, 0, PacketDistanceSensors }
 };
 #define NUMBER_OF_UART_RX_PACKETS (sizeof(psUARTRxPackets)/sizeof(PacketWithIndex))
 
@@ -28,8 +27,7 @@ PacketWithIndex psUARTRxPackets[] =
 // ----------------------------------------------------------------------------
 PacketWithIndex psUARTTxPackets[] =
 {
-    /* MotorSpeeds   */ { 0xD0,  15, PacketMotorSpeeds },
-    /* UIScreenWrite */ { 0xC3,  -1, PacketUIScreenWrite }
+    /* MotorSpeeds   */ { 0xD0,  15, PacketMotorSpeeds }
 };
 #define NUMBER_OF_UART_TX_PACKETS (sizeof(psUARTTxPackets)/sizeof(PacketWithIndex))
 

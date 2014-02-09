@@ -12,9 +12,9 @@
 // ----------------------------------------------------------------------------
 // Values
 // ----------------------------------------------------------------------------
-Bool  pDLValueBool[10];
-U4    pDLValueU4[3];
-U8    pDLValueU8[20];
+Bool  pDLValueBool[6];
+U8    pDLValueU8[14];
+S8    pDLValueS8[3];
 S16   pDLValueS16[9];
 U32   pDLValueU32[2];
 
@@ -44,28 +44,18 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* Motor1RequestSpeed  */ { TypeS16,  &pDLValueS16[6]  },
 	/* Motor2RequestSpeed  */ { TypeS16,  &pDLValueS16[7]  },
 	/* Motor3RequestSpeed  */ { TypeS16,  &pDLValueS16[8]  },
-	/* ScreenRow           */ { TypeU4,   &pDLValueU4[0]   },
-	/* ScreenColumn        */ { TypeU4,   &pDLValueU4[1]   },
-	/* ScreenTextLen       */ { TypeU4,   &pDLValueU4[2]   },
-	/* ScreenTextChar0     */ { TypeU8,   &pDLValueU8[6]   },
-	/* ScreenTextChar1     */ { TypeU8,   &pDLValueU8[7]   },
-	/* ScreenTextChar2     */ { TypeU8,   &pDLValueU8[8]   },
-	/* ScreenTextChar3     */ { TypeU8,   &pDLValueU8[9]   },
-	/* ScreenTextChar4     */ { TypeU8,   &pDLValueU8[10]  },
-	/* ScreenTextChar5     */ { TypeU8,   &pDLValueU8[11]  },
 	/* ConstantAddress     */ { TypeU32,  &pDLValueU32[0]  },
 	/* ConstantValue       */ { TypeU32,  &pDLValueU32[1]  },
-	/* ButtonTopLeft       */ { TypeBool, &pDLValueBool[6] },
-	/* ButtonTopRight      */ { TypeBool, &pDLValueBool[7] },
-	/* ButtonBottomLeft    */ { TypeBool, &pDLValueBool[8] },
-	/* ButtonBottomRight   */ { TypeBool, &pDLValueBool[9] },
-	/* DistanceSensor1     */ { TypeU8,   &pDLValueU8[12]  },
-	/* DistanceSensor2     */ { TypeU8,   &pDLValueU8[13]  },
-	/* DistanceSensor3     */ { TypeU8,   &pDLValueU8[14]  },
-	/* DistanceSensor4     */ { TypeU8,   &pDLValueU8[15]  },
-	/* DistanceSensor5     */ { TypeU8,   &pDLValueU8[16]  },
-	/* DistanceSensor6     */ { TypeU8,   &pDLValueU8[17]  },
-	/* DistanceSensor7     */ { TypeU8,   &pDLValueU8[18]  },
-	/* DistanceSensor8     */ { TypeU8,   &pDLValueU8[19]  }
+	/* DistanceSensor1     */ { TypeU8,   &pDLValueU8[6]   },
+	/* DistanceSensor2     */ { TypeU8,   &pDLValueU8[7]   },
+	/* DistanceSensor3     */ { TypeU8,   &pDLValueU8[8]   },
+	/* DistanceSensor4     */ { TypeU8,   &pDLValueU8[9]   },
+	/* DistanceSensor5     */ { TypeU8,   &pDLValueU8[10]  },
+	/* DistanceSensor6     */ { TypeU8,   &pDLValueU8[11]  },
+	/* DistanceSensor7     */ { TypeU8,   &pDLValueU8[12]  },
+	/* DistanceSensor8     */ { TypeU8,   &pDLValueU8[13]  },
+	/* AccelerationX       */ { TypeS8,   &pDLValueS8[0]   },
+	/* AccelerationY       */ { TypeS8,   &pDLValueS8[1]   },
+	/* AccelerationZ       */ { TypeS8,   &pDLValueS8[2]   }
 };
 
