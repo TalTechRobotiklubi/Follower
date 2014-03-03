@@ -11,6 +11,7 @@ Kinematics::Kinematics(DataLayerBase* dataLayer)
     requestM2_ = 0;
     dataLayer_ = dataLayer;
     connect(&timer_, SIGNAL(timeout()), this, SLOT(timerUpdate()));
+    running_ = false;
 }
 
 Kinematics::~Kinematics(void)
@@ -97,10 +98,32 @@ void Kinematics::stop()
     calculateAndSetSpeeds();
 }
 
+void Kinematics::startAlgorithm()
+{
+    running_ = true;
+    qDebug() << "Algorithm start";
+}
+
+void Kinematics::stopAlgorithm()
+{   
+    running_ = false;
+    stop();
+    qDebug() << "Algorithm stop";
+}
+
+void Kinematics::runAlgorithm()
+{
+    if (running_)
+    {
+        algorithm1();
+    }
+}
+
 
 void Kinematics::timerUpdate()
 {
-    calculateAndSetSpeeds();
+    runAlgorithm();
+    calculateAndSetSpeeds();  // smooth acceleration and stopping
 }
 
 
@@ -142,4 +165,25 @@ int Kinematics::calculateNewSpeed(int currentSpeed, int requestedSpeed)
         // no change as currentSpeed == requestedSpeed
     }
     return currentSpeed;
+}
+
+
+void Kinematics::algorithm1()
+{
+    unsigned char sensorLeft;
+    unsigned char sensorRight;
+
+    dataLayer_->DL_getData(DLParamDistanceSensor1, &sensorLeft);
+    dataLayer_->DL_getData(DLParamDistanceSensor5, &sensorRight);
+
+    if( (sensorLeft < 30) || (sensorRight < 30))
+    {
+        stop();
+        qDebug() << "stop";
+    }
+    else
+    {
+        forward(1200);
+        qDebug() << "forward";
+    }
 }

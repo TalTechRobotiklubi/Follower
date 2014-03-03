@@ -175,6 +175,12 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
     case Qt::Key_O:
         ui.sb_setSpeed->setValue(setSpeed - 100);
         break;
+    case Qt::Key_R:  // run
+        kinematics_->startAlgorithm();
+        break;
+    case Qt::Key_P:  // stop
+        kinematics_->stopAlgorithm();
+        break;
 	}
  }
 
