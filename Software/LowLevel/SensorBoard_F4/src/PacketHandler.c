@@ -44,7 +44,8 @@ PacketWithIndex psUARTRxPackets[] =
 // ----------------------------------------------------------------------------
 PacketWithIndex psUARTTxPackets[] =
 {
-	/* Sensors       */ { 0xF0, -1, PacketDistanceSensors }
+	/* DistanceSensors */ { 0xF0, -1, PacketDistanceSensors },
+	/* Acceleration    */ { 0xF1, -1, PacketAcceleration }
 };
 #define NUMBER_OF_UART_TX_PACKETS (sizeof(psUARTTxPackets)/sizeof(PacketWithIndex))
 

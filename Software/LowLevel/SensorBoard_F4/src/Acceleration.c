@@ -6,6 +6,7 @@
 /*private variables*/
 static int8_t priv_XOffset;
 static int8_t priv_YOffset;
+static int8_t priv_ZOffset;
 
 /*private function declarations*/
 
@@ -76,6 +77,7 @@ void Acceleration_INIT(void)
 
 	priv_XOffset = buffer[0];
 	priv_YOffset = buffer[2];
+	priv_ZOffset = buffer[4];
 }
 
 
@@ -87,7 +89,9 @@ void Acceleration_TASK(void)
 	LIS302DL_Read(buffer, LIS302DL_OUT_X_ADDR, 6);
 	buffer[0] -= priv_XOffset;
 	buffer[2] -= priv_YOffset;
+	buffer[4] -= priv_ZOffset;
 
 	DL_setData(DLParamAccelerationX, &buffer[0]);
 	DL_setData(DLParamAccelerationY, &buffer[2]);
+	DL_setData(DLParamAccelerationZ, &buffer[4]);
 }

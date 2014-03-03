@@ -121,6 +121,20 @@ void FollowerUi::newUiData()
 
     ui.lbl_leftSpeed->setText(QString("Vasak: %1m/s").arg(speed1));
     ui.lbl_rightSpeed->setText(QString("Parem: %1m/s").arg(speed2));
+
+    int8_t accX = 0;
+    int8_t accY = 0;
+    int8_t accZ = 0;
+
+    dataLayer_->DL_getData(DLParamAccelerationX, &accX);
+    dataLayer_->DL_getData(DLParamAccelerationY, &accY);
+    dataLayer_->DL_getData(DLParamAccelerationZ, &accZ);
+
+    ui.lbl_accX->setText(QString("AccX: %1").arg(accX));
+    ui.lbl_accY->setText(QString("AccY: %1").arg(accY));
+    ui.lbl_accZ->setText(QString("AccZ: %1").arg(accZ));
+
+    //qDebug() << accX << accY << accZ;
 }
 
 void FollowerUi::keyPressEvent ( QKeyEvent * event )

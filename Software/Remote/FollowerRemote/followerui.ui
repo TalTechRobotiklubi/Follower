@@ -99,6 +99,27 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="lbl_accX">
+          <property name="text">
+           <string>AccX:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lbl_accY">
+          <property name="text">
+           <string>AccY:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lbl_accZ">
+          <property name="text">
+           <string>AccZ:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
