@@ -1,7 +1,7 @@
 #ifndef FOLLOWERUI_H
 #define FOLLOWERUI_H
 
-#include <QtGui/QMainWindow>
+#include <QtWidgets/QMainWindow>
 #include "ui_followerui.h"
 #include "Follower.h"
 #include "TRobot.h"
@@ -16,7 +16,7 @@ class FollowerUi : public QMainWindow
 
 public:
     explicit FollowerUi(Follower *robot);
-    FollowerUi(QWidget *parent = 0, Qt::WFlags flags = 0);
+    FollowerUi(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~FollowerUi();
 
 protected:

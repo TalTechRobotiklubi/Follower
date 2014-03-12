@@ -23,8 +23,8 @@ bool DataLayerCAN::DL_getData(DLParam param, DLValuePointer pValue)
 {
 	uint8_t numOfPackets, i, j;
 	PacketWithIndex *packet;
-	bool valid = FALSE;
-	bool asyncData = FALSE;
+	bool valid = false;
+	bool asyncData = false;
 
     QMutexLocker locker(&mutex_);
 
@@ -42,11 +42,11 @@ bool DataLayerCAN::DL_getData(DLParam param, DLValuePointer pValue)
 			{
 				if ((packetHandler_.Packet_getMessageParameterList(packet[i].index) + j)->eParam == param)
 				{
-					asyncData = TRUE;
+					asyncData = true;
 					if (packet[i].iperiod != PACKET_WAITING)
 					{
 						packet[i].iperiod = PACKET_WAITING;
-						valid = TRUE;
+						valid = true;
 						break;
 					}
 				}
@@ -131,7 +131,7 @@ void DataLayerCAN::DL_setDataByComm(DLParam param, DLValuePointer value)
 {
 	SetDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
 	
-	pbValidFlags_[param] = TRUE;
+	pbValidFlags_[param] = true;
 }
 
 Type DataLayerCAN::DL_getDataType(DLParam param)

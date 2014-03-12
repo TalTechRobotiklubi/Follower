@@ -1,7 +1,7 @@
 #pragma once
 #include <QPainter>
-#include <QGraphicsItem>
-#include <QGraphicsScene>
+#include <QtWidgets/QGraphicsItem>
+#include <QtWidgets/QGraphicsScene>
 
 
 

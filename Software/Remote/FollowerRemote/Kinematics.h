@@ -1,6 +1,6 @@
 #pragma once
 
-#include <qtimer.h>
+#include <QtCore/qtimer.h>
 #include <qobject.h>
 
 class DataLayerBase;
