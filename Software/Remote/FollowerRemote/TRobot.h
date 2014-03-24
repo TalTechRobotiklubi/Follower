@@ -14,6 +14,8 @@ public:
 	TRobot(void);
 	~TRobot(void);
 	double zoom; 
+	int m1speed;
+	int m2speed;
 	
 	virtual QRectF boundingRect() const;
 	virtual void paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWidget *widget);
@@ -39,6 +41,8 @@ protected:
 	int GetAngle(int x1,int y1,int x2,int y2);
 	void SaveToFile(void);
 	int TRobot::LoadFromFile(void);
+	double TRobot::GetSpeedAngle(double s1,double s2);
+	void TRobot::PaintAngledArrow(int x1,int y1,int len,int angle,QPainter *painter,double size);
 	
 };
 
