@@ -60,6 +60,9 @@ TRobot::TRobot(void)
 	}
 
 	zoom = 1;
+
+	m1speed = 500;
+	m2speed = 50;
 }
 
 
@@ -100,6 +103,11 @@ void TRobot::paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWid
 		PaintSonar(&sensor[i],painter,zoom);
 	}
 
+	int driveangle = 0;
+
+	driveangle = GetSpeedAngle(m1speed,m2speed);
+
+	PaintAngledArrow(0,0,-100,driveangle,painter,zoom); 
 
 
 }
@@ -342,6 +350,45 @@ int TRobot::LoadFromFile(void)
 		return 1;
 	}
 	return 0;
+}
+
+double TRobot::GetSpeedAngle(double s1,double s2)
+{
+	return  ((s1-s2)/0.2)*0.017453;
+}
+
+void TRobot::PaintAngledArrow(int x1,int y1,int len,int angle,QPainter *painter,double size)
+{
+	int i;
+	int x = x1;
+	int y = y1;
+	QPoint p;
+	int segments = 5;
+	int seglen = len / segments;
+	int seg = angle/segments;
+
+	QPen pen(Qt::green);
+	pen.setWidth(2);
+	painter->setPen(pen);
+
+	p = QPoint(0,seglen);
+
+	for (i = 0; i<segments; i++)
+	{
+		p = RotatePoint(p,seg);
+
+		painter->drawLine(x*size,y*size,(x+p.x())*size,(y+p.y())*size);
+
+		x += (int) p.x();
+		y += (int) p.y();
+
+	}
+	p = RotatePoint(p,135);
+	painter->drawLine(x*size,y*size,(x+p.x())*size,(y+p.y())*size);
+
+	p = RotatePoint(p,90);
+	painter->drawLine(x*size,y*size,(x+p.x())*size,(y+p.y())*size);
+	
 }
 
 

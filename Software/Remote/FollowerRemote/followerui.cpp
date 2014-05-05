@@ -118,6 +118,9 @@ void FollowerUi::newUiData()
     int16_t speed2 = 0;
     dataLayer_->DL_getData(DLParamMotor1ActualSpeed, &speed1);
     dataLayer_->DL_getData(DLParamMotor2ActualSpeed, &speed2);
+	robotgui_->m1speed  = speed1;
+	robotgui_->m2speed  = -speed2;
+
 
     ui.lbl_leftSpeed->setText(QString("Vasak: %1m/s").arg(speed1));
     ui.lbl_rightSpeed->setText(QString("Parem: %1m/s").arg(speed2));
