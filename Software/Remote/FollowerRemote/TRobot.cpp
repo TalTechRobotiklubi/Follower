@@ -105,7 +105,7 @@ void TRobot::paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWid
 
 	int driveangle = 0;
 
-	driveangle = GetSpeedAngle(m1speed,m2speed);
+	driveangle = GetSpeedAngle(m2speed,m1speed);
 
 	PaintAngledArrow(0,0,-100,driveangle,painter,zoom); 
 
@@ -259,7 +259,7 @@ void TRobot::MousePressEvent(int x,int y,int button)
 			}
 
 			if (sensor[i].state == 2){
-				sensor[i].deg = GetAngle(sensor[i].x,sensor[i].y,x/zoom,y/zoom);
+				sensor[i].deg = 180+GetAngle(x/zoom,y/zoom,sensor[i].x,sensor[i].y) % 360;
 			}
 
 

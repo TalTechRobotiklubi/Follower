@@ -75,16 +75,27 @@ void Kinematics::backward(int speed)
 void Kinematics::right(int speed)
 {
     state_ = Right;
-    requestM1_ = speed;
-    requestM2_ = speed;
+    requestM1_ = speed/2;
+    requestM2_ = speed/2;
     calculateAndSetSpeeds();
 }
 
 void Kinematics::left(int speed)
 {
     state_ = Left;
-    requestM1_ = -speed;
-    requestM2_ = -speed;
+    requestM1_ = -speed/2;
+    requestM2_ = -speed/2;
+    calculateAndSetSpeeds();
+}
+
+void Kinematics::motorspeed(int speedleft,int speedright)
+{
+    state_ = Forward; // TODO: forward is not good
+
+
+    requestM1_ = speedleft;
+    requestM2_ = -speedright;
+
     calculateAndSetSpeeds();
 }
 
@@ -173,17 +184,44 @@ void Kinematics::algorithm1()
     unsigned char sensorLeft;
     unsigned char sensorRight;
 
-    dataLayer_->DL_getData(DLParamDistanceSensor1, &sensorLeft);
-    dataLayer_->DL_getData(DLParamDistanceSensor5, &sensorRight);
+	unsigned char sensorDiagLeft;
+    unsigned char sensorDiagRight;
+
+    dataLayer_->DL_getData(DLParamDistanceSensor5, &sensorLeft);
+    dataLayer_->DL_getData(DLParamDistanceSensor1, &sensorRight);
+
+	if ( sensorLeft == 4 ) 
+		sensorLeft = 255;
+
+	if ( sensorRight == 4 ) 
+		sensorRight = 255;
+
+	dataLayer_->DL_getData(DLParamDistanceSensor6, &sensorDiagLeft);
+	dataLayer_->DL_getData(DLParamDistanceSensor2, &sensorDiagRight);
+
+	if ( sensorDiagLeft == 4 ) 
+		sensorDiagLeft = 255;
+
+	if ( sensorDiagRight == 4 ) 
+		sensorDiagRight = 255;
 
     if( (sensorLeft < 30) || (sensorRight < 30))
     {
         stop();
-        qDebug() << "stop";
     }
-    else
+    else if ( (sensorLeft < 60) && (sensorRight > 60))
     {
-        forward(1200);
-        qDebug() << "forward";
+		motorspeed(900,1200);
+	//	qDebug() << "vasakule" << sensorLeft << sensorRight;
+	}
+	else if ( (sensorLeft > 60) && (sensorRight < 60))
+    {
+		motorspeed(1200,900);
+//		qDebug() << "paremale" << sensorLeft << sensorRight;
+	}
+	else
+	{
+//		qDebug() << "otse" << sensorLeft << sensorRight;
+		motorspeed(1200,1200);
     }
 }

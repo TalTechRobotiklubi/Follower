@@ -32,6 +32,7 @@ public:
     void stop();
     void startAlgorithm();
     void stopAlgorithm();
+	void motorspeed(int speedleft,int speedright);
 
 public slots:
     void timerUpdate();
