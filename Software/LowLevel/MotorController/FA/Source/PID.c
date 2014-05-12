@@ -45,7 +45,7 @@ void vPid(T_PID* ptPid)
 			(fKi != *ptPid->pfKp) || (fKi != *ptPid->pfKp) ||
 			(u32Timelevel != *ptPid->pu32Timelevel))
 	{
-		float fTimeLevelSec = *ptPid->pu32Timelevel/10000;
+		float fTimeLevelSec = *ptPid->pu32Timelevel/10000.0;
 
 		fKf = *ptPid->pfKf;
 		fKp = *ptPid->pfKp;

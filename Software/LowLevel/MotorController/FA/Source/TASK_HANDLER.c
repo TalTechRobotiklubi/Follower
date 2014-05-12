@@ -7,11 +7,11 @@
  *convince that period is not bigger than TIMER_EXCEED_VALUE and divides with it*/
 const struct TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		/*id              period (*100us)   offset (*100us)   taskPointer */
-		{TASK_LED,		  	2000,            0,            	GPIO_TASK_blinkLED 	},
 		{TASK_CAN,		  	1000,            0,            	CAN_TASK 	},
 		{TASK_RAMP,		  	 100,            0,            	RAMP_TASK 	},
 		{TASK_QEI,	          20,            1,         	QEI_TASK   },
 		{TASK_ANALOG,	     100,            0,          	ANALOG_TASK   },
+		{TASK_LED,		  	2000,            0,            	GPIO_TASK_blinkLED 	},
 		{TASK_PID,	          20,            2,         	PID_TASK   },
 		{TASK_MODULATION,	  20,            3,         	MODULATION_TASK   }
 };
@@ -68,11 +68,4 @@ void TaskHandler_run(void)
 	}
 }
 
-void SysTick_Handler(void)
-{
-	taskHandler_timerTicks++;
-	if (taskHandler_timerTicks >= TIMER_EXCEED_VALUE)
-	{
-		taskHandler_timerTicks = 0;
-	}
-}
+
