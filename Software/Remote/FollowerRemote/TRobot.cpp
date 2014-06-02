@@ -210,6 +210,11 @@ void TRobot::SetSensors(unsigned char *sensors,int count)
 		{
 			update = 1;
 			sensor[i].sonarlen = *sensors;
+
+			if (sensor[i].sonarlen == 4)
+			{
+				sensor[i].sonarlen = 255;
+			}
 		}
 		sensors++;
 	}

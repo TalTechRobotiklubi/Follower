@@ -33,6 +33,7 @@ public:
     void startAlgorithm();
     void stopAlgorithm();
 	void motorspeed(int speedleft,int speedright);
+	int getsensorerror();
 
 public slots:
     void timerUpdate();
