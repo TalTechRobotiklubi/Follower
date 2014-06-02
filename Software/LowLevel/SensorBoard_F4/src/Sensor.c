@@ -8,7 +8,8 @@ typedef enum
 {
 	SENSOR_INPUT_IDLE,
 	SENSOR_INPUT_RISED,
-	SENSOR_INPUT_FALLED
+	SENSOR_INPUT_FALLED,
+	SENSOR_INPUT_ERROR
 }
 SensorInputStatus_Typedef;
 
@@ -118,12 +119,14 @@ void EXTI15_10_IRQHandler(void)
 				/*disable pin detection*/
 				//EXTI_DeInit();
 				disableSensorInterrupt(URF1_ECHO);
+
+				priv_sensorStat[0] = SENSOR_INPUT_FALLED;
 			}
 			else
 			{
-				priv_sensorValue[0] = 0;
+				priv_sensorStat[0] = SENSOR_INPUT_ERROR;
 			}
-			priv_sensorStat[0] = SENSOR_INPUT_FALLED;
+
 		}
 
 		/* Clear the  EXTI line pending bit */
@@ -375,7 +378,7 @@ void Sensor_TASK_startMeasurement1(void)
 	GPIO_outputOn(URF1_TRIG);
 	Timer_startTimer(TIMER2_ID);
 	// keep output high for 20 us
-	while (Timer_getTimerValue(TIMER2_ID) < 20);
+	while (Timer_getTimerValue(TIMER2_ID) < 10);
 
 	Timer_stopTimer(TIMER2_ID);
 	// set trigger output low
@@ -387,19 +390,26 @@ void Sensor_TASK_startMeasurement1(void)
 void Sensor_TASK_readDistance1(void)
 {
 	uint16_t distance = 0;
-	// measurement has taken too long, set max distance
-	if (priv_sensorStat[0] == SENSOR_INPUT_RISED)
-	{
-		Timer_stopTimer(TIMER2_ID);
-		priv_sensorStat[0] = SENSOR_INPUT_IDLE;
-		priv_sensorValue[0] = 255;
-	}
+
 	// disable pin detection anyway
 	disableSensorInterrupt(URF1_ECHO);
-	/*write distance result in cm to DL*/
-	distance = priv_sensorValue[0] / 58;  // 147 us equals 1 inch -> 147 / 2,54 = 57,8
-	if (distance > 255)
+	Timer_stopTimer(TIMER2_ID);
+
+	switch(priv_sensorStat[0])
+	{
+	case SENSOR_INPUT_IDLE:  // no sensor connected
+		distance = 0;
+		break;
+	case SENSOR_INPUT_FALLED: //ok, write distance result in cm to DL
+		distance = priv_sensorValue[0] / 58;  // 147 us equals 1 inch -> 147 / 2,54 = 57,8
+		if (distance > 255)
+			distance = 255;
+		break;
+	case SENSOR_INPUT_RISED: // error in measure, so max value
+	case SENSOR_INPUT_ERROR:
 		distance = 255;
+		break;
+	}
 	DL_setData(DLParamDistanceSensor1, &distance);
 }
 
@@ -410,7 +420,7 @@ void Sensor_TASK_startMeasurement2(void)
 	GPIO_outputOn(URF2_TRIG);
 	Timer_startTimer(TIMER2_ID);
 	// keep output high for 20 us
-	while (Timer_getTimerValue(TIMER2_ID) < 20);
+	while (Timer_getTimerValue(TIMER2_ID) < 10);
 	Timer_stopTimer(TIMER2_ID);
 	// set trigger output low
 	GPIO_outputOff(URF2_TRIG);
@@ -445,7 +455,7 @@ void Sensor_TASK_startMeasurement3(void)
 	GPIO_outputOn(URF3_TRIG);
 	Timer_startTimer(TIMER2_ID);
 	// keep output high for 20 us
-	while (Timer_getTimerValue(TIMER2_ID) < 20);
+	while (Timer_getTimerValue(TIMER2_ID) < 10);
 	Timer_stopTimer(TIMER2_ID);
 	// set trigger output low
 	GPIO_outputOff(URF3_TRIG);
@@ -479,7 +489,7 @@ void Sensor_TASK_startMeasurement4(void)
 	GPIO_outputOn(URF4_TRIG);
 	Timer_startTimer(TIMER2_ID);
 	// keep output high for 20 us
-	while (Timer_getTimerValue(TIMER2_ID) < 20);
+	while (Timer_getTimerValue(TIMER2_ID) < 10);
 	Timer_stopTimer(TIMER2_ID);
 	// set trigger output low
 	GPIO_outputOff(URF4_TRIG);
@@ -514,7 +524,7 @@ void Sensor_TASK_startMeasurement5(void)
 	GPIO_outputOn(URF5_TRIG);
 	Timer_startTimer(TIMER3_ID);
 	// keep output high for 20 us
-	while (Timer_getTimerValue(TIMER3_ID) < 20);
+	while (Timer_getTimerValue(TIMER3_ID) < 10);
 
 	Timer_stopTimer(TIMER3_ID);
 	// set trigger output low
@@ -549,7 +559,7 @@ void Sensor_TASK_startMeasurement6(void)
 	GPIO_outputOn(URF6_TRIG);
 	Timer_startTimer(TIMER3_ID);
 	// keep output high for 20 us
-	while (Timer_getTimerValue(TIMER3_ID) < 20);
+	while (Timer_getTimerValue(TIMER3_ID) < 10);
 	Timer_stopTimer(TIMER3_ID);
 	// set trigger output low
 	GPIO_outputOff(URF6_TRIG);
@@ -583,7 +593,7 @@ void Sensor_TASK_startMeasurement7(void)
 	GPIO_outputOn(URF7_TRIG);
 	Timer_startTimer(TIMER3_ID);
 	// keep output high for 20 us
-	while (Timer_getTimerValue(TIMER3_ID) < 20);
+	while (Timer_getTimerValue(TIMER3_ID) < 10);
 	Timer_stopTimer(TIMER3_ID);
 	// set trigger output low
 	GPIO_outputOff(URF7_TRIG);
@@ -617,7 +627,7 @@ void Sensor_TASK_startMeasurement8(void)
 	GPIO_outputOn(URF8_TRIG);
 	Timer_startTimer(TIMER3_ID);
 	// keep output high for 20 us
-	while (Timer_getTimerValue(TIMER3_ID) < 20);
+	while (Timer_getTimerValue(TIMER3_ID) < 10);
 	Timer_stopTimer(TIMER3_ID);
 	// set trigger output low
 	GPIO_outputOff(URF8_TRIG);
