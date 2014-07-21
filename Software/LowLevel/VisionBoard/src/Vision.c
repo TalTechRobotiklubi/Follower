@@ -223,6 +223,7 @@ void driverStop(I2C_TypeDef* I2Cx)
 }
 
 
+// note that data buffer contains word with sent least-significant byte first
 void findObjectsFromBuffer()
 {
 	BufferAnalyzeState state = Sync;
@@ -236,43 +237,43 @@ void findObjectsFromBuffer()
 		switch (state)
 		{
 		case Sync:
-			if (priv_receivedData[i] == 0xaa && priv_receivedData[i + 1] == 0x55)
+			if (priv_receivedData[i] == 0x55 && priv_receivedData[i + 1] == 0xaa)
 				state = CheckSum;
 			break;
 		case CheckSum:
-			if (priv_receivedData[i] != 0xaa && priv_receivedData[i + 1] != 0x55)
+			if (priv_receivedData[i] != 0x55 && priv_receivedData[i + 1] != 0xaa)
 			{
-				checksum = (priv_receivedData[i] << 8) + priv_receivedData[i + 1];
+				checksum = priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
 				state = Signature;
 			}
 			break;
 		case Signature:
-			if (priv_receivedData[i] == 0 && priv_receivedData[i + 1] == 1)
+			if (priv_receivedData[i] == 1 && priv_receivedData[i + 1] == 0)
 			{
-				calcChecksum = (priv_receivedData[i] << 8) + priv_receivedData[i + 1];
+				calcChecksum = priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
 				state = Xcord;
 			}
 			else
 				state = Sync;
 			break;
 		case Xcord:
-			calcChecksum += (priv_receivedData[i] << 8) + priv_receivedData[i + 1];
-			priv_objects[objCount].x = (priv_receivedData[i] << 8) + priv_receivedData[i + 1];
+			calcChecksum += priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
+			priv_objects[objCount].x = priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
 			state = Ycord;
 			break;
 		case Ycord:
-			calcChecksum += (priv_receivedData[i] << 8) + priv_receivedData[i + 1];
-			priv_objects[objCount].y = (priv_receivedData[i] << 8) + priv_receivedData[i + 1];
+			calcChecksum += priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
+			priv_objects[objCount].y = priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
 			state = Height;
 			break;
 		case Height:
-			calcChecksum += (priv_receivedData[i] << 8) + priv_receivedData[i + 1];
-			priv_objects[objCount].height = (priv_receivedData[i] << 8) + priv_receivedData[i + 1];
+			calcChecksum += priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
+			priv_objects[objCount].height = priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
 			state = Width;
 			break;
 		case Width:
-			calcChecksum += (priv_receivedData[i] << 8) + priv_receivedData[i + 1];
-			priv_objects[objCount].width = (priv_receivedData[i] << 8) + priv_receivedData[i + 1];
+			calcChecksum += priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
+			priv_objects[objCount].width = priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
 
 			if (checksum == calcChecksum)
 				objCount++;
