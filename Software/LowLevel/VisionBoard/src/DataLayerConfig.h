@@ -1,63 +1,50 @@
 // ----------------------------------------------------------------------------
 //
-// Casecatcher generated packet configuration header file
+// Casecatcher generated datalayer configuration header file
 //
 // ----------------------------------------------------------------------------
-#ifndef _PACKET_CONFIG_
-#define _PACKET_CONFIG_
+#ifndef _DATALAYER_CONFIG_
+#define _DATALAYER_CONFIG_
 
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
 #include "Typedef.h"
-#include "DataLayerConfig.h"
 
 // ----------------------------------------------------------------------------
-// Packets enumeration
+// Parameters
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	PacketMotor1Status,    // 0
-	PacketMotor2Status,    // 1
-	PacketDistanceSensors, // 2
-	PacketAcceleration,    // 3
-	PacketTrackedObject,   // 4
-	PacketMotorSpeeds,     // 5
-	PacketMotorPID,        // 6
-	// Count of items is 7
-	NumberOfPackets
+	DLParamTrackedObjectX,      // 0
+	DLParamTrackedObjectY,      // 1
+	DLParamTrackedObjectHeight, // 2
+	DLParamTrackedObjectWidth,  // 3
+	// Count of items is 4
+	DLNumberOfParams
 }
-Packet;
+DLParam;
+#define DLSizeOfParam ((DLNumberOfParams <= 255) ? 1 : 2)
 
 // ----------------------------------------------------------------------------
-// Packet structures
+// General datalayer parameter value pointer
+// ----------------------------------------------------------------------------
+typedef void* DLValuePointer;
+
+// ----------------------------------------------------------------------------
+// Parameter descriptor
 // ----------------------------------------------------------------------------
 typedef struct
 {
-	DLParam eParam;
-	uint16_t uiStartBit;
-	uint16_t uiLengthBits;
+	Type eType;
+	DLValuePointer pValue;
 }
-PacketParameter;
-
-typedef struct
-{
-	uint16_t uiID;
-	int16_t  iPeriod;
-	PacketParameter const * psParameterList;
-	uint16_t uiParameterCount;
-	uint16_t uiDLC;
-}
-PacketDescriptor;
+DLParamDescriptor;
 
 // ----------------------------------------------------------------------------
-// Export packet descriptors
+// Export parameters descriptors
 // ----------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
-extern const PacketDescriptor psPacketDescriptorList[NumberOfPackets];
-}
-#endif
+extern const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams];
 
 #endif
 

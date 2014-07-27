@@ -12,8 +12,11 @@ const GPIO_Struct GPIO_table[] = {
 	{LED_BLUE,				GPIOD,	GPIO_Pin_15,	RCC_AHB1Periph_GPIOD,	EXTI_Line15, 	EXTI_PortSourceGPIOD,	EXTI_PinSource15,	EXTI15_10_IRQn},
 	{USER_BUTTON,			GPIOA,  GPIO_Pin_0, 	RCC_AHB1Periph_GPIOA,	EXTI_Line0, 	EXTI_PortSourceGPIOA,	EXTI_PinSource0,	EXTI0_IRQn},
 /*I2C*/
-
-
+	{I2C3_SCL,				GPIOA,  GPIO_Pin_8, 	RCC_AHB1Periph_GPIOA,   EXTI_Line8,     EXTI_PortSourceGPIOA,	EXTI_PinSource8,	I2C3_EV_IRQn},
+	{I2C3_SDA,				GPIOC,  GPIO_Pin_9, 	RCC_AHB1Periph_GPIOC,   EXTI_Line9,     EXTI_PortSourceGPIOC,	EXTI_PinSource9,	I2C3_EV_IRQn},
+/*CAN1*/
+	{CAN1_Tx,				GPIOD,	GPIO_Pin_1,		RCC_AHB1Periph_GPIOD,	EXTI_Line1, 	EXTI_PortSourceGPIOD,	GPIO_PinSource1,	CAN1_TX_IRQn},  //PD1
+	{CAN1_Rx,				GPIOD,	GPIO_Pin_0,		RCC_AHB1Periph_GPIOD,	EXTI_Line0, 	EXTI_PortSourceGPIOD,	GPIO_PinSource0,	CAN1_RX0_IRQn},  //PD0
 };
 
 

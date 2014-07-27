@@ -17,6 +17,10 @@ typedef enum
 	LED_RED,
 	LED_BLUE,
 	USER_BUTTON,
+	I2C3_SCL,
+	I2C3_SDA,
+	CAN1_Tx,
+	CAN1_Rx,
 	NUM_OF_GPIOS
 }
 GPIO_IdDef;

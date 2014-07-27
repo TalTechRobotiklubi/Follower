@@ -12,6 +12,7 @@ enum INITS
 enum TASKS
 {
 	TASK_VISION,
+	TASK_CAN,
 	TASK_LED
 };
 

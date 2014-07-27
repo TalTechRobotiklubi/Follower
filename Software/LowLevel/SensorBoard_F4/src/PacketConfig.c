@@ -36,16 +36,14 @@ const PacketParameter psPacketMotor2StatusParameterList[6] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "Motor3Status" parameters table
+// Packet "TrackedObject" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter psPacketMotor3StatusParameterList[6] = 
+const PacketParameter psPacketTrackedObjectParameterList[4] = 
 {
-	{ DLParamMotor3ActualSpeed,    0, 16 },
-	{ DLParamMotor3EncoderClicks, 16, 16 },
-	{ DLParamMotor3CurrentDraw,   32,  8 },
-	{ DLParamMotor3DriverTemp,    40,  8 },
-	{ DLParamMotor3BridgeAFault,  48,  1 },
-	{ DLParamMotor3BridgeBFault,  49,  1 }
+	{ DLParamTrackedObjectX,       0, 16 },
+	{ DLParamTrackedObjectY,      16, 16 },
+	{ DLParamTrackedObjectHeight, 32, 16 },
+	{ DLParamTrackedObjectWidth,  48, 16 }
 };
 
 // ----------------------------------------------------------------------------
@@ -99,7 +97,7 @@ const PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
 {
 	/* Motor1Status    */ { 0xD1, -1, psPacketMotor1StatusParameterList,    6, 7 },
 	/* Motor2Status    */ { 0xD2, -1, psPacketMotor2StatusParameterList,    6, 7 },
-	/* Motor3Status    */ { 0xD3, -1, psPacketMotor3StatusParameterList,    6, 7 },
+	/* TrackedObject   */ { 0xC0, -1, psPacketTrackedObjectParameterList,   4, 8 },
 	/* MotorSpeeds     */ { 0xD0, -1, psPacketMotorSpeedsParameterList,     3, 6 },
 	/* MotorPID        */ { 0xD4, -1, psPacketMotorPIDParameterList,        2, 8 },
 	/* DistanceSensors */ { 0xF0, -1, psPacketDistanceSensorsParameterList, 8, 8 },

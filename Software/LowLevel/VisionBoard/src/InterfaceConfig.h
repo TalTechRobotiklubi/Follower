@@ -1,63 +1,58 @@
 // ----------------------------------------------------------------------------
 //
-// Casecatcher generated packet configuration header file
+// Casecatcher generated node interfaces header file
 //
 // ----------------------------------------------------------------------------
-#ifndef _PACKET_CONFIG_
-#define _PACKET_CONFIG_
+#ifndef _INTERFACE_CONFIG_
+#define _INTERFACE_CONFIG_
 
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
 #include "Typedef.h"
-#include "DataLayerConfig.h"
+#include "PacketConfig.h"
 
 // ----------------------------------------------------------------------------
-// Packets enumeration
+// Interfaces
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	PacketMotor1Status,    // 0
-	PacketMotor2Status,    // 1
-	PacketDistanceSensors, // 2
-	PacketAcceleration,    // 3
-	PacketTrackedObject,   // 4
-	PacketMotorSpeeds,     // 5
-	PacketMotorPID,        // 6
-	// Count of items is 7
-	NumberOfPackets
+	InterfaceCAN,
+	// Count of items is 1
+	NumberOfInterfaces
 }
-Packet;
+Interface;
 
 // ----------------------------------------------------------------------------
-// Packet structures
+// Interface structures
 // ----------------------------------------------------------------------------
 typedef struct
 {
-	DLParam eParam;
-	uint16_t uiStartBit;
-	uint16_t uiLengthBits;
+	Packet ePacket;
+	uint32_t ulPeriod;
 }
-PacketParameter;
+InterfaceReceivePacket;
 
 typedef struct
 {
-	uint16_t uiID;
-	int16_t  iPeriod;
-	PacketParameter const * psParameterList;
-	uint16_t uiParameterCount;
-	uint16_t uiDLC;
+	Packet ePacket;
+	uint32_t ulPeriod;
 }
-PacketDescriptor;
+InterfaceTransmitPacket;
+
+typedef struct
+{
+	InterfaceReceivePacket const * psReceivePacketList;
+	uint32_t uiReceivePacketCount;
+	InterfaceTransmitPacket const * psTransmitPacketList;
+	uint32_t uiTransmitPacketCount;
+}
+NodeInterfaceDescriptor;
 
 // ----------------------------------------------------------------------------
-// Export packet descriptors
+// Export interface descriptors
 // ----------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
-extern const PacketDescriptor psPacketDescriptorList[NumberOfPackets];
-}
-#endif
+extern const NodeInterfaceDescriptor psInterfaceList[NumberOfInterfaces];
 
 #endif
 

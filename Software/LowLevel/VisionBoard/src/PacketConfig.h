@@ -12,19 +12,15 @@
 #include "Typedef.h"
 #include "DataLayerConfig.h"
 
+#define ENABLE_CAN_INTERFACE  1
+
 // ----------------------------------------------------------------------------
 // Packets enumeration
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	PacketMotor1Status,    // 0
-	PacketMotor2Status,    // 1
-	PacketDistanceSensors, // 2
-	PacketAcceleration,    // 3
-	PacketTrackedObject,   // 4
-	PacketMotorSpeeds,     // 5
-	PacketMotorPID,        // 6
-	// Count of items is 7
+	PacketTrackedObject, // 0
+	// Count of items is 1
 	NumberOfPackets
 }
 Packet;
@@ -53,11 +49,7 @@ PacketDescriptor;
 // ----------------------------------------------------------------------------
 // Export packet descriptors
 // ----------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
 extern const PacketDescriptor psPacketDescriptorList[NumberOfPackets];
-}
-#endif
 
 #endif
 

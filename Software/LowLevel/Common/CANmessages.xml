@@ -22,19 +22,11 @@
       <Type>S16</Type>
     </Parameter>
     <Parameter>
-      <Name>Motor3ActualSpeed</Name>
-      <Type>S16</Type>
-    </Parameter>
-    <Parameter>
       <Name>Motor1CurrentDraw</Name>
       <Type>U8</Type>
     </Parameter>
     <Parameter>
       <Name>Motor2CurrentDraw</Name>
-      <Type>U8</Type>
-    </Parameter>
-    <Parameter>
-      <Name>Motor3CurrentDraw</Name>
       <Type>U8</Type>
     </Parameter>
     <Parameter>
@@ -46,19 +38,11 @@
       <Type>U8</Type>
     </Parameter>
     <Parameter>
-      <Name>Motor3DriverTemp</Name>
-      <Type>U8</Type>
-    </Parameter>
-    <Parameter>
       <Name>Motor1BridgeAFault</Name>
       <Type>Bool</Type>
     </Parameter>
     <Parameter>
       <Name>Motor2BridgeAFault</Name>
-      <Type>Bool</Type>
-    </Parameter>
-    <Parameter>
-      <Name>Motor3BridgeAFault</Name>
       <Type>Bool</Type>
     </Parameter>
     <Parameter>
@@ -70,31 +54,11 @@
       <Type>Bool</Type>
     </Parameter>
     <Parameter>
-      <Name>Motor3BridgeBFault</Name>
-      <Type>Bool</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ScreenRow</Name>
-      <Type>U4</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ScreenColumn</Name>
-      <Type>U4</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ScreenTextLen</Name>
-      <Type>U4</Type>
-    </Parameter>
-    <Parameter>
       <Name>Motor1EncoderClicks</Name>
       <Type>S16</Type>
     </Parameter>
     <Parameter>
       <Name>Motor2EncoderClicks</Name>
-      <Type>S16</Type>
-    </Parameter>
-    <Parameter>
-      <Name>Motor3EncoderClicks</Name>
       <Type>S16</Type>
     </Parameter>
     <Parameter>
@@ -104,46 +68,6 @@
     <Parameter>
       <Name>ConstantValue</Name>
       <Type>U32</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ButtonTopLeft</Name>
-      <Type>Bool</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ButtonTopRight</Name>
-      <Type>Bool</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ButtonBottomLeft</Name>
-      <Type>Bool</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ButtonBottomRight</Name>
-      <Type>Bool</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ScreenTextChar0</Name>
-      <Type>U8</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ScreenTextChar1</Name>
-      <Type>U8</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ScreenTextChar2</Name>
-      <Type>U8</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ScreenTextChar3</Name>
-      <Type>U8</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ScreenTextChar4</Name>
-      <Type>U8</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ScreenTextChar5</Name>
-      <Type>U8</Type>
     </Parameter>
     <Parameter>
       <Name>DistanceSensor1</Name>
@@ -188,6 +112,22 @@
     <Parameter>
       <Name>AccelerationZ</Name>
       <Type>S8</Type>
+    </Parameter>
+    <Parameter>
+      <Name>TrackedObjectX</Name>
+      <Type>U16</Type>
+    </Parameter>
+    <Parameter>
+      <Name>TrackedObjectY</Name>
+      <Type>U16</Type>
+    </Parameter>
+    <Parameter>
+      <Name>TrackedObjectHeight</Name>
+      <Type>U16</Type>
+    </Parameter>
+    <Parameter>
+      <Name>TrackedObjectWidth</Name>
+      <Type>U16</Type>
     </Parameter>
   </Parameters>
   <Packets>
@@ -258,65 +198,6 @@
       </PacketParameters>
     </Packet>
     <Packet>
-      <ID>211</ID>
-      <Name>Motor3Status</Name>
-      <NominalPeriod>0</NominalPeriod>
-      <PacketParameters>
-        <PacketParameter>
-          <Parameter>Motor3ActualSpeed</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>Motor3EncoderClicks</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>Motor3CurrentDraw</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>Motor3DriverTemp</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>Motor3BridgeAFault</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>Motor3BridgeBFault</Parameter>
-        </PacketParameter>
-      </PacketParameters>
-    </Packet>
-    <Packet>
-      <ID>195</ID>
-      <Name>UIScreenWrite</Name>
-      <NominalPeriod>0</NominalPeriod>
-      <PacketParameters>
-        <PacketParameter>
-          <Parameter>ScreenRow</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ScreenColumn</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ScreenTextLen</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ScreenTextChar0</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ScreenTextChar1</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ScreenTextChar2</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ScreenTextChar3</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ScreenTextChar4</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ScreenTextChar5</Parameter>
-        </PacketParameter>
-      </PacketParameters>
-    </Packet>
-    <Packet>
       <ID>212</ID>
       <Name>MotorPID</Name>
       <NominalPeriod>0</NominalPeriod>
@@ -326,25 +207,6 @@
         </PacketParameter>
         <PacketParameter>
           <Parameter>ConstantValue</Parameter>
-        </PacketParameter>
-      </PacketParameters>
-    </Packet>
-    <Packet>
-      <ID>192</ID>
-      <Name>UIControls</Name>
-      <NominalPeriod>0</NominalPeriod>
-      <PacketParameters>
-        <PacketParameter>
-          <Parameter>ButtonTopLeft</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ButtonTopRight</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ButtonBottomLeft</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ButtonBottomRight</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
@@ -395,6 +257,25 @@
         </PacketParameter>
       </PacketParameters>
     </Packet>
+    <Packet>
+      <ID>192</ID>
+      <Name>TrackedObject</Name>
+      <NominalPeriod>0</NominalPeriod>
+      <PacketParameters>
+        <PacketParameter>
+          <Parameter>TrackedObjectX</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>TrackedObjectY</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>TrackedObjectHeight</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>TrackedObjectWidth</Parameter>
+        </PacketParameter>
+      </PacketParameters>
+    </Packet>
   </Packets>
   <Nodes>
     <Node>
@@ -413,15 +294,15 @@
               <Period>0</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>Motor3Status</Packet>
-              <Period>0</Period>
-            </ReceivePacket>
-            <ReceivePacket>
               <Packet>DistanceSensors</Packet>
               <Period>0</Period>
             </ReceivePacket>
             <ReceivePacket>
               <Packet>Acceleration</Packet>
+              <Period>0</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>TrackedObject</Packet>
               <Period>0</Period>
             </ReceivePacket>
           </ReceivePackets>
@@ -454,7 +335,7 @@
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>Motor3Status</Packet>
+              <Packet>TrackedObject</Packet>
               <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
@@ -537,23 +418,14 @@
     </Node>
     <Node>
       <ID>0</ID>
-      <Name>MotorController3</Name>
+      <Name>VisionModule</Name>
       <Interfaces>
         <Interface>
           <Name>CAN</Name>
-          <ReceivePackets>
-            <ReceivePacket>
-              <Packet>MotorSpeeds</Packet>
-              <Period>0</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>MotorPID</Packet>
-              <Period>0</Period>
-            </ReceivePacket>
-          </ReceivePackets>
+          <ReceivePackets />
           <TransmitPackets>
             <TransmitPacket>
-              <Packet>Motor3Status</Packet>
+              <Packet>TrackedObject</Packet>
               <Period>0</Period>
             </TransmitPacket>
           </TransmitPackets>

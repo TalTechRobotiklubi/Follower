@@ -25,7 +25,7 @@ typedef enum
 {
 	PacketMotor1Status,    // 0
 	PacketMotor2Status,    // 1
-	PacketMotor3Status,    // 2
+	PacketTrackedObject,   // 2
 	PacketMotorSpeeds,     // 3
 	PacketMotorPID,        // 4
 	PacketDistanceSensors, // 5

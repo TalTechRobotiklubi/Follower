@@ -57,9 +57,9 @@ PacketWithIndex psUARTTxPackets[] =
 // ----------------------------------------------------------------------------
 PacketWithIndex psGatewayCANtoUARTPackets[] =
 {
-	/* Motor1Status  */ { 0xD1, -1, PacketMotor1Status  },
-	/* Motor2Status  */ { 0xD2, -1, PacketMotor2Status  },
-	/* TrackedObject */ { 0xC0, -1, PacketTrackedObject }
+	/* Motor1Status  */ { 0xD1, -1, PacketMotor1Status },
+	/* Motor2Status  */ { 0xD2, -1, PacketMotor2Status },
+	/* Motor3Status  */ { 0xD3, -1, PacketMotor3Status }
 };
 #define NUMBER_OF_CAN_TO_UART_PACKETS (sizeof(psGatewayCANtoUARTPackets)/sizeof(PacketWithIndex))
 

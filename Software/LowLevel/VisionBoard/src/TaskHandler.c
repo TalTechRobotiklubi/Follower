@@ -2,6 +2,7 @@
 #include "TaskHandler.h"
 #include "GPIO.h"
 #include "Vision.h"
+#include "CAN.h"
 
 /*Table of initialization tasks. All functions in tables are called once after initializing system clock.
  * With adding new init check that id is corresponding to enum value.*/
@@ -18,6 +19,7 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
 const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		/*id              	  period (ms)   offset (ms)   taskPointer */
 		{TASK_VISION,			   20,			0,			Vision_TASK      	    },
+		{TASK_CAN,			       20,			2,			CAN_TASK      	        },
 		{TASK_LED,				  400,			0,			GPIO_TASK_blinkLED	    },
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))
