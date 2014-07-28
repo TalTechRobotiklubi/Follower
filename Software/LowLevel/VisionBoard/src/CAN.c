@@ -14,9 +14,7 @@ typedef enum
 
 typedef struct
 {
-	uint8_t data[8];
-	uint8_t dlc;
-	uint8_t id;
+	InterfaceMessage msg;
 	uint8_t flag;
 } CAN_MessageBox;
 
@@ -31,6 +29,7 @@ void initCAN1parameters(uint8_t bs1, uint8_t bs2, uint16_t prescaler);
 void initializeMessageBoxes(void);
 void CAN1_NVIC_Config(void);
 void sendCANmessage(InterfaceMessage* msg);
+void storeReceivedDataToMessageBox(InterfaceMessage msg);
 
 void initCAN1parameters(uint8_t bs1, uint8_t bs2, uint16_t prescaler)
 {
@@ -152,6 +151,54 @@ void sendCANmessage(InterfaceMessage* msg)
 			canMessage.Data[i] = msg->data[i];
 		}
 		CAN_Transmit(CAN1, &canMessage);
+	}
+}
+
+
+void CAN1_RX0_IRQHandler(void)
+{
+	CanRxMsg receiveMsg;
+
+	CAN_Receive(CAN1, CAN_FIFO0, &receiveMsg);
+
+	InterfaceMessage msg;
+	msg.id = receiveMsg.StdId;
+	msg.length = receiveMsg.DLC;
+
+	if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceCAN, &msg))
+	{
+		storeReceivedDataToMessageBox(msg);
+	}
+}
+
+
+/* Stores CAN message data to message box. Every message has its own box.
+ * Writes over previous data.
+ * NB! Called from interrupt!!!*/
+void storeReceivedDataToMessageBox(InterfaceMessage msg)
+{
+	if (priv_CANmessageBoxes[msg.packet].flag != CAN_Box_Locked)
+	{
+		priv_CANmessageBoxes[msg.packet].msg = msg;
+		priv_CANmessageBoxes[msg.packet].flag = CAN_Box_Rx_New_Data;
+	}
+}
+
+
+/*check CAN message boxes and stores data to data layer if something new*/
+void handleReceivedData(void)
+{
+	uint8_t i;
+
+	for (i = 0; i < NumberOfPackets; i++)
+	{
+		/*check if new data has received to any of the message boxes*/
+		if (priv_CANmessageBoxes[i].flag == CAN_Box_Rx_New_Data)
+		{
+			priv_CANmessageBoxes[i].flag = CAN_Box_Locked;
+			InterfaceHandler_storeReceivedData(&priv_CANmessageBoxes[i].msg);
+			priv_CANmessageBoxes[i].flag = CAN_Box_Empty;
+		}
 	}
 }
 
