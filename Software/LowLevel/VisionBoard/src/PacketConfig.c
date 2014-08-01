@@ -23,7 +23,7 @@ const PacketParameter psPacketTrackedObjectParameterList[4] =
 // ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
-const PacketDescriptor psPacketDescriptorList[NumberOfPackets] = 
+PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
 {
 	/* TrackedObject */ { 0xC0, 0, psPacketTrackedObjectParameterList, 4, 8 }
 };

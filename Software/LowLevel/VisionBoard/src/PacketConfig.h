@@ -49,7 +49,7 @@ PacketDescriptor;
 // ----------------------------------------------------------------------------
 // Export packet descriptors
 // ----------------------------------------------------------------------------
-extern const PacketDescriptor psPacketDescriptorList[NumberOfPackets];
+extern PacketDescriptor psPacketDescriptorList[NumberOfPackets];
 
 #endif
 

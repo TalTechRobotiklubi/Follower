@@ -1,8 +1,10 @@
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
+#include "DataLayer.h"
 #include "DataLayerConfig.h"
-#include "PacketHandler.h"
+#include "PacketConfig.h"
+
 
 // ----------------------------------------------------------------------------
 // Variables
@@ -24,64 +26,36 @@ void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 // ----------------------------------------------------------------------------
 Boolean DL_getData(DLParam param, DLValuePointer pValue)
 {
-	uint8_t numOfPackets, i, j;
-	PacketWithIndex *packet;
+	uint8_t i, j;
 	Boolean valid = FALSE;
 	Boolean asyncData = FALSE;
 
 	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
-#if (ENABLE_CAN_INTERFACE)
-	/*check if parameter is part of any async CAN packets*/
-	numOfPackets = Packet_getNumOfCANRxPackets();
-	packet = Packet_getCANRxPacketsData();
-
-	for (i = 0; i < numOfPackets; i++)
+	/*check if parameter is part of any async packets*/
+	for (i = 0; i < NumberOfPackets; i++)
 	{
-		if ((packet[i].iperiod < 0) && (Packet_getMessagePeriod(packet[i].index) < 0))
+		PacketDescriptor *packet = &psPacketDescriptorList[i];
+		if (packet->iPeriod < 0)
 		{
-			for (j = 0; j < Packet_getMessageParameterCount(packet[i].index); j++)
+			for (j = 0; j < packet->uiParameterCount; j++)
 			{
-				if ((Packet_getMessageParameterList(packet[i].index) + j)->eParam == param)
+				if ((packet->psParameterList + j)->eParam == param)
 				{
 					asyncData = TRUE;
-					if (packet[i].iperiod != PACKET_WAITING)
+					if (packet->iPeriod != PACKET_WAITING)
 					{
-						packet[i].iperiod = PACKET_WAITING;
+
+						packet->iPeriod = PACKET_WAITING;
 						valid = TRUE;
-						break;
 					}
+					break;
 				}
 			}
 		}
+		if (asyncData)
+			break;
 	}
-#endif
-
-#if (ENABLE_UART_INTERFACE == 1)
-	/*check if parameter is part of any async UART packets*/
-	numOfPackets = Packet_getNumOfUARTRxPackets();
-	packet = Packet_getUARTRxPacketsData();
-
-	for (i = 0; i < numOfPackets; i++)
-	{
-		if ((packet[i].iperiod < 0) && (Packet_getMessagePeriod(packet[i].index) < 0))
-		{
-			for (j = 0; j < Packet_getMessageParameterCount(packet[i].index); j++)
-			{
-				if ((Packet_getMessageParameterList(packet[i].index) + j)->eParam == param)
-				{
-					asyncData = TRUE;
-					if (packet[i].iperiod != PACKET_WAITING)
-					{
-						packet[i].iperiod = PACKET_WAITING;
-						valid = TRUE;
-						break;
-					}
-				}
-			}
-		}
-	}
-#endif
 
 	if (asyncData)
 	{
@@ -108,7 +82,7 @@ void DL_peekData(DLParam param, DLValuePointer pValue)
  *Param as parameter
  *pValue as pointer to place where data will be stored from DL
  *Returns if the value is valid or not*/
-Boolean DL_getDataByComm(DLParam param, DLValuePointer pValue)
+Boolean DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer pValue)
 {
 	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
@@ -122,11 +96,9 @@ void DL_setData(DLParam param, DLValuePointer pValue)
 {
 	uint32_t tempData, newValue;
 	uint32_t mask = 0;
-	uint8_t numOfPackets, i, j;
-	PacketWithIndex *packet;
+	uint8_t i, j;
 	Type type;
 	uint32_t size;
-
 
 	/*format data so they are comparable*/
 	type = psDLParamDescriptorList[param].eType;
@@ -143,45 +115,22 @@ void DL_setData(DLParam param, DLValuePointer pValue)
 	{
 		setDataAccordingToType(param, pValue, type);
 
-#if (ENABLE_CAN_INTERFACE == 1)
-		/*check if parameter is part of any async CAN packets*/
-		numOfPackets = Packet_getNumOfCANTxPackets();
-		packet = Packet_getCANTxPacketsData();
-
-		for (i = 0; i < numOfPackets; i++)
+		/*check if parameter is part of any async packets*/
+		for (i = 0; i < NumberOfPackets; i++)
 		{
-			if ((packet[i].iperiod < 0) && (Packet_getMessagePeriod(packet[i].index) < 0))
+			PacketDescriptor* packet = &psPacketDescriptorList[i];
+			if (packet->iPeriod < 0)
 			{
-				for (j = 0; j < Packet_getMessageParameterCount(packet[i].index); j++)
+				for (j = 0; j < packet->uiParameterCount; j++)
 				{
-					if ((Packet_getMessageParameterList(packet[i].index) + j)->eParam == param)
+					if ((packet->psParameterList + j)->eParam == param)
 					{
-						packet[i].iperiod = PACKET_READY_TO_SEND;
+						packet->iPeriod = PACKET_READY_TO_SEND;
+						break;
 					}
 				}
 			}
 		}
-#endif
-
-#if (ENABLE_UART_INTERFACE == 1)
-		/*check if parameter is part of any async UART packets*/
-		numOfPackets = Packet_getNumOfUARTTxPackets();
-		packet = Packet_getUARTTxPacketsData();
-
-		for (i = 0; i < numOfPackets; i++)
-		{
-			if ((packet[i].iperiod < 0) && (Packet_getMessagePeriod(packet[i].index) < 0))
-			{
-				for (j = 0; j < Packet_getMessageParameterCount(packet[i].index); j++)
-				{
-					if ((Packet_getMessageParameterList(packet[i].index) + j)->eParam == param)
-					{
-						packet[i].iperiod = PACKET_READY_TO_SEND;
-					}
-				}
-			}
-		}
-#endif
 	}
 }
 
@@ -189,7 +138,7 @@ void DL_setData(DLParam param, DLValuePointer pValue)
  *Communication tasks (CAN_TASK etc.) are already handling data status.
  *Param as parameter
  *pValue as pointer to data for storing to DL*/
-void DL_setDataByComm(DLParam param, DLValuePointer value)
+void DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value)
 {
 	setDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
 	
