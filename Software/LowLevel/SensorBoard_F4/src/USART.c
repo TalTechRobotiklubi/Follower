@@ -4,9 +4,9 @@
 #include "USART.h"
 #include "GPIO.h"
 #include "DataLayer.h"
-#include "PacketHandler.h"
 #include "TaskHandler.h"
 #include "CANmessages.h"
+#include "InterfaceHandler.h"
 
 /* splitted u16 type, which can be accessed in separate byte manner*/
 typedef union
@@ -44,10 +44,14 @@ GPIO_IdDef UART_GPIO_init(USART_TypeDef *uartX);
 void UART_IRQ_init(GPIO_IdDef);
 uint32_t intToASCIIchar(int32_t value, uint8_t *string);
 void analyzeRecieveBuffer(void);
-void storeDataToDataLayer(UART_CANmessage *message, PacketWithIndex *packet);
+//void storeDataToDataLayer(UART_CANmessage *message, PacketWithIndex *packet);
 void sendUARTpackages(void);
-void sendDataLayerDataToUART(PacketWithIndex *packet);
+//void sendDataLayerDataToUART(PacketWithIndex *packet);
 uint8_t getBitmaskForUARTmessage(uint8_t bitPosition, int16_t length);
+
+static void handleReceiveData(void);
+static void sendUARTmessage(InterfaceMessage* msg);
+static void handleTransmitData(void);
 
 //Rx buffer
 static unsigned char USART_RxBuf[USART_RX_BUFFER_SIZE];
@@ -442,12 +446,15 @@ void USART_ReceiveInt(void)
 /*Periodic UART task*/
 void USART_TASK(void)
 {
-	analyzeRecieveBuffer();
-	sendUARTpackages();
+	//analyzeRecieveBuffer();
+	//sendUARTpackages();
+	handleReceiveData();
+	handleTransmitData();
 }
 
 void analyzeRecieveBuffer(void)
 {
+#if 0
 	uint16_t tempTail, tempHead;
 	static MessageAnalyseState analyseState = noData;
 	static UART_CANmessage message;
@@ -611,8 +618,10 @@ void analyzeRecieveBuffer(void)
 	USART_ITConfig(UART4,USART_IT_RXNE,DISABLE);  //disable UART receive interrupts
 	USART_RxTail = tempHead;
 	USART_ITConfig(UART4,USART_IT_RXNE,ENABLE);  // enable UART receive interrupts
+#endif
 }
 
+#if 0
 /*saves data received from UART to data layer*/
 void storeDataToDataLayer(UART_CANmessage *message, PacketWithIndex *packet)
 {
@@ -707,10 +716,12 @@ void storeDataToDataLayer(UART_CANmessage *message, PacketWithIndex *packet)
 	}
 
 }
+#endif
 
 /*Checks if any UART message is ready for sending*/
 void sendUARTpackages(void)
 {
+#if 0
 	uint8_t numOfPackets, i;
 	PacketWithIndex *packet;
 
@@ -765,8 +776,10 @@ void sendUARTpackages(void)
 			}
 		}
 	}
+#endif
 }
 
+#if 0
 /*sets data layer data to UART Tx buffer*/
 void sendDataLayerDataToUART(PacketWithIndex *packet)
 {
@@ -853,7 +866,226 @@ void sendDataLayerDataToUART(PacketWithIndex *packet)
 	USART_SendChar(crc.u8.byteLow);
 
 }
+#endif
 
+void handleReceiveData(void)
+{
+	uint16_t tempTail, tempHead;
+	static MessageAnalyseState analyseState = noData;
+	//static UART_CANmessage message;
+	static InterfaceMessage message;
+	static uint16_t calcCrc;
+	static splitU16 messageCrc;
+	static uint8_t length;
+	static uint8_t dataIndex;
+	//static uint8_t rxMessageIndex;
+	//static PacketWithIndex *packet;
+	//uint8_t numOfPackets, j;
+
+	/*save the buffer tail and head into local variable*/
+	USART_ITConfig(activeUART, USART_IT_RXNE, DISABLE);  //disable UART receive interrupts
+	tempTail = USART_RxTail;
+	tempHead = USART_RxHead;
+	USART_ITConfig(activeUART, USART_IT_RXNE, ENABLE);  // enable UART receive interrupts
+
+
+	/*Analyze received data*/
+	while (tempTail != tempHead)
+	{
+		switch (analyseState)
+		{
+			case noData:
+				// search preambula '0xAA'
+				if ((USART_RxBuf[tempTail] == 0xaa) || (USART_RxBuf[tempTail] == 0xAA))
+				{
+					// clear message for next data
+					message.length = 0;
+					message.id = 0;
+					message.data[0] = 0;
+					message.data[1] = 0;
+					message.data[2] = 0;
+					message.data[3] = 0;
+					message.data[4] = 0;
+					message.data[5] = 0;
+					message.data[6] = 0;
+					message.data[7] = 0;
+					// clear variables
+					length = 0;
+					dataIndex = 0;
+					messageCrc.u16 = 0;
+					//rxMessageIndex = 0;
+					// preambula is part of CRC
+					calcCrc = USART_RxBuf[tempTail];
+					analyseState = preambulaFound;
+				}
+				break;
+			case preambulaFound:
+#if 0
+				/* check first if it is a message to send further*/
+				/* get list of messages to gateway, note that it is a Tx list */
+				numOfPackets = Packet_getNumOfGatewayUARTtoCANPackets();
+				packet = Packet_getGatewayUARTtoCANPackets();
+				for (j = 0; j < numOfPackets; j++)
+				{
+					if (USART_RxBuf[tempTail] == packet[j].uiID)
+					{
+						// remember the index of the suitable message
+						rxMessageIndex = j;
+						message.canMessage.id = USART_RxBuf[tempTail];
+						message.crc += USART_RxBuf[tempTail];
+						analyseState = idOK;
+						break;
+					}
+				}
+				/* get list of UART rx messages to this module as it is not gateway message
+				 * Now it is Rx list */
+				if (analyseState != idOK)
+				{
+					numOfPackets = Packet_getNumOfUARTRxPackets();
+					packet = Packet_getUARTRxPacketsData();
+					for (j = 0; j < numOfPackets; j++)
+					{
+						if (USART_RxBuf[tempTail] == packet[j].uiID)
+						{
+							// remember the index of the suitable message
+							rxMessageIndex = j;
+							message.canMessage.id = USART_RxBuf[tempTail];
+							message.crc += USART_RxBuf[tempTail];
+							analyseState = idOK;
+							break;
+						}
+					}
+				}
+				// if not ok message then start from beginning
+				if (analyseState != idOK)
+				{
+					analyseState = noData;
+				}
+#endif
+				message.id = USART_RxBuf[tempTail];
+				calcCrc += message.id;
+				analyseState = idOK;
+				break;
+			case idOK:
+#if 0
+				// check valid length (1-8)
+				length = USART_RxBuf[tempTail];
+				if (length == Packet_getMessageDLC(packet[rxMessageIndex].index))
+				{
+					message.canMessage.dlc = length;
+					message.crc += length;
+					analyseState = lengthOK;
+				}
+				else
+				{
+					// not valid message, continue with seaching next preambula
+					analyseState = noData;
+				}
+#endif
+				message.length = USART_RxBuf[tempTail];
+				__disable_irq();
+				if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceUART, &message) ||
+						InterfaceHandler_checkIfReceivedMessageExists(InterfaceUART_CAN, &message) )
+				{
+					calcCrc += message.length;
+					length = message.length;
+					analyseState = lengthOK;
+				}
+				else
+				{
+					// not valid message, continue with seaching next preambula
+					analyseState = noData;
+				}
+				__enable_irq();
+				break;
+			case lengthOK:
+				// copy data
+				if (length != 0)
+				{
+					message.data[dataIndex] = USART_RxBuf[tempTail];
+					calcCrc += USART_RxBuf[tempTail];
+					dataIndex++;
+					length--;
+					if (length == 0)
+					{
+						// continue with CRC
+						analyseState = crcFirstbyte;
+					}
+				}
+				else
+				{
+					// length should not be 0 from the beginning -> logic mistake, start from the beginning
+					analyseState = noData;
+				}
+				break;
+			case crcFirstbyte:
+				// store crc first byte
+				messageCrc.u8.byteHigh = USART_RxBuf[tempTail];
+				analyseState = crcCheck;
+				break;
+			case crcCheck:
+				// store 2nd byte
+				messageCrc.u8.byteLow = USART_RxBuf[tempTail];
+				// check CRC
+				if (calcCrc == messageCrc.u16)
+				{
+					// new valid message received, copy data into data layer
+					InterfaceHandler_storeReceivedData(&message);
+					// ready for next packet
+					analyseState = noData;
+				}
+				else
+				{
+					analyseState = noData;
+				}
+				break;
+			default:
+
+				break;
+		}
+		/*take next byte*/
+		tempTail = tempTail + 1;
+		if (tempTail >= USART_RX_BUFFER_SIZE)
+		{
+			tempTail = 0;
+		}
+	}
+
+	/*update the buffer tail*/
+	USART_ITConfig(activeUART, USART_IT_RXNE, DISABLE);  //disable UART receive interrupts
+	USART_RxTail = tempHead;
+	USART_ITConfig(activeUART, USART_IT_RXNE, ENABLE);  // enable UART receive interrupts
+}
+
+
+void sendUARTmessage(InterfaceMessage* msg)
+{
+	splitU16 crc;
+	uint16_t j;
+
+	USART_SendChar(0xAA);
+	crc.u16 = 0xAA;
+	USART_SendChar(msg->id);
+	crc.u16 += msg->id;
+	USART_SendChar(msg->length);
+	crc.u16 += msg->length;
+	for (j = 0; j < msg->length; j++)
+	{
+		USART_SendChar(msg->data[j]);
+		crc.u16 += msg->data[j];
+	}
+	USART_SendChar(crc.u8.byteHigh);
+	USART_SendChar(crc.u8.byteLow);
+}
+
+
+void handleTransmitData(void)
+{
+	InterfaceHandler_transmitData(InterfaceUART, sendUARTmessage, TaskHandler_tableOfTasks[TASK_USART].period);
+	InterfaceHandler_transmitData(InterfaceCAN_UART, sendUARTmessage, TaskHandler_tableOfTasks[TASK_USART].period);
+}
+
+#if 0
 /*Finds which mask to use for data setting in message when bit position and data length is known
  Params: bitPosition - bit position in byte, NB! not absolute position in message
  	 	 length - remaining data length
@@ -883,4 +1115,4 @@ uint8_t getBitmaskForUARTmessage(uint8_t bitPosition, int16_t length)
   }
   return mask;
 }
-
+#endif

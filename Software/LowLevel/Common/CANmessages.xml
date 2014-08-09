@@ -327,6 +327,29 @@
           <Name>UART_CAN</Name>
           <ReceivePackets>
             <ReceivePacket>
+              <Packet>MotorSpeeds</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>MotorPID</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+          </ReceivePackets>
+          <TransmitPackets>
+            <TransmitPacket>
+              <Packet>MotorSpeeds</Packet>
+              <Period>-1</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>MotorPID</Packet>
+              <Period>-1</Period>
+            </TransmitPacket>
+          </TransmitPackets>
+        </Interface>
+        <Interface>
+          <Name>CAN_UART</Name>
+          <ReceivePackets>
+            <ReceivePacket>
               <Packet>Motor1Status</Packet>
               <Period>-1</Period>
             </ReceivePacket>
@@ -341,11 +364,15 @@
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
-              <Packet>MotorSpeeds</Packet>
+              <Packet>Motor1Status</Packet>
               <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>MotorPID</Packet>
+              <Packet>Motor2Status</Packet>
+              <Period>-1</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>TrackedObject</Packet>
               <Period>-1</Period>
             </TransmitPacket>
           </TransmitPackets>

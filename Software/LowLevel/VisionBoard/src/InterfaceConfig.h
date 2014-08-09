@@ -29,14 +29,14 @@ Interface;
 typedef struct
 {
 	Packet ePacket;
-	uint32_t ulPeriod;
+	int16_t ulPeriod;
 }
 InterfaceReceivePacket;
 
 typedef struct
 {
 	Packet ePacket;
-	uint32_t ulPeriod;
+	int16_t ulPeriod;
 }
 InterfaceTransmitPacket;
 

@@ -1,59 +1,60 @@
 // ----------------------------------------------------------------------------
 //
-// Casecatcher generated packet configuration header file
+// Casecatcher generated node interfaces header file
 //
 // ----------------------------------------------------------------------------
-#ifndef _PACKET_CONFIG_
-#define _PACKET_CONFIG_
+#ifndef _INTERFACE_CONFIG_
+#define _INTERFACE_CONFIG_
 
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
 #include "Typedef.h"
-#include "DataLayerConfig.h"
+#include "PacketConfig.h"
 
 // ----------------------------------------------------------------------------
-// Packets enumeration
+// Interfaces
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	PacketMotor1Status,    // 0
-	PacketMotor2Status,    // 1
-	PacketTrackedObject,   // 2
-	PacketMotorSpeeds,     // 3
-	PacketMotorPID,        // 4
-	PacketDistanceSensors, // 5
-	PacketAcceleration,    // 6
-	// Count of items is 7
-	NumberOfPackets
+	InterfaceUART_CAN,
+	InterfaceCAN_UART,
+	InterfaceUART,    
+	// Count of items is 3
+	NumberOfInterfaces
 }
-Packet;
+Interface;
 
 // ----------------------------------------------------------------------------
-// Packet structures
+// Interface structures
 // ----------------------------------------------------------------------------
 typedef struct
 {
-	DLParam eParam;
-	uint16_t uiStartBit;
-	uint16_t uiLengthBits;
+	Packet ePacket;
+	int16_t ulPeriod;
 }
-PacketParameter;
+InterfaceReceivePacket;
 
 typedef struct
 {
-	uint16_t uiID;
-	int16_t  iPeriod;
-	PacketParameter const * psParameterList;
-	uint16_t uiParameterCount;
-	uint16_t uiDLC;
+	Packet ePacket;
+	int16_t ulPeriod;
 }
-PacketDescriptor;
+InterfaceTransmitPacket;
+
+typedef struct
+{
+	InterfaceReceivePacket const * psReceivePacketList;
+	uint32_t uiReceivePacketCount;
+	InterfaceTransmitPacket const * psTransmitPacketList;
+	uint32_t uiTransmitPacketCount;
+}
+NodeInterfaceDescriptor;
 
 // ----------------------------------------------------------------------------
-// Export packet descriptors
+// Export interface descriptors
 // ----------------------------------------------------------------------------
-extern PacketDescriptor psPacketDescriptorList[NumberOfPackets];
+extern const NodeInterfaceDescriptor psInterfaceList[NumberOfInterfaces];
 
 #endif
 

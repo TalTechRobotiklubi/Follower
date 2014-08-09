@@ -93,7 +93,7 @@ const PacketParameter psPacketAccelerationParameterList[3] =
 // ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
-const PacketDescriptor psPacketDescriptorList[NumberOfPackets] = 
+PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
 {
 	/* Motor1Status    */ { 0xD1, -1, psPacketMotor1StatusParameterList,    6, 7 },
 	/* Motor2Status    */ { 0xD2, -1, psPacketMotor2StatusParameterList,    6, 7 },

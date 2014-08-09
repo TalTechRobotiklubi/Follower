@@ -24,13 +24,13 @@ static uint8_t  priv_bs1 = 7;
 static uint8_t  priv_bs2 = 4;
 static uint16_t priv_prescaler = 24;
 
-void CAN_CAN1Init(void);
-void initCAN1parameters(uint8_t bs1, uint8_t bs2, uint16_t prescaler);
-void initializeMessageBoxes(void);
-void CAN1_NVIC_Config(void);
-void sendCANmessage(InterfaceMessage* msg);
-void storeReceivedDataToMessageBox(InterfaceMessage msg);
-void sendCANmessageForUserButton();
+static void initCAN1parameters(uint8_t bs1, uint8_t bs2, uint16_t prescaler);
+static void initializeMessageBoxes(void);
+static void CAN1_NVIC_Config(void);
+static void sendCANmessage(InterfaceMessage* msg);
+static void storeReceivedDataToMessageBox(InterfaceMessage* msg, CanRxMsg* canMsg);
+static void handleReceivedData(void);
+static void handleTransmitData();
 
 void initCAN1parameters(uint8_t bs1, uint8_t bs2, uint16_t prescaler)
 {
@@ -168,7 +168,7 @@ void CAN1_RX0_IRQHandler(void)
 
 	if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceCAN, &msg))
 	{
-		storeReceivedDataToMessageBox(msg);
+		storeReceivedDataToMessageBox(&msg, &receiveMsg);
 	}
 }
 
@@ -176,12 +176,18 @@ void CAN1_RX0_IRQHandler(void)
 /* Stores CAN message data to message box. Every message has its own box.
  * Writes over previous data.
  * NB! Called from interrupt!!!*/
-void storeReceivedDataToMessageBox(InterfaceMessage msg)
+void storeReceivedDataToMessageBox(InterfaceMessage* msg, CanRxMsg* canMsg)
 {
-	if (priv_CANmessageBoxes[msg.packet].flag != CAN_Box_Locked)
+	if (priv_CANmessageBoxes[msg->packet].flag != CAN_Box_Locked)
 	{
-		priv_CANmessageBoxes[msg.packet].msg = msg;
-		priv_CANmessageBoxes[msg.packet].flag = CAN_Box_Rx_New_Data;
+		int i;
+		priv_CANmessageBoxes[msg->packet].msg.id = canMsg->StdId;
+		priv_CANmessageBoxes[msg->packet].msg.length = canMsg->DLC;
+		priv_CANmessageBoxes[msg->packet].msg.period = msg->period;
+		priv_CANmessageBoxes[msg->packet].msg.packet = msg->packet;
+		for ( i = 0; i < canMsg->DLC; i++)
+			priv_CANmessageBoxes[msg->packet].msg.data[i] = canMsg->Data[i];
+		priv_CANmessageBoxes[msg->packet].flag = CAN_Box_Rx_New_Data;
 	}
 }
 
@@ -197,25 +203,15 @@ void handleReceivedData(void)
 		if (priv_CANmessageBoxes[i].flag == CAN_Box_Rx_New_Data)
 		{
 			priv_CANmessageBoxes[i].flag = CAN_Box_Locked;
-			InterfaceHandler_storeReceivedData(&priv_CANmessageBoxes[i].msg);
+			InterfaceHandler_storeReceivedData(&(priv_CANmessageBoxes[i].msg));
 			priv_CANmessageBoxes[i].flag = CAN_Box_Empty;
 		}
 	}
 }
 
-
-void sendCANmessageForUserButton()
+void handleTransmitData(void)
 {
-	if (GPIO_inputValue(USER_BUTTON) == INPUT_ON) {
-		CanTxMsg txMessage;
-
-		txMessage.StdId = 0xC1;
-		txMessage.RTR = CAN_RTR_DATA;
-		txMessage.IDE = CAN_ID_STD;
-		txMessage.DLC = 1;
-		txMessage.Data[0] = 0xAA;
-		CAN_Transmit(CAN1, &txMessage);
-	}
+	InterfaceHandler_transmitData(InterfaceCAN, sendCANmessage, TaskHandler_tableOfTasks[TASK_CAN].period);
 }
 
 
@@ -227,6 +223,6 @@ void CAN_init(void)
 
 void CAN_TASK(void)
 {
-	InterfaceHandler_transmitData(InterfaceCAN, sendCANmessage, TaskHandler_tableOfTasks[TASK_CAN].period);
+	handleTransmitData();
 }
 
