@@ -6,7 +6,8 @@
 enum INITS
 {
 	INIT_GPIO,
-	INIT_VISION
+	INIT_VISION,
+	INIT_CAN
 };
 
 enum TASKS

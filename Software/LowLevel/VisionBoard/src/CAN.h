@@ -8,7 +8,7 @@
 #ifndef CAN_H_
 #define CAN_H_
 
-extern void    CAN_CAN1Init();
+extern void    CAN_init(void);
 extern void    CAN_TASK(void);
 
 #endif /* CAN_H_ */

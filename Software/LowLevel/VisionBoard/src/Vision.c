@@ -1,5 +1,6 @@
 #include "Vision.h"
 #include "stm32f4xx.h"
+#include "DataLayer.h"
 
 #define PIXY_I2C                      	I2C3
 #define PIXY_I2C_CLK                  	RCC_APB1Periph_I2C3
@@ -39,6 +40,7 @@ uint8_t driverReadAck(I2C_TypeDef* I2Cx);
 uint8_t driverReadNack(I2C_TypeDef* I2Cx);
 void driverStop(I2C_TypeDef* I2Cx);
 void findObjectsFromBuffer();
+void setTrackedObjectToDataLayer(VisionObject* obj);
 
 uint8_t priv_receivedData[VISION_BUFFER_SIZE];
 VisionObject priv_objects[MAX_NUM_OF_OBJECTS];
@@ -276,12 +278,24 @@ void findObjectsFromBuffer()
 			priv_objects[objCount].width = priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
 
 			if (checksum == calcChecksum)
+			{
+				setTrackedObjectToDataLayer(&priv_objects[objCount]);
 				objCount++;
+			}
 			state = Sync;
 			break;
 		}
 	}
 	priv_numOfObjects = objCount;
+}
+
+
+void setTrackedObjectToDataLayer(VisionObject* obj)
+{
+	DL_setData(DLParamTrackedObjectX, &(obj->x));
+	DL_setData(DLParamTrackedObjectY, &(obj->y));
+	DL_setData(DLParamTrackedObjectHeight, &(obj->height));
+	DL_setData(DLParamTrackedObjectWidth, &(obj->width));
 }
 
 

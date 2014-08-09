@@ -24,12 +24,13 @@ static uint8_t  priv_bs1 = 7;
 static uint8_t  priv_bs2 = 4;
 static uint16_t priv_prescaler = 24;
 
-
+void CAN_CAN1Init(void);
 void initCAN1parameters(uint8_t bs1, uint8_t bs2, uint16_t prescaler);
 void initializeMessageBoxes(void);
 void CAN1_NVIC_Config(void);
 void sendCANmessage(InterfaceMessage* msg);
 void storeReceivedDataToMessageBox(InterfaceMessage msg);
+void sendCANmessageForUserButton();
 
 void initCAN1parameters(uint8_t bs1, uint8_t bs2, uint16_t prescaler)
 {
@@ -200,6 +201,27 @@ void handleReceivedData(void)
 			priv_CANmessageBoxes[i].flag = CAN_Box_Empty;
 		}
 	}
+}
+
+
+void sendCANmessageForUserButton()
+{
+	if (GPIO_inputValue(USER_BUTTON) == INPUT_ON) {
+		CanTxMsg txMessage;
+
+		txMessage.StdId = 0xC1;
+		txMessage.RTR = CAN_RTR_DATA;
+		txMessage.IDE = CAN_ID_STD;
+		txMessage.DLC = 1;
+		txMessage.Data[0] = 0xAA;
+		CAN_Transmit(CAN1, &txMessage);
+	}
+}
+
+
+void CAN_init(void)
+{
+	CAN_CAN1Init();
 }
 
 
