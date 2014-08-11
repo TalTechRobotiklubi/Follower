@@ -502,8 +502,7 @@ void handleReceiveData(void)
 			case idOK:
 				message.length = USART_RxBuf[tempTail];
 				__disable_irq();
-				if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceUART, &message) ||
-						InterfaceHandler_checkIfReceivedMessageExists(InterfaceUART_CAN, &message) )
+				if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceUART, &message))
 				{
 					calcCrc += message.length;
 					length = message.length;
@@ -600,5 +599,4 @@ void sendUARTmessage(InterfaceMessage* msg)
 void handleTransmitData(void)
 {
 	InterfaceHandler_transmitData(InterfaceUART, sendUARTmessage, TaskHandler_tableOfTasks[TASK_USART].period);
-	InterfaceHandler_transmitData(InterfaceCAN_UART, sendUARTmessage, TaskHandler_tableOfTasks[TASK_USART].period);
 }

@@ -166,7 +166,7 @@ void CAN1_RX0_IRQHandler(void)
 	msg.id = receiveMsg.StdId;
 	msg.length = receiveMsg.DLC;
 
-	if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceCAN_UART, &msg))
+	if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceCAN, &msg))
 	{
 		storeReceivedDataToMessageBox(&msg, &receiveMsg);
 	}
@@ -211,7 +211,7 @@ void handleReceivedData(void)
 
 void handleTransmitData(void)
 {
-	InterfaceHandler_transmitData(InterfaceUART_CAN, sendCANmessage, TaskHandler_tableOfTasks[TASK_CAN].period);
+	InterfaceHandler_transmitData(InterfaceCAN, sendCANmessage, TaskHandler_tableOfTasks[TASK_CAN].period);
 }
 
 

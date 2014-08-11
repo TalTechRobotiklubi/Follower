@@ -17,10 +17,9 @@
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	InterfaceUART_CAN,
-	InterfaceCAN_UART,
-	InterfaceUART,    
-	// Count of items is 3
+	InterfaceCAN, 
+	InterfaceUART,
+	// Count of items is 2
 	NumberOfInterfaces
 }
 Interface;
