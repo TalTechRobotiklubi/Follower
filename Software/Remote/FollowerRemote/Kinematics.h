@@ -44,7 +44,7 @@ private:
     void runAlgorithm();
     void algorithm1();
 
-    static const int ACCELER_RATE = 100;
+    static const int ACCELER_RATE = 75;
 
     Direction       state_;
     int             requestM1_;

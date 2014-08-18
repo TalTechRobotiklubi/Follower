@@ -180,7 +180,7 @@ int Kinematics::calculateNewSpeed(int currentSpeed, int requestedSpeed)
 
 int Kinematics::getsensorerror()
 {
-	int errconst[4] = {-100,-10,10,-100};
+	int errconst[4] = {-50,10,10,50};
 	DLParam senslist[4] = {DLParamDistanceSensor8,DLParamDistanceSensor7,DLParamDistanceSensor1,DLParamDistanceSensor2};
 	int sum = 0;
 	unsigned char sensorvalue;
@@ -190,12 +190,13 @@ int Kinematics::getsensorerror()
 	{
 		dataLayer_->DL_getData(senslist[i], &sensorvalue);
 
-		if ( sensorvalue <= 4 )
+		if ( sensorvalue == 0 )
 		{
 			sensorvalue = 255;
 		}
 
-		sum += errconst[4]*(255-sensorvalue);
+
+		sum += errconst[i]*(255-sensorvalue);
 	}
 
 	return sum;
@@ -213,131 +214,72 @@ void Kinematics::algorithm1()
 	static int last_state = 0;
 	static int speed = 1200;
 
-	//float mms_per_tick = 0.2633663366;
+	int stop_distance = 50;
 
 
-	/*if ((counter / 288) % 2)
-	{
-		motorspeed(1000,1000);
-	}
-	else
-	{
-		motorspeed(-1000,-1000);
-	}
-	*/
-	
-	
-
-	//motorspeed(1000,1000);
-
-	switch (last_state)
-	{
-		case 0:	speed = 1200; break;
-		case 1:	speed -= 25; break;
-		case 2:	speed += 25; break;
-	}
-
-
-	
-	if ((sensorDiagLeft < 150)||(sensorDiagRight < 175)||(sensorLeft < 175)||(sensorRight < 150))
-	{
-		speed -= 25;
-	}
-	
-	if ((sensorDiagLeft < 100)||(sensorDiagRight < 150)||(sensorLeft < 150)||(sensorRight < 100))
-	{
-		speed -= 50;
-	}
-
-	if ((sensorDiagLeft < 80)||(sensorDiagRight < 100)||(sensorLeft < 100)||(sensorRight < 80))
-	{
-		speed -= 75;
-	}
+	static int p,i,d ;
 
     dataLayer_->DL_getData(DLParamDistanceSensor7, &sensorLeft);
     dataLayer_->DL_getData(DLParamDistanceSensor1, &sensorRight);
-
-	if ( sensorLeft <= 4 ) 
-		sensorLeft = 255;
-
-	if ( sensorRight <= 4 ) 
-		sensorRight = 255;
-
 	dataLayer_->DL_getData(DLParamDistanceSensor8, &sensorDiagLeft);
 	dataLayer_->DL_getData(DLParamDistanceSensor2, &sensorDiagRight);
 
-	if ( sensorDiagLeft <= 4 ) 
-		sensorDiagLeft = 255;
 
-	if ( sensorDiagRight <= 4 ) 
-		sensorDiagRight = 255;
-
-	if ((sensorDiagLeft < 50)||(sensorDiagRight < 50)||(sensorLeft < 50)||(sensorRight < 50))
+	if (((sensorDiagLeft <stop_distance)&&(sensorDiagLeft))
+		||((sensorDiagRight < stop_distance)&&(sensorDiagRight))
+		||((sensorLeft < stop_distance)&&(sensorLeft))
+		||((sensorRight < stop_distance)&&(sensorRight)))
 	{
+
 		if (last_state)
 		{
 			counter++;
 		}
+			if (counter & 1)
+			{
+				motorspeed(900,-900);
+			}
+			else
+			{
+				motorspeed(-900,900);
+			}
 
-		if (counter & 1)
-		{
-			motorspeed(600,-600);
-		}
-		else
-		{
-			motorspeed(-600,600);
-		}
 
 		last_state = 0;
+		i = 0;
+		d = 0;
+		p = 0;
 		return;
 	}
 
-		if (speed < 1200)
-		{
-			speed = 1200;
-		}
 
-		if (speed > 5000)
-		{
-			speed = 5000;
-		}
+	d = p;
 
-	if (sensorDiagLeft < sensorDiagRight)
+	p = getsensorerror()/25;
+	
+	if (p > 1000)
 	{
+		p = 1000;
+	}
 
-		if( sensorDiagLeft < 100)
-		{
-			motorspeed(speed,speed-int(speed/float(2+speed/1500)));
-			last_state = 1;
-		}
-		else
-		{
-			motorspeed(speed,speed);
-			last_state = 2;
-		}
-	}
-	else
+	if (p < -1000)
 	{
-		if( sensorDiagRight < 100)
-		{
-			last_state = 1;
-			motorspeed(speed-int(speed/float(2+speed/1500)),speed);
-		}
-		else
-		{
-			last_state = 2;
-			motorspeed(speed,speed);
-		}
+		p = -1000;
 	}
-	/*else if (sensorDiagLeft > 150)
+	d = p-d;
+
+	speed = 1200;//2000-abs(p);
+
+	if ((i < 50000)&&(i >-50000))
 	{
-		motorspeed(1200,600);
+		i += p;
 	}
-    else 
-	{
-		motorspeed(1200,1200);
-    }
-	*/
+
+	int pid = p;//+i/75+d/4;
+
+	motorspeed(speed-pid,speed+pid);
+	last_state = 1;
+
 
 
 
