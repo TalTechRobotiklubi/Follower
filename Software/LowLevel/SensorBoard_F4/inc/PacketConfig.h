@@ -12,12 +12,6 @@
 #include "Typedef.h"
 #include "DataLayerConfig.h"
 
-#define ENABLE_UART_INTERFACE 1
-#define ENABLE_CAN_INTERFACE  1
-#define ENABLE_CAN_RECEIVE   1
-#define ENABLE_CAN_TRANSMIT  1
-#define ENABLE_GATEWAYING    1
-
 // ----------------------------------------------------------------------------
 // Packets enumeration
 // ----------------------------------------------------------------------------
@@ -25,7 +19,7 @@ typedef enum
 {
 	PacketMotor1Status,    // 0
 	PacketMotor2Status,    // 1
-	PacketMotor3Status,    // 2
+	PacketTrackedObject,   // 2
 	PacketMotorSpeeds,     // 3
 	PacketMotorPID,        // 4
 	PacketDistanceSensors, // 5
@@ -59,7 +53,7 @@ PacketDescriptor;
 // ----------------------------------------------------------------------------
 // Export packet descriptors
 // ----------------------------------------------------------------------------
-extern const PacketDescriptor psPacketDescriptorList[NumberOfPackets];
+extern PacketDescriptor psPacketDescriptorList[NumberOfPackets];
 
 #endif
 

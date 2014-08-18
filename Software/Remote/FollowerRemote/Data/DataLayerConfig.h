@@ -28,29 +28,27 @@ typedef enum
 	DLParamMotor2DriverTemp,    // 9
 	DLParamMotor2BridgeAFault,  // 10
 	DLParamMotor2BridgeBFault,  // 11
-	DLParamMotor3ActualSpeed,   // 12
-	DLParamMotor3EncoderClicks, // 13
-	DLParamMotor3CurrentDraw,   // 14
-	DLParamMotor3DriverTemp,    // 15
-	DLParamMotor3BridgeAFault,  // 16
-	DLParamMotor3BridgeBFault,  // 17
-	DLParamDistanceSensor1,     // 18
-	DLParamDistanceSensor2,     // 19
-	DLParamDistanceSensor3,     // 20
-	DLParamDistanceSensor4,     // 21
-	DLParamDistanceSensor5,     // 22
-	DLParamDistanceSensor6,     // 23
-	DLParamDistanceSensor7,     // 24
-	DLParamDistanceSensor8,     // 25
-	DLParamAccelerationX,       // 26
-	DLParamAccelerationY,       // 27
-	DLParamAccelerationZ,       // 28
-	DLParamMotor1RequestSpeed,  // 29
-	DLParamMotor2RequestSpeed,  // 30
-	DLParamMotor3RequestSpeed,  // 31
-	DLParamConstantAddress,     // 32
-	DLParamConstantValue,       // 33
-	// Count of items is 34
+	DLParamDistanceSensor1,     // 12
+	DLParamDistanceSensor2,     // 13
+	DLParamDistanceSensor3,     // 14
+	DLParamDistanceSensor4,     // 15
+	DLParamDistanceSensor5,     // 16
+	DLParamDistanceSensor6,     // 17
+	DLParamDistanceSensor7,     // 18
+	DLParamDistanceSensor8,     // 19
+	DLParamAccelerationX,       // 20
+	DLParamAccelerationY,       // 21
+	DLParamAccelerationZ,       // 22
+	DLParamTrackedObjectX,      // 23
+	DLParamTrackedObjectY,      // 24
+	DLParamTrackedObjectHeight, // 25
+	DLParamTrackedObjectWidth,  // 26
+	DLParamMotor1RequestSpeed,  // 27
+	DLParamMotor2RequestSpeed,  // 28
+	DLParamMotor3RequestSpeed,  // 29
+	DLParamConstantAddress,     // 30
+	DLParamConstantValue,       // 31
+	// Count of items is 32
 	DLNumberOfParams
 }
 DLParam;

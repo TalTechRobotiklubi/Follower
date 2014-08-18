@@ -1,7 +1,7 @@
-#include "PacketHandler.h"
 #include "DataLayer.h"
 #include "TaskHandler.h"
 
+#if 0
 void checkTimeouts(uint8_t numOfPackets, PacketWithIndex *packet);
 void setDataReadyToSend(uint8_t numOfPackets, PacketWithIndex *packet);
 
@@ -51,5 +51,5 @@ void checkTimeouts(uint8_t numOfPackets, PacketWithIndex *packet)
 	}
 #endif
 }
-
+#endif
 
