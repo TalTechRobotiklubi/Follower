@@ -25,6 +25,7 @@ protected:
 	virtual void mousePressEvent(QMouseEvent *event);
 	//void mouseReleaseEvent(QMouseEvent *event);
 	virtual void mouseMoveEvent(QMouseEvent *event);
+	virtual void closeEvent(QCloseEvent * event);
 
 signals:
     void startCommunication(void);

@@ -33,6 +33,11 @@ FollowerUi::FollowerUi(Follower *robot)
 	ui.graphicsView->setRenderHint(QPainter::Antialiasing);
 	scene_->addItem(robotgui_);
 
+	qDebug() << "Liikumine - WASD";
+	qDebug() << "Algoritm start - 1,2";
+	qDebug() << "Algoritm stop - P";
+	qDebug() << "Kiirus juurde - I";
+	qDebug() << "Kiirus maha - O";
 }
 
 FollowerUi::~FollowerUi()
@@ -178,8 +183,11 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
     case Qt::Key_O:
         ui.sb_setSpeed->setValue(setSpeed - 100);
         break;
-    case Qt::Key_R:  // run
-        kinematics_->startAlgorithm();
+    case Qt::Key_1:  // run
+        kinematics_->startAlgorithm(1);
+        break;
+	case Qt::Key_2:  // run
+        kinematics_->startAlgorithm(2);
         break;
     case Qt::Key_P:  // stop
         kinematics_->stopAlgorithm();
@@ -222,4 +230,12 @@ void FollowerUi::mousePressEvent(QMouseEvent *event)
 void FollowerUi::mouseMoveEvent(QMouseEvent *event)
 {
 //ui.lbl_andur1->setText(QString("move %1 %2").arg(event->x()).arg(event->y()));
+}
+
+void FollowerUi::closeEvent(QCloseEvent * event)
+{
+	if (workerThread_->isRunning())
+    {
+        emit stopCommunication();
+	}
 }

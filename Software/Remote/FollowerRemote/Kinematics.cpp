@@ -12,6 +12,7 @@ Kinematics::Kinematics(DataLayerBase* dataLayer)
     dataLayer_ = dataLayer;
     connect(&timer_, SIGNAL(timeout()), this, SLOT(timerUpdate()));
     running_ = false;
+	currentAlgorithm = 1;
 }
 
 Kinematics::~Kinematics(void)
@@ -109,24 +110,30 @@ void Kinematics::stop()
     calculateAndSetSpeeds();
 }
 
-void Kinematics::startAlgorithm()
+void Kinematics::startAlgorithm(int algorithmNum)
 {
     running_ = true;
-    qDebug() << "Algorithm start";
+	currentAlgorithm = algorithmNum;
+    qDebug() << "Algorithm"<< currentAlgorithm <<" start";
 }
 
 void Kinematics::stopAlgorithm()
 {   
     running_ = false;
     stop();
-    qDebug() << "Algorithm stop";
+    qDebug() << "Algorithm"<< currentAlgorithm <<" stop";
 }
 
 void Kinematics::runAlgorithm()
 {
     if (running_)
     {
-        algorithm1();
+		switch (currentAlgorithm)
+		{
+			case 1: algorithm1(); break;
+			case 2: algorithm2(); break;
+		}
+			
     }
 }
 
@@ -225,6 +232,7 @@ void Kinematics::algorithm1()
 	dataLayer_->DL_getData(DLParamDistanceSensor2, &sensorDiagRight);
 
 
+
 	if (((sensorDiagLeft <stop_distance)&&(sensorDiagLeft))
 		||((sensorDiagRight < stop_distance)&&(sensorDiagRight))
 		||((sensorLeft < stop_distance)&&(sensorLeft))
@@ -280,7 +288,20 @@ void Kinematics::algorithm1()
 	motorspeed(speed-pid,speed+pid);
 	last_state = 1;
 
+}
 
+void Kinematics::algorithm2()
+{
 
+	uint16_t TrackedObjectX;
+	uint16_t TrackedObjectY;
+	uint16_t TrackedObjectHeight;
+	uint16_t TrackedObjectWidth;
 
+	dataLayer_->DL_getData(DLParamTrackedObjectX, &TrackedObjectX);
+	dataLayer_->DL_getData(DLParamTrackedObjectY, &TrackedObjectY);
+	dataLayer_->DL_getData(DLParamTrackedObjectHeight, &TrackedObjectHeight);
+	dataLayer_->DL_getData(DLParamTrackedObjectWidth, &TrackedObjectWidth);
+
+	qDebug() << "TrackedObject X Y H W"<< TrackedObjectX << " "<< TrackedObjectY <<" "<< TrackedObjectHeight <<" "<< TrackedObjectWidth ;
 }

@@ -30,7 +30,7 @@ public:
     void right(int speed);
     void left(int speed);
     void stop();
-    void startAlgorithm();
+    void startAlgorithm(int algorithmNum);
     void stopAlgorithm();
 	void motorspeed(int speedleft,int speedright);
 	int getsensorerror();
@@ -43,6 +43,7 @@ private:
 
     void runAlgorithm();
     void algorithm1();
+	void algorithm2();
 
     static const int ACCELER_RATE = 75;
 
@@ -54,5 +55,6 @@ private:
     DataLayerBase*  dataLayer_;
     QTimer          timer_;
     bool            running_;
+	int				currentAlgorithm;
 };
 
