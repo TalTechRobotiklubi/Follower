@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "Siilipoeg", "Siilipoeg\Siilipoeg.cproj", "{3F5AE015-59D9-4D45-A8AE-3E30F8414649}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3F5AE015-59D9-4D45-A8AE-3E30F8414649}.Debug|AVR.ActiveCfg = Debug|AVR
+		{3F5AE015-59D9-4D45-A8AE-3E30F8414649}.Debug|AVR.Build.0 = Debug|AVR
+		{3F5AE015-59D9-4D45-A8AE-3E30F8414649}.Release|AVR.ActiveCfg = Release|AVR
+		{3F5AE015-59D9-4D45-A8AE-3E30F8414649}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
