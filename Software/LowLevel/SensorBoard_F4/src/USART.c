@@ -39,13 +39,9 @@ typedef enum
 MessageAnalyseState;
 
 /*function declarations*/
-GPIO_IdDef UART_GPIO_init(USART_TypeDef *uartX);
-void UART_IRQ_init(GPIO_IdDef);
-uint32_t intToASCIIchar(int32_t value, uint8_t *string);
-void analyzeRecieveBuffer(void);
-void sendUARTpackages(void);
-
-
+static GPIO_IdDef UART_GPIO_init(USART_TypeDef *uartX);
+static void UART_IRQ_init(GPIO_IdDef);
+static uint32_t intToASCIIchar(int32_t value, uint8_t *string);
 static void handleReceiveData(void);
 static void sendUARTmessage(InterfaceMessage* msg);
 static void handleTransmitData(void);

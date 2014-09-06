@@ -19,7 +19,7 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
  *With adding new task check that id is corresponding to enum value.*/
 const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		/*id              	  period (ms)   offset (ms)   taskPointer */
-		{TASK_VISION,			   20,			0,			Vision_TASK      	    },
+		{TASK_VISION,			  400,			0,			Vision_TASK      	    },
 		{TASK_CAN,			       20,		   10,			CAN_TASK      	        },
 		{TASK_LED,				  400,			0,			GPIO_TASK_blinkLED	    },
 };
