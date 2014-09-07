@@ -28,7 +28,7 @@ protected:
 	virtual void closeEvent(QCloseEvent * event);
 
 signals:
-    void startCommunication(void);
+    void startCommunication(QString nPort);
     void stopCommunication(void);
     void newCommands(void);
 
@@ -39,10 +39,12 @@ public slots:
     void stopCommStatus(bool status);
     //void newUiData(SpineData* spineData);
     void newUiData();
+	void UpdatePortList();
+
 
 private:
     void sendCmd( int w1, int  w2, int w3 );
- 
+	
     Ui::FollowerUiClass     ui;
     WorkerThreadBase*		workerThread_;
     DataLayerBase*          dataLayer_;

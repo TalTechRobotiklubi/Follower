@@ -21,21 +21,29 @@ CSerial::~CSerial()
 
 }
 
-BOOL CSerial::Open( int nPort, int nBaud )
+BOOL CSerial::Open(wchar_t *nPort, int nBaud )
 {
     TCHAR szComParams[50];
 	DCB dcb;
-    wchar_t portName[6] = L"COM";
+    wchar_t portName[6];
 
 	if( m_bOpened ) return( TRUE );
 	
-	if(nPort > 99)
+/*	if(nPort > 99)
 	{
 		return false;
 	}
+	*/
+	int i = 0;
+	// copy nPort to portname
+	while ((i < 5) && (nPort[i] > 0))
+	{
+		portName[i] = nPort[i];
+		i++;
+	}
 
-	_itow_s(nPort, portName + 3, 3, 10);
-	portName[5] = 0; // just in case
+//	_itow_s(nPort, portName + 3, 3, 10);
+	portName[i] = 0; // just in case
 
 	m_hIDComDev = CreateFile( portName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL );
 	if( m_hIDComDev == NULL ) return( FALSE );
@@ -51,7 +59,7 @@ BOOL CSerial::Open( int nPort, int nBaud )
 	CommTimeOuts.WriteTotalTimeoutConstant = 5000;
 	SetCommTimeouts( m_hIDComDev, &CommTimeOuts );
 
-	wsprintf( szComParams, (LPCWSTR)"COM%d:%d,n,8,1", nPort, nBaud );
+	wsprintf( szComParams, (LPCWSTR)"%s:%d,n,8,1",portName, nBaud );
 
 	m_OverlappedRead.hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 	m_OverlappedWrite.hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );

@@ -2,6 +2,7 @@
 #include "CSpineComm.h"
 #include "DataLayerBase.h"
 #include <qdebug.h>
+#include <QString>
 
 WorkerObjectBase::WorkerObjectBase(SpineComm* spineComm)
     : spineComm_(spineComm), running_(false)
@@ -17,10 +18,27 @@ WorkerObjectBase::~WorkerObjectBase(void)
 
 
 
-void WorkerObjectBase::startCommunication(void)
+void WorkerObjectBase::startCommunication(QString nPort)
 {
     onStart();
-    if (spineComm_->Open(5))
+
+	wchar_t portName[6];
+
+	if (nPort.length() > 5)
+	{
+		nPort.right(5);
+	}
+	
+	int i;
+
+	for (i = 0 ; i < nPort.length() ; i++)
+	{
+		portName[i] = wchar_t (nPort.at(i).unicode());
+	}
+
+	portName[i] = 0;
+
+    if (spineComm_->Open(portName))
     {   
         qDebug() << "Open success";
         timerId_ = startTimer(spineComm_->GetPeriodInMs());

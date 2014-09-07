@@ -21,7 +21,7 @@ public:
 	CSerial();
 	~CSerial();
 
-	BOOL Open( int nPort = 2, int nBaud = 115200 );
+	BOOL Open( wchar_t *nPort, int nBaud = 115200 );
 	BOOL Close( void );
 
 	int ReadData( void *, int );

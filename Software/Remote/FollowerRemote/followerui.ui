@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>FollowerUiClass</class>
  <widget class="QMainWindow" name="FollowerUiClass">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -22,6 +25,16 @@
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QPushButton" name="BtnSeartchPorts">
+          <property name="text">
+           <string>Otsi seadmeid</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="CBPort"/>
+        </item>
         <item>
          <widget class="QPushButton" name="btnConnect">
           <property name="text">

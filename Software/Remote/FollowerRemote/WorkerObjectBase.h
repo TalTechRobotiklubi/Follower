@@ -21,7 +21,7 @@ public:
 
 public slots:
     // signals to show if start/stop was successful or not
-    void startCommunication(void);
+    void startCommunication(QString nPort);
     void stopCommunication(void);
     void newCommandsToSend();
 

@@ -7,6 +7,9 @@
 #include "TRobot.h"
 #include <qdebug.h>
 
+#include <QtSerialPort/QSerialPortInfo>
+#include <QList>
+
 
 FollowerUi::FollowerUi(Follower *robot)
 	: QMainWindow()
@@ -18,13 +21,16 @@ FollowerUi::FollowerUi(Follower *robot)
     kinematics_ = robot->getKinematics();
 
     workerObject_->moveToThread(workerThread_);
-    connect(this, SIGNAL(startCommunication()), workerObject_, SLOT(startCommunication()));
+    connect(this, SIGNAL(startCommunication(QString)), workerObject_, SLOT(startCommunication(QString)));
     connect(workerObject_, SIGNAL(startStatus(bool)), this, SLOT(startCommStatus(bool)));
     connect(workerObject_, SIGNAL(newDataReceived()), this, SLOT(newUiData()));
     connect(this, SIGNAL(newCommands()), workerObject_, SLOT(newCommandsToSend()));
     connect(this, SIGNAL(stopCommunication()), workerObject_, SLOT(stopCommunication()));
     connect(workerObject_, SIGNAL(stopStatus(bool)), this, SLOT(stopCommStatus(bool)));
     connect(ui.btnConnect, SIGNAL(clicked()), this, SLOT(connectSpine()));
+	connect(ui.BtnSeartchPorts, SIGNAL(clicked()), this, SLOT(UpdatePortList()));
+
+
 
 	robotgui_ = new TRobot();
 	scene_ = new QGraphicsScene(this);
@@ -38,6 +44,11 @@ FollowerUi::FollowerUi(Follower *robot)
 	qDebug() << "Algoritm stop - P";
 	qDebug() << "Kiirus juurde - I";
 	qDebug() << "Kiirus maha - O";
+
+	UpdatePortList();
+
+	
+
 }
 
 FollowerUi::~FollowerUi()
@@ -52,15 +63,16 @@ FollowerUi::~FollowerUi()
 void FollowerUi::connectSpine() {
 
 	if (workerThread_->isRunning())
-    {
-        emit stopCommunication();
+	{
+		emit stopCommunication();
 	}
-    else
-    {
+	else
+	{
 		workerThread_->start();
-        // open communication
-        emit startCommunication();
+		// open communication	
+		emit startCommunication(ui.CBPort->currentText());
 	}
+	
 }
 
 void FollowerUi::startCommStatus(bool status)
@@ -74,7 +86,7 @@ void FollowerUi::startCommStatus(bool status)
     else
     {
         // set feedback to user that connection was ok
-        ui.btnConnect->setText("Disconnect");
+        ui.btnConnect->setText(QString("Disconnect"));
         // start timer in kinematics
         kinematics_->startTimer();
     }
@@ -89,7 +101,7 @@ void FollowerUi::stopCommStatus(bool status)
     workerThread_->exit();
     workerThread_->wait();
     // set feedback to user that disconnection was ok
-    ui.btnConnect->setText("Connect");
+    ui.btnConnect->setText(QString("Connect"));
 }
 
 
@@ -239,3 +251,23 @@ void FollowerUi::closeEvent(QCloseEvent * event)
         emit stopCommunication();
 	}
 }
+
+void FollowerUi::UpdatePortList()
+{
+
+	QList<QSerialPortInfo> list = QSerialPortInfo::availablePorts(); 
+	QSerialPortInfo port;
+	int i;
+
+	ui.CBPort->clear();
+
+	if (list.count() > 0)
+	{
+		for (i = 0; i < list.count();i++)
+		{
+			port = list[i];
+			ui.CBPort->addItem(port.portName());
+		}
+	}
+}
+
