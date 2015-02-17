@@ -452,13 +452,12 @@ static void LIS302DL_LowLevel_Init(void)
   */
 static uint8_t LIS302DL_SendByte(uint8_t byte)
 {
-  /* Loop while DR register in not empty */
+  /* Loop while DR register in not emplty */
   LIS302DLTimeout = LIS302DL_FLAG_TIMEOUT;
   while (SPI_I2S_GetFlagStatus(LIS302DL_SPI, SPI_I2S_FLAG_TXE) == RESET)
   {
-#ifdef USE_DEFAULT_TIMEOUT_CALLBACK
-    if((LIS302DLTimeout--) == 0) return LIS302DL_TIMEOUT_UserCallback();
-#endif
+    if((LIS302DLTimeout--) == 0)
+    	return LIS302DL_TIMEOUT_UserCallback();
   }
   
   /* Send a Byte through the SPI peripheral */
@@ -468,9 +467,8 @@ static uint8_t LIS302DL_SendByte(uint8_t byte)
   LIS302DLTimeout = LIS302DL_FLAG_TIMEOUT;
   while (SPI_I2S_GetFlagStatus(LIS302DL_SPI, SPI_I2S_FLAG_RXNE) == RESET)
   {
-#ifdef USE_DEFAULT_TIMEOUT_CALLBACK
-    if((LIS302DLTimeout--) == 0) return LIS302DL_TIMEOUT_UserCallback();
-#endif
+    if((LIS302DLTimeout--) == 0)
+    	return LIS302DL_TIMEOUT_UserCallback();
   }
   
   /* Return the Byte read from the SPI bus */
@@ -489,6 +487,11 @@ uint32_t LIS302DL_TIMEOUT_UserCallback(void)
   while (1)
   {   
   }
+}
+#else
+uint32_t LIS302DL_TIMEOUT_UserCallback(void)
+{
+  return 0;
 }
 #endif /* USE_DEFAULT_TIMEOUT_CALLBACK */
 
