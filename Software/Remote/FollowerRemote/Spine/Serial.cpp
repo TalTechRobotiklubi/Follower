@@ -23,9 +23,9 @@ CSerial::~CSerial()
 
 BOOL CSerial::Open(wchar_t *nPort, int nBaud )
 {
-    TCHAR szComParams[50];
+  //TCHAR szComParams[50];
 	DCB dcb;
-    wchar_t portName[6];
+  wchar_t portName[6];
 
 	if( m_bOpened ) return( TRUE );
 	
@@ -59,7 +59,7 @@ BOOL CSerial::Open(wchar_t *nPort, int nBaud )
 	CommTimeOuts.WriteTotalTimeoutConstant = 5000;
 	SetCommTimeouts( m_hIDComDev, &CommTimeOuts );
 
-	wsprintf( szComParams, (LPCWSTR)"%s:%d,n,8,1",portName, nBaud );
+  //wsprintf( szComParams, (LPCWSTR)"%s:%d,n,8,1",portName, nBaud );
 
 	m_OverlappedRead.hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 	m_OverlappedWrite.hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
