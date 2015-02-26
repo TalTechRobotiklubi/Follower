@@ -266,16 +266,16 @@ void findObjectsFromBuffer()
 		case Ycord:
 			calcChecksum += priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
 			priv_objects[objCount].y = priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
-			state = Height;
-			break;
-		case Height:
-			calcChecksum += priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
-			priv_objects[objCount].height = priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
 			state = Width;
 			break;
 		case Width:
 			calcChecksum += priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
 			priv_objects[objCount].width = priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
+			state = Height;
+			break;
+		case Height:
+			calcChecksum += priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
+			priv_objects[objCount].height = priv_receivedData[i] + (priv_receivedData[i + 1] << 8);
 
 			if (checksum == calcChecksum)
 			{
