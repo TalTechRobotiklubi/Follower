@@ -82,6 +82,7 @@ void nullifyObjects()
 		priv_objects[i].height = 0;
 		priv_objects[i].width = 0;
 	}
+	setTrackedObjectToDataLayer(&priv_objects[0]);
 }
 
 
@@ -232,6 +233,7 @@ void findObjectsFromBuffer()
 	uint16_t checksum = 0;
 	uint16_t calcChecksum = 0;
 	uint8_t objCount = 0;
+	uint8_t endLoop = 0;
 
 	int i = 0;
 	for ( ; i < VISION_BUFFER_SIZE; i = i + 2)
@@ -280,11 +282,15 @@ void findObjectsFromBuffer()
 			if (checksum == calcChecksum)
 			{
 				setTrackedObjectToDataLayer(&priv_objects[objCount]);
-				objCount++;
+				++objCount;
+				if (objCount >= 4)
+					endLoop = 1;
 			}
 			state = Sync;
 			break;
 		}
+		if(endLoop)
+			break;
 	}
 	priv_numOfObjects = objCount;
 }

@@ -303,5 +303,6 @@ void Kinematics::algorithm2()
 	dataLayer_->DL_getData(DLParamTrackedObjectHeight, &TrackedObjectHeight);
 	dataLayer_->DL_getData(DLParamTrackedObjectWidth, &TrackedObjectWidth);
 
-	qDebug() << "TrackedObject X Y H W"<< TrackedObjectX << " "<< TrackedObjectY <<" "<< TrackedObjectHeight <<" "<< TrackedObjectWidth ;
+  qDebug() << "TrackedObject X Y H W"<< TrackedObjectX << TrackedObjectY
+           << TrackedObjectHeight << TrackedObjectWidth ;
 }
