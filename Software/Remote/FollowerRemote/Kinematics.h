@@ -4,27 +4,17 @@
 #include <qobject.h>
 
 class DataLayerBase;
+class IAlgorithm;
 
 class Kinematics : public QObject
 {
     Q_OBJECT
 public:
-    enum Direction
-    {
-        Forward,
-        Backward,
-        Right,
-        Left,
-        Stop
-    };
-
     Kinematics(DataLayerBase* dataLayer);
     ~Kinematics(void);
 
     void startTimer();
     void stopTimer();
-
-    //void move(Direction direction, int speed);
     void forward(int speed);
     void backward(int speed);
     void right(int speed);
@@ -32,12 +22,11 @@ public:
     void stop();
     void startAlgorithm(int algorithmNum);
     void stopAlgorithm();
-	void motorspeed(int speedleft,int speedright);
-	int getsensorerror();
 
 public slots:
     void timerUpdate();
 private:
+    void setMotorSpeeds(int speedleft,int speedright);
     void calculateAndSetSpeeds();
     int calculateNewSpeed(int currentSpeed, int requestedSpeed);
 
@@ -47,7 +36,6 @@ private:
 
     static const int ACCELER_RATE = 75;
 
-    Direction       state_;
     int             requestM1_;
     int             requestM2_;
     int             currentM1_;
@@ -55,6 +43,6 @@ private:
     DataLayerBase*  dataLayer_;
     QTimer          timer_;
     bool            running_;
-	int				currentAlgorithm;
+    IAlgorithm*     algorithm_;
 };
 

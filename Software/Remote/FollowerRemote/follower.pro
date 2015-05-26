@@ -27,7 +27,10 @@ SOURCES += \
     Data/PacketHandler.cpp \
     Data/Typedef.cpp \
     Spine/Serial.cpp \
-    Spine/SpineCommCAN.cpp
+    Spine/SpineCommCAN.cpp \
+    Algorithms/algorithmbuilder.cpp \
+    Algorithms/algorithmwander.cpp \
+    Algorithms/algorithmtrack.cpp
 
 HEADERS  +=  \
     CANWorkerThread.h \
@@ -48,11 +51,16 @@ HEADERS  +=  \
     Data/Typedef.h \
     Spine/CSpineComm.h \
     Spine/Serial.h \
-    Spine/SpineCommCAN.h
+    Spine/SpineCommCAN.h \
+    Algorithms/ialgorithm.h \
+    Algorithms/algorithmbuilder.h \
+    Algorithms/algorithmwander.h \
+    Algorithms/algorithmtrack.h
 
 INCLUDEPATH += \
 	 ./Data \
-	 ./Spine 
+     ./Spine \
+     ./Algorithms
 
 FORMS    += \
     followerui.ui
