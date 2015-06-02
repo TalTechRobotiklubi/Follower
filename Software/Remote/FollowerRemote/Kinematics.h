@@ -29,10 +29,7 @@ private:
     void setMotorSpeeds(int speedleft,int speedright);
     void calculateAndSetSpeeds();
     int calculateNewSpeed(int currentSpeed, int requestedSpeed);
-
     void runAlgorithm();
-    void algorithm1();
-	void algorithm2();
 
     static const int ACCELER_RATE = 75;
 
