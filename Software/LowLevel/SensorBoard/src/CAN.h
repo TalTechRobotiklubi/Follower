@@ -10,7 +10,7 @@
 
 #include "stdint.h"
 
-extern void    CAN_CAN1Init();
+extern void    CAN_init();
 extern void    CAN_TASK(void);
 /*interrupt handler*/
 //void CAN1_RX0_IRQn(void);

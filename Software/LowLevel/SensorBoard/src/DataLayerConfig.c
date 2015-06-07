@@ -13,7 +13,7 @@
 // Values
 // ----------------------------------------------------------------------------
 Bool  pDLValueBool[4];
-U8    pDLValueU8[12];
+U8    pDLValueU8[13];
 S8    pDLValueS8[3];
 U16   pDLValueU16[4];
 S16   pDLValueS16[7];
@@ -55,6 +55,7 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* DistanceSensor8     */ { TypeU8,   &pDLValueU8[11]  },
 	/* AccelerationX       */ { TypeS8,   &pDLValueS8[0]   },
 	/* AccelerationY       */ { TypeS8,   &pDLValueS8[1]   },
-	/* AccelerationZ       */ { TypeS8,   &pDLValueS8[2]   }
+	/* AccelerationZ       */ { TypeS8,   &pDLValueS8[2]   },
+	/* DepthArray          */ { TypeU8,   &pDLValueU8[12]  }
 };
 

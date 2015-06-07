@@ -91,6 +91,14 @@ const PacketParameter psPacketAccelerationParameterList[3] =
 };
 
 // ----------------------------------------------------------------------------
+// Packet "DepthArray" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter psPacketDepthArrayParameterList[1] = 
+{
+	{ DLParamDepthArray, 0, 8 }
+};
+
+// ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
 PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
@@ -101,7 +109,8 @@ PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
 	/* MotorSpeeds     */ { 0xD0, -1, psPacketMotorSpeedsParameterList,     3, 6 },
 	/* MotorPID        */ { 0xD4, -1, psPacketMotorPIDParameterList,        2, 8 },
 	/* DistanceSensors */ { 0xF0, -1, psPacketDistanceSensorsParameterList, 8, 8 },
-	/* Acceleration    */ { 0xF1, -1, psPacketAccelerationParameterList,    3, 3 }
+	/* Acceleration    */ { 0xF1, -1, psPacketAccelerationParameterList,    3, 3 },
+    /* DepthArray      */ { 0xC1, -1, psPacketDepthArrayParameterList,      1, 1 }
 };
 #define NUMBER_OF_PACKETS (sizeof(psPacketDescriptorList)/sizeof(Packet))
 

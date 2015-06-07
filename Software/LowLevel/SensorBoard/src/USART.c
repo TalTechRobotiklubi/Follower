@@ -39,47 +39,52 @@ typedef enum
 MessageAnalyseState;
 
 /*function declarations*/
-static GPIO_IdDef UART_GPIO_init(USART_TypeDef *uartX);
-static void UART_IRQ_init(GPIO_IdDef);
-static uint32_t intToASCIIchar(int32_t value, uint8_t *string);
-static void handleReceiveData(void);
-static void sendUARTmessage(InterfaceMessage* msg);
+static void USARTx_init(USART_TypeDef *uartX);
+static GPIO_IdDef UARTx_GPIO_init(USART_TypeDef *uartX);
+static void UARTx_IRQ_init(GPIO_IdDef);
+static void UARTxBuffersInit(USART_TypeDef *uartX);
+static void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, uint8_t* head, uint8_t* tail);
+static void sendMessageToUSART2(InterfaceMessage* msg);
 static void handleTransmitData(void);
+static Interface findInterface(USART_TypeDef *uartX);
 
-//Rx buffer
-static unsigned char USART_RxBuf[USART_RX_BUFFER_SIZE];
-static volatile uint8_t USART_RxHead;
-static volatile uint8_t USART_RxTail;
-static volatile uint8_t USART_RxOverflow;
+//USART2 Rx buffer
+static unsigned char priv_USART2_RxBuf[USART_RX_BUFFER_SIZE];
+static uint8_t priv_USART2_RxHead;
+static uint8_t priv_USART2_RxTail;
+static volatile uint8_t priv_USART2_RxOverflow;
 
-//Tx buffer
-static unsigned char USART_TxBuf[USART_TX_BUFFER_SIZE];
-static volatile uint8_t USART_TxHead;
-static volatile uint8_t USART_TxTail;
+//UART4 Rx buffer
+static unsigned char priv_UART4_RxBuf[USART_RX_BUFFER_SIZE];
+static uint8_t priv_UART4_RxHead;
+static uint8_t priv_UART4_RxTail;
+static volatile uint8_t priv_UART4_RxOverflow;
+
+//USART2 Tx buffer
+static unsigned char priv_USART2_TxBuf[USART_TX_BUFFER_SIZE];
+static volatile uint8_t priv_USART2_TxHead;
+static volatile uint8_t priv_USART2_TxTail;
+
+//UART4 Tx buffer
+static unsigned char priv_UART4_TxBuf[USART_TX_BUFFER_SIZE];
+static volatile uint8_t priv_UART4_TxHead;
+static volatile uint8_t priv_UART4_TxTail;
 
 USART_TypeDef *activeUART = UART4; // from default set UART4 as active
 
 
 // initialization of USART/UART
-void USART_init(USART_TypeDef *uartX)
+void USARTx_init(USART_TypeDef *uartX)
 {
 	GPIO_IdDef io;
 
-	io = UART_GPIO_init(uartX);
+	io = UARTx_GPIO_init(uartX);
 	if (io == NUM_OF_GPIOS)
 	{
 		return;
 	}
-	UART_IRQ_init(io);
-	USART_RxTail = 0;
-	USART_RxHead = 0;
-	USART_TxTail = 0;
-	USART_TxHead = 0;
-	int i;
-	for(i=0;i<USART_TX_BUFFER_SIZE;i++)
-	{
-		USART_TxBuf[i]='a';
-	}
+	UARTx_IRQ_init(io);
+	UARTxBuffersInit(uartX);
 	USART_InitTypeDef  USART_InitStruct;
 	//Configure 8N1 UART with 115200 baud rate
 	USART_InitStruct.USART_BaudRate = 115200;
@@ -101,7 +106,7 @@ void USART_init(USART_TypeDef *uartX)
 
 
 // initialize UARTx GPIO pins
-GPIO_IdDef UART_GPIO_init(USART_TypeDef *uartX)
+GPIO_IdDef UARTx_GPIO_init(USART_TypeDef *uartX)
 {
 	GPIO_InitTypeDef GPIO_InitStruct;
 	GPIO_IdDef ioRx;
@@ -151,7 +156,7 @@ GPIO_IdDef UART_GPIO_init(USART_TypeDef *uartX)
 	return ioRx;
 }
 
-void UART_IRQ_init(GPIO_IdDef io)
+void UARTx_IRQ_init(GPIO_IdDef io)
 {
 	NVIC_InitTypeDef NVIC_InitStruct;
 
@@ -165,138 +170,55 @@ void UART_IRQ_init(GPIO_IdDef io)
 
 }
 
-uint8_t USART_DataInRxBuffer(void)
+void UARTxBuffersInit(USART_TypeDef *uartX)
 {
-	//Return 0 if receive buffer is empty
-	return (USART_RxHead != USART_RxTail);
+	if (uartX == USART2)
+	{
+		priv_USART2_RxTail = 0;
+		priv_USART2_RxHead = 0;
+		priv_USART2_TxTail = 0;
+		priv_USART2_TxHead = 0;
+		int i;
+		for(i = 0; i < USART_TX_BUFFER_SIZE; i++)
+			priv_USART2_TxBuf[i]='a';
+	}
+	else if (uartX == UART4)
+	{
+		priv_UART4_RxTail = 0;
+		priv_UART4_RxHead = 0;
+		priv_UART4_TxTail = 0;
+		priv_UART4_TxHead = 0;
+		int i;
+		for(i = 0; i < USART_TX_BUFFER_SIZE; i++)
+			priv_UART4_TxBuf[i]='a';
+	}
 }
 
-void USART_SendChar(unsigned char data_char)
+void USART_SendChar(USART_TypeDef *uartX, unsigned char data_char)
 {
 	uint8_t tempHead;
-	tempHead = (USART_TxHead + 1) & USART_TX_BUFFER_MASK;
 
-	while(tempHead == USART_TxTail);
+	if (uartX == USART2)
+	{
+		tempHead = (priv_USART2_TxHead + 1) & USART_TX_BUFFER_MASK;
 
-	USART_TxBuf[tempHead] = data_char;
-	USART_TxHead = tempHead;
+		while(tempHead == priv_USART2_TxTail);
 
-	USART_ITConfig(activeUART, USART_IT_TXE,ENABLE);
+		priv_USART2_TxBuf[tempHead] = data_char;
+		priv_USART2_TxHead = tempHead;
+		USART_ITConfig(activeUART, USART_IT_TXE,ENABLE);
+	}
 }
 
-void USART_SendString(unsigned char *data_string)
+void USART_SendString(USART_TypeDef *uartX, unsigned char *data_string)
 {
 	unsigned int i=0;
 	while(data_string[i])
 	{
-		USART_SendChar((unsigned char)data_string[i]);
+		USART_SendChar(uartX, (unsigned char)data_string[i]);
 		i++;
 	}
 }
-
-void USART_SendInt(int data_int)
-{
-#if 0
-	int digits,i,n;
-	int begin=0;
-	if(data_int == 0)
-	{
-		USART_SendChar('0');
-		USART_SendChar('\r');
-		USART_SendChar('\n');
-		return;
-	}
-	digits = (int)log10(fabs((double)data_int));
-	digits++;
-	n=digits-1;
-	char digit[digits];
-	if(data_int < 0)
-	{
-		data_int *= -1;
-		begin = 1;
-		digit[0] = '-';
-	}
-	for(i=0;i<digits;i++)
-	{
-		digit[n+begin] = (data_int % 10)+48;
-		data_int /= 10;
-		n--;
-	}
-	for(i=0;i<digits+begin;i++)
-	{
-		USART_SendChar(digit[i]);
-	}
-	USART_SendChar('\r');
-	USART_SendChar('\n');
-
-#endif
-}
-
-
-/*converts integer value to string (integer max 999.)
- * return value shows the string length (contains the terminator 0).
- * String value must be at least 6 bytes long*/
-uint32_t intToASCIIchar(int32_t value, uint8_t *string)
-{
-	uint32_t length = 6;
-
-	if (value < 0)
-	{
-		value = value * -1;
-		string[0] = '-';
-	}
-	else
-	{
-		string[0] = ' ';
-	}
-	if (value < 10)
-	{
-		string[1] = value + 48;
-		string[2] = ' ';
-		string[3] = ' ';
-		string[4] = ' ';
-		string[5] = ' ';
-		string[6] = 0;
-	}
-	else if (value < 100)
-	{
-		string[1] = (value / 10) + 48;
-		string[2] = (value % 10) + 48;
-		string[3] = ' ';
-		string[4] = ' ';
-		string[5] = ' ';
-		string[6] = 0;
-	}
-	else if (value < 1000)
-	{
-		string[1] = (value / 100) + 48;
-		string[2] = ((value / 10) % 10) + 48;
-		string[3] = (value % 10) + 48;
-		string[4] = ' ';
-		string[5] = ' ';
-		string[6] = 0;
-	}
-	else if(value < 10000)
-	{
-		string[1] = (value / 1000) + 48;
-		string[2] = ((value / 100) % 10) + 48;
-		string[3] = ((value / 10) % 10) + 48;
-		string[4] = (value % 10) + 48;
-		string[5] = ' ';
-		string[6] = 0;
-	}
-	else if(value < 100000)
-	{
-		string[1] = (value / 10000) + 48;
-		string[2] = ((value / 1000) % 10) + 48;
-		string[3] = ((value / 100) % 10) + 48;
-		string[4] = ((value / 10) % 10) + 48;
-		string[5] = (value % 10) + 48;
-		string[6] = 0;
-	}
-	return length;
-}
-
 
 void UART4_IRQHandler(void)
 {
@@ -308,33 +230,30 @@ void UART4_IRQHandler(void)
 		//Read one byte from receive data register
 		rxdata = USART_ReceiveData(UART4);
 		//Calculate buffer index
-		tempHead = (USART_RxHead + 1) & USART_RX_BUFFER_MASK;
-		USART_RxHead = tempHead;
+		tempHead = (priv_UART4_RxHead + 1) & USART_RX_BUFFER_MASK;
+		priv_UART4_RxHead = tempHead;
 
-		if(tempHead == USART_RxTail)
+		if(tempHead == priv_UART4_RxTail)
 		{
 			//ERROR: buffer overflow
-			USART_RxOverflow = 1;
+			priv_UART4_RxOverflow = 1;
 		}
 		else
 		{
-			USART_RxBuf[tempHead] = rxdata;
-			USART_RxOverflow = 0;
+			priv_UART4_RxBuf[tempHead] = rxdata;
+			priv_UART4_RxOverflow = 0;
 		}
-
-		//
-		if(rxdata == '\n') USART_ReceiveInt();
 		USART_ClearITPendingBit(UART4, USART_IT_RXNE);
 	}
 
 	if(USART_GetITStatus(UART4, USART_IT_TXE) != RESET)
 	{
 		uint8_t tempTail;
-		if(USART_TxHead != USART_TxTail)
+		if(priv_UART4_TxHead != priv_UART4_TxTail)
 		{
-			tempTail = ((USART_TxTail + 1) & (USART_TX_BUFFER_MASK));
-			USART_TxTail = tempTail;
-			USART_SendData(UART4, USART_TxBuf[tempTail]);
+			tempTail = ((priv_UART4_TxTail + 1) & (USART_TX_BUFFER_MASK));
+			priv_UART4_TxTail = tempTail;
+			USART_SendData(UART4, priv_UART4_TxBuf[tempTail]);
 		}
 		else
 		{
@@ -353,33 +272,30 @@ void USART2_IRQHandler(void)
 		//Read one byte from receive data register
 		rxdata = USART_ReceiveData(USART2);
 		//Calculate buffer index
-		tempHead = (USART_RxHead + 1) & USART_RX_BUFFER_MASK;
-		USART_RxHead = tempHead;
+		tempHead = (priv_USART2_RxHead + 1) & USART_RX_BUFFER_MASK;
+		priv_USART2_RxHead = tempHead;
 
-		if(tempHead == USART_RxTail)
+		if(tempHead == priv_USART2_RxTail)
 		{
 			//ERROR: buffer overflow
-			USART_RxOverflow = 1;
+			priv_USART2_RxOverflow = 1;
 		}
 		else
 		{
-			USART_RxBuf[tempHead] = rxdata;
-			USART_RxOverflow = 0;
+			priv_USART2_RxBuf[tempHead] = rxdata;
+			priv_USART2_RxOverflow = 0;
 		}
-
-		//
-		if(rxdata == '\n') USART_ReceiveInt();
 		USART_ClearITPendingBit(USART2, USART_IT_RXNE);
 	}
 
 	if(USART_GetITStatus(USART2, USART_IT_TXE) != RESET)
 	{
 		uint8_t tempTail;
-		if(USART_TxHead != USART_TxTail)
+		if(priv_USART2_TxHead != priv_USART2_TxTail)
 		{
-			tempTail = ((USART_TxTail + 1) & (USART_TX_BUFFER_MASK));
-			USART_TxTail = tempTail;
-			USART_SendData(USART2, USART_TxBuf[tempTail]);
+			tempTail = ((priv_USART2_TxTail + 1) & (USART_TX_BUFFER_MASK));
+			priv_USART2_TxTail = tempTail;
+			USART_SendData(USART2, priv_USART2_TxBuf[tempTail]);
 		}
 		else
 		{
@@ -388,65 +304,10 @@ void USART2_IRQHandler(void)
 	}
 }
 
-
-void USART_ReceiveInt(void)
+void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, uint8_t* head, uint8_t* tail)
 {
-#if 0
-	uint16_t p = 0;
-	uint16_t i = 0;
-	uint16_t d = 0;
-	uint16_t f = 0;
-	if(USART_RxBuf[1] == 'm')
-	{
-		value = 0;
-		value += (USART_RxBuf[4] - 48) * pow(10,2);
-		value += (USART_RxBuf[5] - 48) * pow(10,1);
-		value += (USART_RxBuf[6] - 48);
-	}
-	else if(USART_RxBuf[1] == 'p')
-	{
-		p += (USART_RxBuf[3] - 48) * pow(10,3);
-		p += (USART_RxBuf[4] - 48) * pow(10,2);
-		p += (USART_RxBuf[5] - 48) * pow(10,1);
-		p += (USART_RxBuf[6] - 48) * pow(10,0);
-	}
-	else if(USART_RxBuf[1] == 'i')
-	{
-		i += (USART_RxBuf[3] - 48) * pow(10,3);
-		i += (USART_RxBuf[4] - 48) * pow(10,2);
-		i += (USART_RxBuf[5] - 48) * pow(10,1);
-		i += (USART_RxBuf[6] - 48) * pow(10,0);
-	}
-	else if(USART_RxBuf[1] == 'd')
-	{
-		d += (USART_RxBuf[3] - 48) * pow(10,3);
-		d += (USART_RxBuf[4] - 48) * pow(10,2);
-		d += (USART_RxBuf[5] - 48) * pow(10,1);
-		d += (USART_RxBuf[6] - 48) * pow(10,0);
-	}
-	else if(USART_RxBuf[1] == 'f')
-	{
-		f += (USART_RxBuf[3] - 48) * pow(10,3);
-		f += (USART_RxBuf[4] - 48) * pow(10,2);
-		f += (USART_RxBuf[5] - 48) * pow(10,1);
-		f += (USART_RxBuf[6] - 48) * pow(10,0);
-	}
-	if(USART_RxBuf[3] == '-') value *= -1;
-	USART_RxHead = 0;
-#endif
-}
-
-/*Periodic UART task*/
-void USART_TASK(void)
-{
-	handleReceiveData();
-	handleTransmitData();
-}
-
-
-void handleReceiveData(void)
-{
-	uint16_t tempTail, tempHead;
+	uint8_t tempHead;
+	uint8_t tempTail;
 	static MessageAnalyseState analyseState = noData;
 	static InterfaceMessage message;
 	static uint16_t calcCrc;
@@ -456,8 +317,8 @@ void handleReceiveData(void)
 
 	/*save the buffer tail and head into local variable*/
 	USART_ITConfig(activeUART, USART_IT_RXNE, DISABLE);  //disable UART receive interrupts
-	tempTail = USART_RxTail;
-	tempHead = USART_RxHead;
+	tempHead = *head;
+	tempTail = *tail;
 	USART_ITConfig(activeUART, USART_IT_RXNE, ENABLE);  // enable UART receive interrupts
 
 	/*Analyze received data*/
@@ -467,7 +328,7 @@ void handleReceiveData(void)
 		{
 			case noData:
 				// search preambula '0xAA'
-				if ((USART_RxBuf[tempTail] == 0xaa) || (USART_RxBuf[tempTail] == 0xAA))
+				if (rxBuffer[tempTail] == 0xaa || rxBuffer[tempTail] == 0xAA)
 				{
 					// clear message for next data
 					message.length = 0;
@@ -486,19 +347,19 @@ void handleReceiveData(void)
 					messageCrc.u16 = 0;
 					//rxMessageIndex = 0;
 					// preambula is part of CRC
-					calcCrc = USART_RxBuf[tempTail];
+					calcCrc = rxBuffer[tempTail];
 					analyseState = preambulaFound;
 				}
 				break;
 			case preambulaFound:
-				message.id = USART_RxBuf[tempTail];
+				message.id = rxBuffer[tempTail];
 				calcCrc += message.id;
 				analyseState = idOK;
 				break;
 			case idOK:
-				message.length = USART_RxBuf[tempTail];
+				message.length = rxBuffer[tempTail];
 				__disable_irq();
-				if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceUART, &message))
+				if (InterfaceHandler_checkIfReceivedMessageExists(findInterface(activeUART), &message))
 				{
 					calcCrc += message.length;
 					length = message.length;
@@ -515,8 +376,8 @@ void handleReceiveData(void)
 				// copy data
 				if (length != 0)
 				{
-					message.data[dataIndex] = USART_RxBuf[tempTail];
-					calcCrc += USART_RxBuf[tempTail];
+					message.data[dataIndex] = rxBuffer[tempTail];
+					calcCrc += rxBuffer[tempTail];
 					dataIndex++;
 					length--;
 					if (length == 0)
@@ -533,12 +394,12 @@ void handleReceiveData(void)
 				break;
 			case crcFirstbyte:
 				// store crc first byte
-				messageCrc.u8.byteHigh = USART_RxBuf[tempTail];
+				messageCrc.u8.byteHigh = rxBuffer[tempTail];
 				analyseState = crcCheck;
 				break;
 			case crcCheck:
 				// store 2nd byte
-				messageCrc.u8.byteLow = USART_RxBuf[tempTail];
+				messageCrc.u8.byteLow = rxBuffer[tempTail];
 				// check CRC
 				if (calcCrc == messageCrc.u16)
 				{
@@ -566,33 +427,57 @@ void handleReceiveData(void)
 
 	/*update the buffer tail*/
 	USART_ITConfig(activeUART, USART_IT_RXNE, DISABLE);  //disable UART receive interrupts
-	USART_RxTail = tempHead;
+	*tail = tempHead;
 	USART_ITConfig(activeUART, USART_IT_RXNE, ENABLE);  // enable UART receive interrupts
 }
 
 
-void sendUARTmessage(InterfaceMessage* msg)
+void sendMessageToUSART2(InterfaceMessage* msg)
 {
 	splitU16 crc;
 	uint16_t j;
 
-	USART_SendChar(0xAA);
+	USART_SendChar(USART2, 0xAA);
 	crc.u16 = 0xAA;
-	USART_SendChar(msg->id);
+	USART_SendChar(USART2, msg->id);
 	crc.u16 += msg->id;
-	USART_SendChar(msg->length);
+	USART_SendChar(USART2, msg->length);
 	crc.u16 += msg->length;
 	for (j = 0; j < msg->length; j++)
 	{
-		USART_SendChar(msg->data[j]);
+		USART_SendChar(USART2, msg->data[j]);
 		crc.u16 += msg->data[j];
 	}
-	USART_SendChar(crc.u8.byteHigh);
-	USART_SendChar(crc.u8.byteLow);
+	USART_SendChar(USART2, crc.u8.byteHigh);
+	USART_SendChar(USART2, crc.u8.byteLow);
+}
+
+static Interface findInterface(USART_TypeDef *uartX)
+{
+	Interface interface = NumberOfInterfaces;
+	if (uartX == UART4)
+		interface = InterfaceUARTtoKinect;
+	else if (uartX == USART2)
+		interface = InterfaceUARTtoRemote;
+	return interface;
 }
 
 
 void handleTransmitData(void)
 {
-	InterfaceHandler_transmitData(InterfaceUART, sendUARTmessage, TaskHandler_tableOfTasks[TASK_USART].period);
+	InterfaceHandler_transmitData(findInterface(USART2), sendMessageToUSART2, TaskHandler_tableOfTasks[TASK_USART].period);
+}
+
+void USART_init()
+{
+	USARTx_init(USART2);
+	USARTx_init(UART4);
+}
+
+/*Periodic UART task*/
+void USART_TASK(void)
+{
+	handleReceivedData(USART2, priv_USART2_RxBuf, &priv_USART2_RxHead, &priv_USART2_RxTail);
+	handleReceivedData(UART4, priv_UART4_RxBuf, &priv_UART4_RxHead, &priv_UART4_RxTail);
+	handleTransmitData();
 }

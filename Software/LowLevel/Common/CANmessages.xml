@@ -129,6 +129,10 @@
       <Name>TrackedObjectWidth</Name>
       <Type>U16</Type>
     </Parameter>
+    <Parameter>
+      <Name>DepthArray</Name>
+      <Type>U8</Type>
+    </Parameter>
   </Parameters>
   <Packets>
     <Packet>
@@ -276,6 +280,16 @@
         </PacketParameter>
       </PacketParameters>
     </Packet>
+    <Packet>
+      <ID>193</ID>
+      <Name>DepthArray</Name>
+      <NominalPeriod>0</NominalPeriod>
+      <PacketParameters>
+        <PacketParameter>
+          <Parameter>DepthArray</Parameter>
+        </PacketParameter>
+      </PacketParameters>
+    </Packet>
   </Packets>
   <Nodes>
     <Node>
@@ -351,7 +365,7 @@
           </TransmitPackets>
         </Interface>
         <Interface>
-          <Name>UART</Name>
+          <Name>UARTtoRemote</Name>
           <ReceivePackets>
             <ReceivePacket>
               <Packet>MotorSpeeds</Packet>
@@ -383,7 +397,25 @@
               <Packet>TrackedObject</Packet>
               <Period>-1</Period>
             </TransmitPacket>
+            <TransmitPacket>
+              <Packet>DepthArray</Packet>
+              <Period>-1</Period>
+            </TransmitPacket>
           </TransmitPackets>
+        </Interface>
+        <Interface>
+          <Name>UARTtoKinect</Name>
+          <ReceivePackets>
+            <ReceivePacket>
+              <Packet>TrackedObject</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>DepthArray</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+          </ReceivePackets>
+          <TransmitPackets />
         </Interface>
       </Interfaces>
     </Node>
