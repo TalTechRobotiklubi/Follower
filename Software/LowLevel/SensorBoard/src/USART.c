@@ -70,9 +70,6 @@ static unsigned char priv_UART4_TxBuf[USART_TX_BUFFER_SIZE];
 static volatile uint8_t priv_UART4_TxHead;
 static volatile uint8_t priv_UART4_TxTail;
 
-USART_TypeDef *activeUART = UART4; // from default set UART4 as active
-
-
 // initialization of USART/UART
 void USARTx_init(USART_TypeDef *uartX)
 {
@@ -100,8 +97,6 @@ void USARTx_init(USART_TypeDef *uartX)
 	USART_ITConfig(uartX, USART_IT_TXE, ENABLE);
 	//Enable UARTx
 	USART_Cmd(uartX, ENABLE);
-	// currently only 1 UART supported at a time
-	activeUART = uartX;
 }
 
 
@@ -206,7 +201,7 @@ void USART_SendChar(USART_TypeDef *uartX, unsigned char data_char)
 
 		priv_USART2_TxBuf[tempHead] = data_char;
 		priv_USART2_TxHead = tempHead;
-		USART_ITConfig(activeUART, USART_IT_TXE,ENABLE);
+		USART_ITConfig(USART2, USART_IT_TXE,ENABLE);
 	}
 }
 
