@@ -254,6 +254,7 @@ void UART4_IRQHandler(void)
 		{
 			USART_ITConfig(UART4, USART_IT_TXE,DISABLE);
 		}
+		USART_ClearITPendingBit(UART4, USART_IT_TXE);
 	}
 }
 
@@ -296,6 +297,7 @@ void USART2_IRQHandler(void)
 		{
 			USART_ITConfig(USART2, USART_IT_TXE,DISABLE);
 		}
+		USART_ClearITPendingBit(USART2, USART_IT_TXE);
 	}
 }
 
@@ -447,7 +449,7 @@ void sendMessageToUSART2(InterfaceMessage* msg)
 	USART_SendChar(USART2, crc.u8.byteLow);
 }
 
-static Interface findInterface(USART_TypeDef *uartX)
+Interface findInterface(USART_TypeDef *uartX)
 {
 	Interface interface = NumberOfInterfaces;
 	if (uartX == UART4)
@@ -473,6 +475,6 @@ void USART_init()
 void USART_TASK(void)
 {
 	handleReceivedData(USART2, priv_USART2_RxBuf, &priv_USART2_RxHead, &priv_USART2_RxTail);
-	handleReceivedData(UART4, priv_UART4_RxBuf, &priv_UART4_RxHead, &priv_UART4_RxTail);
+	//handleReceivedData(UART4, priv_UART4_RxBuf, &priv_UART4_RxHead, &priv_UART4_RxTail);
 	handleTransmitData();
 }

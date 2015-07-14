@@ -72,7 +72,7 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 	uint8_t byteIndex, bitPosition, j, type;
 	int16_t length;
 	uint8_t dataLayerOk;
-	uint32_t data;
+	uint32_t data = 0;
 
 	dataLayerOk = 0;
 
@@ -110,7 +110,7 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 				{
 					/*involves two bytes */
 					/*first byte, bit position is assumed to be 0 and the byte is fully for this parameter*/
-					data = (msg->data[byteIndex] << 8);
+					data = (msg->data[byteIndex] << 8) & 0xFF00;
 					length = length - 8;
 					/*second byte, bit position is still 0, shift if length is not full byte*/
 					data |= (msg->data[byteIndex + 1] & 0xFF);
