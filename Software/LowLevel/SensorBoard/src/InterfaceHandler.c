@@ -106,7 +106,7 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 			case TypeU16:
 			case TypeS16:
 				/*sanity check*/
-				if ((length <= 16) && (length > 8) && (byteIndex < 7))
+				if ((length <= 16) && (length > 8))
 				{
 					/*involves two bytes */
 					/*first byte, bit position is assumed to be 0 and the byte is fully for this parameter*/
@@ -122,7 +122,7 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 			case TypeU32:
 			case TypeS32:
 				/*sanity check*/
-				if ((length <= 32) && (length > 24) && (byteIndex < 5))
+				if ((length <= 32) && (length > 24))
 				{
 					/*involves 4 bytes */
 					/*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
