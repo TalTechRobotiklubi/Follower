@@ -3,12 +3,9 @@
 #include <QObject>
 #include <QElapsedTimer>
 #include "CSpineComm.h"
-//#include "SpineDataCAN.h"
 #include "CANmessages.h"
 #include "PacketHandler.h"
 #include "DataLayerCAN.h"
-//#include "SpineCmd_Fwd.h"
-
 
 class SpineCommCAN : public SpineComm
 {
@@ -33,9 +30,7 @@ private:
     bool                sendDataLayerDataToUART(PacketWithIndex *packet);
     uint8_t             getBitmaskForUARTmessage(uint8_t bitPosition, int16_t length);
 
-	bool				hasNewData_;
-    //SpineDataCAN	    spineDataCAN_;		
-
+	bool				hasNewData_;	
 	unsigned int   		readBufSize_;
 	unsigned char*		readBuf_;
 	unsigned int		bytesInBuf_;

@@ -4,7 +4,6 @@
 #include <cstdio>
 #include <string>
 #include <qdebug.h>
-//#include <qmutex.h>
 
 // splitted u16 type, which can be accessed in separate byte manner
 typedef union
@@ -40,30 +39,22 @@ enum MessageAnalyseState
 
 SpineCommCAN::SpineCommCAN(void)
 {
-	readBufSize_	= 20 * 12;//SpineDataCAN::SerialPacketSize;
+    readBufSize_	= 20 * 12;
 	readBuf_		= new unsigned char[readBufSize_];
 	bytesInBuf_		= 0;
 	hasNewData_		= false;
-    //dataLayerCAN_.DL_setDefaultValuesForParameters();
-	//timer_.start();
 }
 
 void SpineCommCAN::Communicate()
 {
 	unsigned int bytesRead;
-	int i;
 	static MessageAnalyseState analyseState = noData;
     static UART_CANmessage message;
 	static unsigned char length;
 	static int rxMessageIndex;
 	static int dataIndex;
 	static splitU16 messageCrc;
-	static int maxData = 0;
-	static int invalidMessages = 0;
-	static bool messageIndicator = 0;
-    static int rxMessageCount = 0;
-	bool messageFound = false;
-	int bufIndex;
+    static unsigned int maxData = 0;
     static PacketWithIndex *packet;
 	uint8_t numOfPackets;
     
@@ -78,7 +69,7 @@ void SpineCommCAN::Communicate()
 		if(maxData < bytesRead) maxData = bytesRead;
 
 		// go through all the buffer, search valid messages
-		for(int i = 0; i < (bytesRead + bytesInBuf_); i++)
+        for(unsigned int i = 0; i < (bytesRead + bytesInBuf_); i++)
 		{
 			switch (analyseState)
 			{
@@ -117,18 +108,6 @@ void SpineCommCAN::Communicate()
 					if (analyseState != idOK)
 					{
 						analyseState = noData;
-					}
-					else
-					{
-						if(messageIndicator)
-						{
-							invalidMessages++;
-							messageIndicator = 0;
-						}
-						else
-						{
-							messageIndicator = 1;
-						}
 					}
 					break;
 				case idOK:				
@@ -186,9 +165,6 @@ void SpineCommCAN::Communicate()
 						storeDataToDataLayer(&message, &packet[rxMessageIndex]);
 						// ready for next packet
 						analyseState = noData;					
-						// for buffer analysis
-						messageIndicator = 0;
-                        rxMessageCount++;
 					}
 					else
 					{
@@ -199,11 +175,6 @@ void SpineCommCAN::Communicate()
 
 					break;
 			}
-		}
-		if (hasNewData_)
-		{
-			// copy data to SpineData
-			//spineDataCAN_.SetReceivedDataToObject(&dataLayerCAN_);		
 		}
 	}
 	//while (!timer_.hasExpired(PERIOD_IN_MS));
@@ -259,8 +230,6 @@ void SpineCommCAN::storeDataToDataLayer(UART_CANmessage *message, PacketWithInde
 					data = message->canMessage.data[byteIndex];
 					/*data into normal value*/
 					data = (data >> (8 - bitPosition - length)) & (0xFF >> (8 - length));
-					//*((uint8_t*)(DL_GET_POINTER_TO_DATA(packet->psParameterList[j].eParam))) = (uint8_t)data;
-					//DL_setDataValidity(packet->psParameterList[j].eParam, TRUE);
 					dataLayerCAN_.DL_setDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
 					dataLayerOk++;
 				}
@@ -268,21 +237,37 @@ void SpineCommCAN::storeDataToDataLayer(UART_CANmessage *message, PacketWithInde
 			case TypeU16:
 			case TypeS16:
 				/*sanity check*/
-				if ((length <= 16) && (length > 8) && (byteIndex < 7))
+                if ((length <= 16) && (length > 8))
 				{
 					/*involves two bytes */
 					/*first byte, bit position is assumed to be 0 and the byte is fully for this parameter*/
-					data = (message->canMessage.data[byteIndex] << 8);
+                    data = (message->canMessage.data[byteIndex] << 8) & 0xFF00;
 					length = length - 8;
 					/*second byte, bit position is still 0, shift if length is not full byte*/
 					data |= (message->canMessage.data[byteIndex + 1] & 0xFF);
 					data = (uint16_t)(data >> (8 - length));
-					//*((uint16_t*)(DL_GET_POINTER_TO_DATA(packet->psParameterList[j].eParam))) = (uint16_t)data;
-					//DL_setDataValidity(packet->psParameterList[j].eParam, TRUE);
 					dataLayerCAN_.DL_setDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
 					dataLayerOk++;
 				}
-				break;
+                break;
+            case TypeU32:
+            case TypeS32:
+                /*sanity check*/
+                if ((length <= 32) && (length > 24))
+                {
+                    /*involves 4 bytes */
+                    /*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
+                    data = (message->canMessage.data[byteIndex] << 24) & 0xFF000000;
+                    data += (message->canMessage.data[byteIndex + 1] << 16) & 0xFF0000;
+                    data += (message->canMessage.data[byteIndex + 2] << 8) & 0xFF00;
+                    length = length - 24;
+                    /*fourth byte, bit position is still 0, shift if length is not full byte*/
+                    data |= (message->canMessage.data[byteIndex + 3] & 0xFF);
+                    data = (uint32_t)(data >> (8 - length));
+                    dataLayerCAN_.DL_setDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+                    dataLayerOk++;
+                }
+                break;
 			default:
 				break;
 		}
@@ -402,14 +387,12 @@ bool SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
 			case TypeS8:
 				/*involves only one byte */
 				bitmask = getBitmaskForUARTmessage(bitPosition, length);
-				//data = *((uint8_t*)(DL_GET_POINTER_TO_DATA(packet->psParameterList[j].eParam)));
 				dataLayerCAN_.DL_getDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
 				message.canMessage.data[byteIndex] |= (((((uint8_t)data) & 0xFF) << (8 - length - bitPosition)) & bitmask);
 				break;
 			case TypeU16:
 			case TypeS16:
 				/*involves two bytes */
-				//data = *((uint16_t*)(DL_GET_POINTER_TO_DATA(packet->psParameterList[j].eParam)));
 				dataLayerCAN_.DL_getDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
 				/*first byte, bit position is assumed to be 0 and the byte is fully for this parameter*/
 				message.canMessage.data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
@@ -419,6 +402,15 @@ bool SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
 				break;
 			case TypeU32:
 			case TypeS32:
+                /*involves four bytes */
+                dataLayerCAN_.DL_getDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+                /*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
+                message.canMessage.data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
+                message.canMessage.data[byteIndex + 1] |= (uint8_t)((data >> (length - 16)) & 0xFF);
+                message.canMessage.data[byteIndex + 2] |= (uint8_t)((data >> (length - 24)) & 0xFF);
+                /*fourth byte, bit position is still 0*/
+                bitmask = getBitmaskForUARTmessage(0, length - 8);
+                message.canMessage.data[byteIndex + 3] |= (uint8_t)(((data & 0xFF) << (32 - length)) & bitmask);
 				break;
 			default:
 				break;
