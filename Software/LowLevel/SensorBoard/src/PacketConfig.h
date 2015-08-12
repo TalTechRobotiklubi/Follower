@@ -24,7 +24,7 @@ typedef enum
 	PacketMotorPID,        // 4
 	PacketDistanceSensors, // 5
 	PacketAcceleration,    // 6
-	PacketDepthArray,      // 7
+	PacketDepthRaw,        // 7
 	// Count of items is 8
 	NumberOfPackets
 }

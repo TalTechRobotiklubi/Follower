@@ -38,34 +38,45 @@ typedef enum
 }
 MessageAnalyseState;
 
+typedef struct
+{
+	MessageAnalyseState analyseState;
+	InterfaceMessage message;
+	uint16_t calcCrc;
+	splitU16 messageCrc;
+	uint8_t length;
+	uint8_t dataIndex;
+	uint8_t head;
+	uint8_t tail;
+}
+ReceivingDataState;
+
 /*function declarations*/
 static void USARTx_init(USART_TypeDef *uartX);
 static GPIO_IdDef UARTx_GPIO_init(USART_TypeDef *uartX);
 static void UARTx_IRQ_init(GPIO_IdDef);
 static void UARTxBuffersInit(USART_TypeDef *uartX);
-static void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, uint8_t* head, uint8_t* tail);
+static void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, ReceivingDataState* rxState);
 static void sendMessageToUSART2(InterfaceMessage* msg);
 static void handleTransmitData(void);
 static Interface findInterface(USART_TypeDef *uartX);
 
-//USART2 Rx buffer
+//USART2 Rx
 static unsigned char priv_USART2_RxBuf[USART_RX_BUFFER_SIZE];
-static uint8_t priv_USART2_RxHead;
-static uint8_t priv_USART2_RxTail;
+static ReceivingDataState priv_USART2_RxState;
 static volatile uint8_t priv_USART2_RxOverflow;
 
-//UART4 Rx buffer
+//UART4 Rx
 static unsigned char priv_UART4_RxBuf[USART_RX_BUFFER_SIZE];
-static uint8_t priv_UART4_RxHead;
-static uint8_t priv_UART4_RxTail;
+static ReceivingDataState priv_UART4_RxState;
 static volatile uint8_t priv_UART4_RxOverflow;
 
-//USART2 Tx buffer
+//USART2 Tx
 static unsigned char priv_USART2_TxBuf[USART_TX_BUFFER_SIZE];
 static volatile uint8_t priv_USART2_TxHead;
 static volatile uint8_t priv_USART2_TxTail;
 
-//UART4 Tx buffer
+//UART4 Tx
 static unsigned char priv_UART4_TxBuf[USART_TX_BUFFER_SIZE];
 static volatile uint8_t priv_UART4_TxHead;
 static volatile uint8_t priv_UART4_TxTail;
@@ -169,8 +180,9 @@ void UARTxBuffersInit(USART_TypeDef *uartX)
 {
 	if (uartX == USART2)
 	{
-		priv_USART2_RxTail = 0;
-		priv_USART2_RxHead = 0;
+		priv_USART2_RxState.tail = 0;
+		priv_USART2_RxState.head = 0;
+		priv_USART2_RxState.analyseState = noData;
 		priv_USART2_TxTail = 0;
 		priv_USART2_TxHead = 0;
 		int i;
@@ -179,8 +191,9 @@ void UARTxBuffersInit(USART_TypeDef *uartX)
 	}
 	else if (uartX == UART4)
 	{
-		priv_UART4_RxTail = 0;
-		priv_UART4_RxHead = 0;
+		priv_UART4_RxState.tail = 0;
+		priv_UART4_RxState.head = 0;
+		priv_UART4_RxState.analyseState = noData;
 		priv_UART4_TxTail = 0;
 		priv_UART4_TxHead = 0;
 		int i;
@@ -225,10 +238,10 @@ void UART4_IRQHandler(void)
 		//Read one byte from receive data register
 		rxdata = USART_ReceiveData(UART4);
 		//Calculate buffer index
-		tempHead = (priv_UART4_RxHead + 1) & USART_RX_BUFFER_MASK;
-		priv_UART4_RxHead = tempHead;
+		tempHead = (priv_UART4_RxState.head + 1) & USART_RX_BUFFER_MASK;
+		priv_UART4_RxState.head = tempHead;
 
-		if(tempHead == priv_UART4_RxTail)
+		if(tempHead == priv_UART4_RxState.tail)
 		{
 			//ERROR: buffer overflow
 			priv_UART4_RxOverflow = 1;
@@ -268,10 +281,10 @@ void USART2_IRQHandler(void)
 		//Read one byte from receive data register
 		rxdata = USART_ReceiveData(USART2);
 		//Calculate buffer index
-		tempHead = (priv_USART2_RxHead + 1) & USART_RX_BUFFER_MASK;
-		priv_USART2_RxHead = tempHead;
+		tempHead = (priv_USART2_RxState.head + 1) & USART_RX_BUFFER_MASK;
+		priv_USART2_RxState.head = tempHead;
 
-		if(tempHead == priv_USART2_RxTail)
+		if(tempHead == priv_USART2_RxState.tail)
 		{
 			//ERROR: buffer overflow
 			priv_USART2_RxOverflow = 1;
@@ -301,113 +314,107 @@ void USART2_IRQHandler(void)
 	}
 }
 
-void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, uint8_t* head, uint8_t* tail)
+void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, ReceivingDataState* rxState)
 {
 	uint8_t tempHead;
 	uint8_t tempTail;
-	static MessageAnalyseState analyseState = noData;
-	static InterfaceMessage message;
-	static uint16_t calcCrc;
-	static splitU16 messageCrc;
-	static uint8_t length;
-	static uint8_t dataIndex;
 
 	/*save the buffer tail and head into local variable*/
 	USART_ITConfig(activeUART, USART_IT_RXNE, DISABLE);  //disable UART receive interrupts
-	tempHead = *head;
-	tempTail = *tail;
+	tempHead = rxState->head;
+	tempTail = rxState->tail;
 	USART_ITConfig(activeUART, USART_IT_RXNE, ENABLE);  // enable UART receive interrupts
 
 	/*Analyze received data*/
 	while (tempTail != tempHead)
 	{
-		switch (analyseState)
+		switch (rxState->analyseState)
 		{
 			case noData:
 				// search preambula '0xAA'
 				if (rxBuffer[tempTail] == 0xaa || rxBuffer[tempTail] == 0xAA)
 				{
 					// clear message for next data
-					message.length = 0;
-					message.id = 0;
-					message.data[0] = 0;
-					message.data[1] = 0;
-					message.data[2] = 0;
-					message.data[3] = 0;
-					message.data[4] = 0;
-					message.data[5] = 0;
-					message.data[6] = 0;
-					message.data[7] = 0;
+					rxState->message.length = 0;
+					rxState->message.id = 0;
+					rxState->message.data[0] = 0;
+					rxState->message.data[1] = 0;
+					rxState->message.data[2] = 0;
+					rxState->message.data[3] = 0;
+					rxState->message.data[4] = 0;
+					rxState->message.data[5] = 0;
+					rxState->message.data[6] = 0;
+					rxState->message.data[7] = 0;
 					// clear variables
-					length = 0;
-					dataIndex = 0;
-					messageCrc.u16 = 0;
+					rxState->length = 0;
+					rxState->dataIndex = 0;
+					rxState->messageCrc.u16 = 0;
 					//rxMessageIndex = 0;
 					// preambula is part of CRC
-					calcCrc = rxBuffer[tempTail];
-					analyseState = preambulaFound;
+					rxState->calcCrc = rxBuffer[tempTail];
+					rxState->analyseState = preambulaFound;
 				}
 				break;
 			case preambulaFound:
-				message.id = rxBuffer[tempTail];
-				calcCrc += message.id;
-				analyseState = idOK;
+				rxState->message.id = rxBuffer[tempTail];
+				rxState->calcCrc += rxState->message.id;
+				rxState->analyseState = idOK;
 				break;
 			case idOK:
-				message.length = rxBuffer[tempTail];
+				rxState->message.length = rxBuffer[tempTail];
 				__disable_irq();
-				if (InterfaceHandler_checkIfReceivedMessageExists(findInterface(activeUART), &message))
+				if (InterfaceHandler_checkIfReceivedMessageExists(findInterface(activeUART), &rxState->message))
 				{
-					calcCrc += message.length;
-					length = message.length;
-					analyseState = lengthOK;
+					rxState->calcCrc += rxState->message.length;
+					rxState->length = rxState->message.length;
+					rxState->analyseState = lengthOK;
 				}
 				else
 				{
 					// not valid message, continue with seaching next preambula
-					analyseState = noData;
+					rxState->analyseState = noData;
 				}
 				__enable_irq();
 				break;
 			case lengthOK:
 				// copy data
-				if (length != 0)
+				if (rxState->length != 0)
 				{
-					message.data[dataIndex] = rxBuffer[tempTail];
-					calcCrc += rxBuffer[tempTail];
-					dataIndex++;
-					length--;
-					if (length == 0)
+					rxState->message.data[rxState->dataIndex] = rxBuffer[tempTail];
+					rxState->calcCrc += rxBuffer[tempTail];
+					rxState->dataIndex++;
+					rxState->length--;
+					if (rxState->length == 0)
 					{
 						// continue with CRC
-						analyseState = crcFirstbyte;
+						rxState->analyseState = crcFirstbyte;
 					}
 				}
 				else
 				{
 					// length should not be 0 from the beginning -> logic mistake, start from the beginning
-					analyseState = noData;
+					rxState->analyseState = noData;
 				}
 				break;
 			case crcFirstbyte:
 				// store crc first byte
-				messageCrc.u8.byteHigh = rxBuffer[tempTail];
-				analyseState = crcCheck;
+				rxState->messageCrc.u8.byteHigh = rxBuffer[tempTail];
+				rxState->analyseState = crcCheck;
 				break;
 			case crcCheck:
 				// store 2nd byte
-				messageCrc.u8.byteLow = rxBuffer[tempTail];
+				rxState->messageCrc.u8.byteLow = rxBuffer[tempTail];
 				// check CRC
-				if (calcCrc == messageCrc.u16)
+				if (rxState->calcCrc == rxState->messageCrc.u16)
 				{
 					// new valid message received, copy data into data layer
-					InterfaceHandler_storeReceivedData(&message);
+					InterfaceHandler_storeReceivedData(&rxState->message);
 					// ready for next packet
-					analyseState = noData;
+					rxState->analyseState = noData;
 				}
 				else
 				{
-					analyseState = noData;
+					rxState->analyseState = noData;
 				}
 				break;
 			default:
@@ -424,7 +431,7 @@ void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, uint8_t* h
 
 	/*update the buffer tail*/
 	USART_ITConfig(activeUART, USART_IT_RXNE, DISABLE);  //disable UART receive interrupts
-	*tail = tempHead;
+	rxState->tail = tempHead;
 	USART_ITConfig(activeUART, USART_IT_RXNE, ENABLE);  // enable UART receive interrupts
 }
 
@@ -453,9 +460,9 @@ Interface findInterface(USART_TypeDef *uartX)
 {
 	Interface interface = NumberOfInterfaces;
 	if (uartX == UART4)
-		interface = InterfaceUARTtoKinect;
+		interface = InterfaceUART_Kinect;
 	else if (uartX == USART2)
-		interface = InterfaceUARTtoRemote;
+		interface = InterfaceUART_Remote;
 	return interface;
 }
 
@@ -474,7 +481,7 @@ void USART_init()
 /*Periodic UART task*/
 void USART_TASK(void)
 {
-	handleReceivedData(USART2, priv_USART2_RxBuf, &priv_USART2_RxHead, &priv_USART2_RxTail);
-	//handleReceivedData(UART4, priv_UART4_RxBuf, &priv_UART4_RxHead, &priv_UART4_RxTail);
+	handleReceivedData(USART2, priv_USART2_RxBuf, &priv_USART2_RxState);
+	handleReceivedData(UART4, priv_UART4_RxBuf, &priv_UART4_RxState);
 	handleTransmitData();
 }

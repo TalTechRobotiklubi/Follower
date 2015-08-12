@@ -14,7 +14,7 @@ typedef struct
 {
 	uint16_t id;
 	uint8_t length;
-	uint8_t data[20];
+	uint8_t data[32];
 	Packet packet;
 	int16_t period;
 } InterfaceMessage;

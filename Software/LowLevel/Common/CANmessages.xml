@@ -130,8 +130,36 @@
       <Type>U16</Type>
     </Parameter>
     <Parameter>
-      <Name>DepthArray</Name>
-      <Type>U8</Type>
+      <Name>DepthRaw0</Name>
+      <Type>U32</Type>
+    </Parameter>
+    <Parameter>
+      <Name>DepthRaw1</Name>
+      <Type>U32</Type>
+    </Parameter>
+    <Parameter>
+      <Name>DepthRaw2</Name>
+      <Type>U32</Type>
+    </Parameter>
+    <Parameter>
+      <Name>DepthRaw3</Name>
+      <Type>U32</Type>
+    </Parameter>
+    <Parameter>
+      <Name>DepthRaw4</Name>
+      <Type>U32</Type>
+    </Parameter>
+    <Parameter>
+      <Name>DepthRaw5</Name>
+      <Type>U32</Type>
+    </Parameter>
+    <Parameter>
+      <Name>DepthRaw6</Name>
+      <Type>U32</Type>
+    </Parameter>
+    <Parameter>
+      <Name>DepthRaw7</Name>
+      <Type>U32</Type>
     </Parameter>
   </Parameters>
   <Packets>
@@ -282,11 +310,32 @@
     </Packet>
     <Packet>
       <ID>193</ID>
-      <Name>DepthArray</Name>
+      <Name>DepthRaw</Name>
       <NominalPeriod>0</NominalPeriod>
       <PacketParameters>
         <PacketParameter>
-          <Parameter>DepthArray</Parameter>
+          <Parameter>DepthRaw0</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>DepthRaw1</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>DepthRaw2</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>DepthRaw3</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>DepthRaw4</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>DepthRaw5</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>DepthRaw6</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>DepthRaw7</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
@@ -317,6 +366,10 @@
             </ReceivePacket>
             <ReceivePacket>
               <Packet>TrackedObject</Packet>
+              <Period>0</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>DepthRaw</Packet>
               <Period>0</Period>
             </ReceivePacket>
           </ReceivePackets>
@@ -365,7 +418,7 @@
           </TransmitPackets>
         </Interface>
         <Interface>
-          <Name>UARTtoRemote</Name>
+          <Name>UART_Remote</Name>
           <ReceivePackets>
             <ReceivePacket>
               <Packet>MotorSpeeds</Packet>
@@ -398,20 +451,20 @@
               <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>DepthArray</Packet>
+              <Packet>DepthRaw</Packet>
               <Period>-1</Period>
             </TransmitPacket>
           </TransmitPackets>
         </Interface>
         <Interface>
-          <Name>UARTtoKinect</Name>
+          <Name>UART_Kinect</Name>
           <ReceivePackets>
             <ReceivePacket>
               <Packet>TrackedObject</Packet>
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>DepthArray</Packet>
+              <Packet>DepthRaw</Packet>
               <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
@@ -490,6 +543,6 @@
   <OutputParameters />
   <Cases />
   <Config>
-    <OutputPath>..\..\..\..\Follower\Software\LowLevel\Common</OutputPath>
+    <OutputPath>..\..\LowLevel\Common</OutputPath>
   </Config>
 </CaseCatcher>
