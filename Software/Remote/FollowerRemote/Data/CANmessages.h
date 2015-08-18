@@ -3,6 +3,7 @@
 
 #define PC_QT_APPLICATION
 
+#define DATA_BUFFER_SIZE 32
 
 #ifdef PC_QT_APPLICATION
 #include "qglobal.h"
@@ -19,7 +20,7 @@ typedef struct
 {
 	uint8_t id;
 	uint8_t dlc;
-	uint8_t data[8];
+    uint8_t data[DATA_BUFFER_SIZE];
 } CANmessage;
 
 /*General UART CAN message struct*/
