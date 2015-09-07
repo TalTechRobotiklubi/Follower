@@ -251,7 +251,6 @@ void UART4_IRQHandler(void)
 			priv_UART4_RxBuf[tempHead] = rxdata;
 			priv_UART4_RxOverflow = 0;
 		}
-		USART_ClearITPendingBit(UART4, USART_IT_RXNE);
 	}
 
 	if(USART_GetITStatus(UART4, USART_IT_TXE) != RESET)
@@ -294,7 +293,6 @@ void USART2_IRQHandler(void)
 			priv_USART2_RxBuf[tempHead] = rxdata;
 			priv_USART2_RxOverflow = 0;
 		}
-		USART_ClearITPendingBit(USART2, USART_IT_RXNE);
 	}
 
 	if(USART_GetITStatus(USART2, USART_IT_TXE) != RESET)

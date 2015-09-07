@@ -39,6 +39,8 @@ typedef enum
 	CAN1_Rx,
 	USART2_Tx,
 	USART2_Rx,
+	I2C3_SCL,
+	I2C3_SDA,
 	NUM_OF_GPIOS
 }
 GPIO_IdDef;
