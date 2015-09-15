@@ -33,11 +33,20 @@ AlgorithmTurn::Execution AlgorithmTurn::run() {
     dataLayer->DL_getData(DLParamDistanceSensor8, &sensorDiagLeft);
     dataLayer->DL_getData(DLParamDistanceSensor2, &sensorDiagRight);
 
-   /*if (Turn <= -4 || Turn >= 4) {
+    /*if (Turn == 200 || Turn == -200) {
+        RightAngle = 1;
         Turn = 0;
     }*/
 
-    if (((sensorDiagLeft < StopDistance)&&(sensorDiagLeft))
+
+
+    if (((Turn < -150) && (sensorDiagRight < SafeTurn) && (sensorDiagRight)) ||
+       ((Turn > 150) && (sensorDiagLeft < SafeTurn) && (sensorDiagLeft))) {
+          execution.leftSpeed = speed;
+          execution.rightSpeed = speed;
+          FollowsObstacle = 1;
+    }
+    else if (((sensorDiagLeft < StopDistance)&&(sensorDiagLeft))
          ||((sensorDiagRight < StopDistance)&&(sensorDiagRight))
          ||((sensorLeft < StopDistance)&&(sensorLeft))
          ||((sensorRight < StopDistance)&&(sensorRight))) {
@@ -50,13 +59,13 @@ AlgorithmTurn::Execution AlgorithmTurn::run() {
                ((sensorDiagLeft < StopDistance) && (sensorDiagLeft))) {
                execution.leftSpeed = 600;
                execution.rightSpeed = 0;
-               //time_delay();
+               time_delay();
                Turn++;
            }
            else if ((sensorRight < StopDistance) && (sensorRight)) {
                execution.leftSpeed = 0;
                execution.rightSpeed = 600;
-               //time_delay();
+               time_delay();
                Turn--;
            }
         }
@@ -70,27 +79,29 @@ AlgorithmTurn::Execution AlgorithmTurn::run() {
                ((sensorDiagRight < StopDistance) && (sensorDiagRight))) { //kontroll,et pööre on sooritatud piisavalt
                 execution.leftSpeed = 0;
                 execution.rightSpeed = 600;
-                //time_delay();
+                time_delay();
                 Turn--;
             }
             else if ((sensorLeft < StopDistance) && (sensorLeft)) {
                 execution.leftSpeed = 600;
                 execution.rightSpeed = 0;
-                //time_delay();
+                time_delay();
                 Turn++;
             }
         }
     }
-    else if (Turn != 0)
+    else if ((Turn < -10) || (Turn > 10))
          {
             if (Turn < 0) {
                 execution.leftSpeed = 600;
                 execution.rightSpeed = 0;
+                time_delay();
                 Turn++;
             }
             else if (Turn > 0) {
                 execution.leftSpeed = 0;
                 execution.rightSpeed = 600;
+                time_delay();
                 Turn--;
             }
     }
@@ -99,7 +110,7 @@ AlgorithmTurn::Execution AlgorithmTurn::run() {
           execution.rightSpeed = speed;
         }
     
-    qDebug() << "T" << Turn;
+    qDebug() << "T" << Turn << "FO" << FollowsObstacle;
     
     return execution;
 }

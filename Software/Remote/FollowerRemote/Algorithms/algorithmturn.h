@@ -14,6 +14,7 @@ public:
 
 private:
     const int StopDistance = 60;
+    const int SafeTurn = 150;
 
     int getSensorError();
 
@@ -25,6 +26,7 @@ private:
     int pidI;
     int pidD;
     int Turn = 0;
+    int FollowsObstacle = 0;
     //int SavedTurn;
 };
 
