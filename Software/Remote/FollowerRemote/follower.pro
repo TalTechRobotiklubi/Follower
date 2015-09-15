@@ -30,7 +30,8 @@ SOURCES += \
     Spine/SpineCommCAN.cpp \
     Algorithms/algorithmbuilder.cpp \
     Algorithms/algorithmwander.cpp \
-    Algorithms/algorithmtrack.cpp
+    Algorithms/algorithmtrack.cpp \
+    Algorithms/algorithmturn.cpp
 
 HEADERS  +=  \
     CANWorkerThread.h \
@@ -55,7 +56,8 @@ HEADERS  +=  \
     Algorithms/ialgorithm.h \
     Algorithms/algorithmbuilder.h \
     Algorithms/algorithmwander.h \
-    Algorithms/algorithmtrack.h
+    Algorithms/algorithmtrack.h \
+    Algorithms/algorithmturn.h
 
 INCLUDEPATH += \
 	 ./Data \

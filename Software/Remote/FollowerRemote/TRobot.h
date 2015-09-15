@@ -40,9 +40,9 @@ protected:
 	int GetDisdanceColor(int distance);
 	int GetAngle(int x1,int y1,int x2,int y2);
 	void SaveToFile(void);
-	int TRobot::LoadFromFile(void);
-	double TRobot::GetSpeedAngle(double s1,double s2);
-	void TRobot::PaintAngledArrow(int x1,int y1,int len,int angle,QPainter *painter,double size);
+    int LoadFromFile(void);
+    double GetSpeedAngle(double s1,double s2);
+    void PaintAngledArrow(int x1,int y1,int len,int angle,QPainter *painter,double size);
 	
 };
 

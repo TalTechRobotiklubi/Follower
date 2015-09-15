@@ -40,7 +40,7 @@ FollowerUi::FollowerUi(Follower *robot)
 	scene_->addItem(robotgui_);
 
 	qDebug() << "Liikumine - WASD";
-	qDebug() << "Algoritm start - 1,2";
+    qDebug() << "Algoritm start - 1,2,3";
 	qDebug() << "Algoritm stop - P";
 	qDebug() << "Kiirus juurde - I";
 	qDebug() << "Kiirus maha - O";
@@ -200,6 +200,9 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
         break;
 	case Qt::Key_2:  // run
         kinematics_->startAlgorithm(2);
+        break;
+    case Qt::Key_3:  // run
+        kinematics_->startAlgorithm(3);
         break;
     case Qt::Key_P:  // stop
         kinematics_->stopAlgorithm();

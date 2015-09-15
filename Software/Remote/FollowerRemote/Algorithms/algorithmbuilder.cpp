@@ -2,6 +2,7 @@
 
 #include "algorithmwander.h"
 #include "algorithmtrack.h"
+#include "algorithmturn.h"
 
 IAlgorithm* AlgorithmBuilder::create(int number, DataLayerBase* dataLayer)
 {
@@ -11,6 +12,8 @@ IAlgorithm* AlgorithmBuilder::create(int number, DataLayerBase* dataLayer)
       return new AlgorithmWander(dataLayer);
   case 2:
       return new AlgorithmTrack(dataLayer);
+  case 3:
+      return new AlgorithmTurn(dataLayer);
   default:
       return 0;
   }
