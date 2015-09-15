@@ -9,31 +9,9 @@
 #include "USART.h"
 #include "CAN.h"
 
-/* Private macro */
-/* Private variables */
-/* Private function prototypes */
-/* Private functions */
-void init(void);
 
 int main(void)
 {
-	//Initialize system
-	init();
-
-	// initialize GPIOs
-	GPIO_init();
-	// initialize sensors
-	Sensor_init();
-	// initialize USART communication
-	USART_init(USART2);
-
-	//Turn LEDs on
-	GPIO_outputOff(LED_GREEN);
-	GPIO_outputOff(LED_ORANGE);
-	GPIO_outputOff(LED_RED);
-	GPIO_outputOff(LED_BLUE);
-
-	CAN_CAN1Init();
 	// init timers with max counting time 40 ms
 	Timer_setOneShotCounter(TIMER2_ID, 40000, FALSE);
 	Timer_setOneShotCounter(TIMER3_ID, 40000, FALSE);
@@ -47,14 +25,6 @@ int main(void)
 	//__disable_irq();
 
 	return 0;
-}
-
-void init(void)
-{
-	//Enable AFIO (Alternate Function IO) clock
-	//RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
-	//Disable JTAG, but leave SWD enabled
-	//GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable,ENABLE);
 }
 
 

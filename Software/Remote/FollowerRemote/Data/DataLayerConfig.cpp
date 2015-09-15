@@ -19,7 +19,7 @@ U8    pDLValueU8[12];
 S8    pDLValueS8[3];
 U16   pDLValueU16[4];
 S16   pDLValueS16[7];
-U32   pDLValueU32[2];
+U32   pDLValueU32[10];
 
 // ----------------------------------------------------------------------------
 // Parameters descriptors
@@ -53,11 +53,19 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* TrackedObjectY      */ { TypeU16,  &pDLValueU16[1]  },
 	/* TrackedObjectHeight */ { TypeU16,  &pDLValueU16[2]  },
 	/* TrackedObjectWidth  */ { TypeU16,  &pDLValueU16[3]  },
+	/* DepthRaw0           */ { TypeU32,  &pDLValueU32[0]  },
+	/* DepthRaw1           */ { TypeU32,  &pDLValueU32[1]  },
+	/* DepthRaw2           */ { TypeU32,  &pDLValueU32[2]  },
+	/* DepthRaw3           */ { TypeU32,  &pDLValueU32[3]  },
+	/* DepthRaw4           */ { TypeU32,  &pDLValueU32[4]  },
+	/* DepthRaw5           */ { TypeU32,  &pDLValueU32[5]  },
+	/* DepthRaw6           */ { TypeU32,  &pDLValueU32[6]  },
+	/* DepthRaw7           */ { TypeU32,  &pDLValueU32[7]  },
 	/* Motor1RequestSpeed  */ { TypeS16,  &pDLValueS16[4]  },
 	/* Motor2RequestSpeed  */ { TypeS16,  &pDLValueS16[5]  },
 	/* Motor3RequestSpeed  */ { TypeS16,  &pDLValueS16[6]  },
-	/* ConstantAddress     */ { TypeU32,  &pDLValueU32[0]  },
-	/* ConstantValue       */ { TypeU32,  &pDLValueU32[1]  }
+	/* ConstantAddress     */ { TypeU32,  &pDLValueU32[8]  },
+	/* ConstantValue       */ { TypeU32,  &pDLValueU32[9]  }
 };
 
 }

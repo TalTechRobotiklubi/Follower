@@ -48,7 +48,15 @@ typedef enum
 	DLParamAccelerationX,       // 29
 	DLParamAccelerationY,       // 30
 	DLParamAccelerationZ,       // 31
-	// Count of items is 32
+	DLParamDepthRaw0,           // 32
+	DLParamDepthRaw1,           // 33
+	DLParamDepthRaw2,           // 34
+	DLParamDepthRaw3,           // 35
+	DLParamDepthRaw4,           // 36
+	DLParamDepthRaw5,           // 37
+	DLParamDepthRaw6,           // 38
+	DLParamDepthRaw7,           // 39
+	// Count of items is 40
 	DLNumberOfParams
 }
 DLParam;

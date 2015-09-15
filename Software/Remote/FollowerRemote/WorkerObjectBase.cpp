@@ -68,7 +68,7 @@ void WorkerObjectBase::newCommandsToSend()
     //spineComm_->SendControllerCommands();
 }
 
-void WorkerObjectBase::timerEvent(QTimerEvent *event)
+void WorkerObjectBase::timerEvent(QTimerEvent*)
 {   
      spineComm_->Communicate();
      

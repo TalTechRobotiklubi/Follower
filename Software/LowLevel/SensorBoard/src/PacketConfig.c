@@ -91,17 +91,33 @@ const PacketParameter psPacketAccelerationParameterList[3] =
 };
 
 // ----------------------------------------------------------------------------
+// Packet "DepthRaw" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter psPacketDepthRawParameterList[8] = 
+{
+	{ DLParamDepthRaw0,   0, 32 },
+	{ DLParamDepthRaw1,  32, 32 },
+	{ DLParamDepthRaw2,  64, 32 },
+	{ DLParamDepthRaw3,  96, 32 },
+	{ DLParamDepthRaw4, 128, 32 },
+	{ DLParamDepthRaw5, 160, 32 },
+	{ DLParamDepthRaw6, 192, 32 },
+	{ DLParamDepthRaw7, 224, 32 }
+};
+
+// ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
 PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
 {
-	/* Motor1Status    */ { 0xD1, -1, psPacketMotor1StatusParameterList,    6, 7 },
-	/* Motor2Status    */ { 0xD2, -1, psPacketMotor2StatusParameterList,    6, 7 },
-	/* TrackedObject   */ { 0xC0, -1, psPacketTrackedObjectParameterList,   4, 8 },
-	/* MotorSpeeds     */ { 0xD0, -1, psPacketMotorSpeedsParameterList,     3, 6 },
-	/* MotorPID        */ { 0xD4, -1, psPacketMotorPIDParameterList,        2, 8 },
-	/* DistanceSensors */ { 0xF0, -1, psPacketDistanceSensorsParameterList, 8, 8 },
-	/* Acceleration    */ { 0xF1, -1, psPacketAccelerationParameterList,    3, 3 }
+	/* Motor1Status    */ { 0xD1, -1, psPacketMotor1StatusParameterList,    6,  7 },
+	/* Motor2Status    */ { 0xD2, -1, psPacketMotor2StatusParameterList,    6,  7 },
+	/* TrackedObject   */ { 0xC0, -1, psPacketTrackedObjectParameterList,   4,  8 },
+	/* MotorSpeeds     */ { 0xD0, -1, psPacketMotorSpeedsParameterList,     3,  6 },
+	/* MotorPID        */ { 0xD4, -1, psPacketMotorPIDParameterList,        2,  8 },
+	/* DistanceSensors */ { 0xF0, -1, psPacketDistanceSensorsParameterList, 8,  8 },
+	/* Acceleration    */ { 0xF1, -1, psPacketAccelerationParameterList,    3,  3 },
+    /* DepthRaw        */ { 0xC1, -1, psPacketDepthRawParameterList,        8, 32 }
 };
 #define NUMBER_OF_PACKETS (sizeof(psPacketDescriptorList)/sizeof(Packet))
 

@@ -1,0 +1,4 @@
+Record=SheetSymbol|SourceDocument=BatteryManagementSystem.SchDoc|Designator=Balancer|SchDesignator=Balancer|FileName=BalancerQauge.SchDoc|SymbolType=Normal|RawFileName=BalancerQauge.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=BatteryManagementSystem.SchDoc|Designator=Battery|SchDesignator=Battery|FileName=LiPo Pack.SchDoc|SymbolType=Normal|RawFileName=LiPo Pack.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=BatteryManagementSystem.SchDoc|Designator=Charger|SchDesignator=Charger|FileName=Charger.SchDoc|SymbolType=Normal|RawFileName=Charger.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=TopLevelDocument|FileName=BatteryManagementSystem.SchDoc

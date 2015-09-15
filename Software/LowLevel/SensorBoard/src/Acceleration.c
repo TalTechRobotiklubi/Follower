@@ -13,7 +13,7 @@ static int8_t priv_ZOffset;
 
 /*function definitions*/
 
-void Acceleration_INIT(void)
+void Acceleration_init(void)
 {
 	uint8_t ctrl = 0;
 	uint8_t buffer[6];

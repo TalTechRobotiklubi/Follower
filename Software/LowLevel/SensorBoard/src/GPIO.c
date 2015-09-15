@@ -37,7 +37,10 @@ const GPIO_Struct GPIO_table[] = {
 /*USART2*/
 	{USART2_Tx,				GPIOA,	GPIO_Pin_2,		RCC_AHB1Periph_GPIOA,	EXTI_Line2, 	EXTI_PortSourceGPIOA,	GPIO_PinSource2,	USART2_IRQn},  //PC10
 	{USART2_Rx,				GPIOA,	GPIO_Pin_3,		RCC_AHB1Periph_GPIOA,	EXTI_Line3, 	EXTI_PortSourceGPIOA,	GPIO_PinSource3,	USART2_IRQn},  //PC11
-/*Accelerator - GPIO init done in acceleration module, look also stm32f4_discovery_lis302dl.h file*/
+/*I2C (Power)*/
+	{I2C3_SCL,				GPIOA,  GPIO_Pin_8, 	RCC_AHB1Periph_GPIOA,   EXTI_Line8,     EXTI_PortSourceGPIOA,	EXTI_PinSource8,	I2C3_EV_IRQn},
+	{I2C3_SDA,				GPIOC,  GPIO_Pin_9, 	RCC_AHB1Periph_GPIOC,   EXTI_Line9,     EXTI_PortSourceGPIOC,	EXTI_PinSource9,	I2C3_EV_IRQn},
+	/*Accelerator - GPIO init done in acceleration module, look also stm32f4_discovery_lis302dl.h file*/
 	// LIS302DL_SPI_SCK_PIN  - PA5
 	// LIS302DL_SPI_MISO_PIN - PA6
 	// LIS302DL_SPI_MOSI_PIN - PA7

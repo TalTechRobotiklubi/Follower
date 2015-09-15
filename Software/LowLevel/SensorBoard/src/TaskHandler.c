@@ -11,7 +11,11 @@
  * With adding new init check that id is corresponding to enum value.*/
 const INIT_STRUCT TaskHandler_tableOfInits[] = {
 		/*id              	   taskPointer */
-		{INIT_ACCELERATION,		Acceleration_INIT				},
+		{INIT_GPIO,				GPIO_init    },
+		{INIT_Sensor,			Sensor_init  },
+		{INIT_CAN,				CAN_init     },
+		{INIT_USART,			USART_init   },
+		{INIT_ACCELERATION,		Acceleration_init				},
 };
 #define NUMBER_OF_INITS  (sizeof(TaskHandler_tableOfInits) / sizeof(INIT_STRUCT))
 

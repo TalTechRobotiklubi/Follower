@@ -93,7 +93,7 @@ void FollowerUi::startCommStatus(bool status)
 
 }
 
-void FollowerUi::stopCommStatus(bool status)
+void FollowerUi::stopCommStatus(bool )
 {
     // stop timer in kinematics
     kinematics_->stopTimer();
@@ -242,12 +242,12 @@ void FollowerUi::mousePressEvent(QMouseEvent *event)
 		}
 	}
 }
-void FollowerUi::mouseMoveEvent(QMouseEvent *event)
+void FollowerUi::mouseMoveEvent(QMouseEvent*)
 {
 //ui.lbl_andur1->setText(QString("move %1 %2").arg(event->x()).arg(event->y()));
 }
 
-void FollowerUi::closeEvent(QCloseEvent * event)
+void FollowerUi::closeEvent(QCloseEvent* )
 {
 	if (workerThread_->isRunning())
     {

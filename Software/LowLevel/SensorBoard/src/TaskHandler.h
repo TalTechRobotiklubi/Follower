@@ -5,6 +5,10 @@
 
 enum INITS
 {
+	INIT_GPIO,
+	INIT_Sensor,
+	INIT_CAN,
+	INIT_USART,
 	INIT_ACCELERATION
 };
 

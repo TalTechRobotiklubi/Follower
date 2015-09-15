@@ -17,7 +17,7 @@ U8    pDLValueU8[12];
 S8    pDLValueS8[3];
 U16   pDLValueU16[4];
 S16   pDLValueS16[7];
-U32   pDLValueU32[2];
+U32   pDLValueU32[10];
 
 // ----------------------------------------------------------------------------
 // Parameters descriptors
@@ -55,6 +55,14 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* DistanceSensor8     */ { TypeU8,   &pDLValueU8[11]  },
 	/* AccelerationX       */ { TypeS8,   &pDLValueS8[0]   },
 	/* AccelerationY       */ { TypeS8,   &pDLValueS8[1]   },
-	/* AccelerationZ       */ { TypeS8,   &pDLValueS8[2]   }
+	/* AccelerationZ       */ { TypeS8,   &pDLValueS8[2]   },
+	/* DepthRaw0           */ { TypeU32,  &pDLValueU32[2]  },
+	/* DepthRaw1           */ { TypeU32,  &pDLValueU32[3]  },
+	/* DepthRaw2           */ { TypeU32,  &pDLValueU32[4]  },
+	/* DepthRaw3           */ { TypeU32,  &pDLValueU32[5]  },
+	/* DepthRaw4           */ { TypeU32,  &pDLValueU32[6]  },
+	/* DepthRaw5           */ { TypeU32,  &pDLValueU32[7]  },
+	/* DepthRaw6           */ { TypeU32,  &pDLValueU32[8]  },
+	/* DepthRaw7           */ { TypeU32,  &pDLValueU32[9]  }
 };
 

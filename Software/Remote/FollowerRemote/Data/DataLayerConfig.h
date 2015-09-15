@@ -43,12 +43,20 @@ typedef enum
 	DLParamTrackedObjectY,      // 24
 	DLParamTrackedObjectHeight, // 25
 	DLParamTrackedObjectWidth,  // 26
-	DLParamMotor1RequestSpeed,  // 27
-	DLParamMotor2RequestSpeed,  // 28
-	DLParamMotor3RequestSpeed,  // 29
-	DLParamConstantAddress,     // 30
-	DLParamConstantValue,       // 31
-	// Count of items is 32
+	DLParamDepthRaw0,           // 27
+	DLParamDepthRaw1,           // 28
+	DLParamDepthRaw2,           // 29
+	DLParamDepthRaw3,           // 30
+	DLParamDepthRaw4,           // 31
+	DLParamDepthRaw5,           // 32
+	DLParamDepthRaw6,           // 33
+	DLParamDepthRaw7,           // 34
+	DLParamMotor1RequestSpeed,  // 35
+	DLParamMotor2RequestSpeed,  // 36
+	DLParamMotor3RequestSpeed,  // 37
+	DLParamConstantAddress,     // 38
+	DLParamConstantValue,       // 39
+	// Count of items is 40
 	DLNumberOfParams
 }
 DLParam;
