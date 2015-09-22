@@ -6,6 +6,8 @@
 
 DataLayerCAN::DataLayerCAN(void)
 {
+    for (int i = 0; i < DLNumberOfParams; ++i)
+        pbValidFlags_[i] = false;
 }
 
 DataLayerCAN::~DataLayerCAN(void)
@@ -23,8 +25,6 @@ bool DataLayerCAN::DL_getData(DLParam param, DLValuePointer pValue)
 {
 	uint8_t numOfPackets, i, j;
 	PacketWithIndex *packet;
-	bool valid = false;
-	bool asyncData = false;
 
     QMutexLocker locker(&mutex_);
 
@@ -42,26 +42,19 @@ bool DataLayerCAN::DL_getData(DLParam param, DLValuePointer pValue)
 			{
 				if ((packetHandler_.Packet_getMessageParameterList(packet[i].index) + j)->eParam == param)
 				{
-					asyncData = true;
 					if (packet[i].iperiod != PACKET_WAITING)
 					{
 						packet[i].iperiod = PACKET_WAITING;
-						valid = true;
-						break;
+                        pbValidFlags_[param] = true;
 					}
+                    else
+                        pbValidFlags_[param] = false;
+                    break;
 				}
 			}
 		}
 	}
-
-	if (asyncData)
-	{
-		return valid;
-	}
-	else
-	{
-		return pbValidFlags_[param];
-	}
+    return pbValidFlags_[param];
 }
 
 /*Use this function in COMM driver layer (CAN, UART etc.) to get data from DL.

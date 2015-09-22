@@ -116,8 +116,8 @@ const PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
 	/* Motor2Status    */ { 0xD2, 0, psPacketMotor2StatusParameterList,    6,  7 },
 	/* DistanceSensors */ { 0xF0, 0, psPacketDistanceSensorsParameterList, 8,  8 },
 	/* Acceleration    */ { 0xF1, 0, psPacketAccelerationParameterList,    3,  3 },
-	/* TrackedObject   */ { 0xC0, 0, psPacketTrackedObjectParameterList,   4,  8 },
-	/* DepthRaw        */ { 0xC1, 0, psPacketDepthRawParameterList,        8, 32 },
+    /* TrackedObject   */ { 0xC0, -1, psPacketTrackedObjectParameterList,   4,  8 },
+    /* DepthRaw        */ { 0xC1, -1, psPacketDepthRawParameterList,        8, 32 },
 	/* MotorSpeeds     */ { 0xD0, 15, psPacketMotorSpeedsParameterList,    3,  6 },
 	/* MotorPID        */ { 0xD4, 0, psPacketMotorPIDParameterList,        2,  8 }
 };
