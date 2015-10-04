@@ -89,6 +89,8 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 		switch(type)
 		{
 			case TypeBool:
+			case TypeU2:
+			case TypeS2:
 			case TypeU4:
 			case TypeS4:
 			case TypeU8:
@@ -176,6 +178,8 @@ void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage
 		switch(type)
 		{
 			case TypeBool:
+			case TypeU2:
+			case TypeS2:
 			case TypeU4:
 			case TypeS4:
 			case TypeU8:
