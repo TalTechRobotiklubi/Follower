@@ -1,6 +1,8 @@
 #ifndef _TASKHANDLER_H_
 #define _TASKHANDLER_H_
 
+#include <stdint.h>
+
 #define TIMER_EXCEED_VALUE     400   //smallest value, which every task's period can be divided
 
 enum INITS
@@ -14,6 +16,7 @@ enum INITS
 
 enum TASKS
 {
+	TASK_DATAHANDLER,
 	TASK_CAN,
 	TASK_USART,
 	TASK_SENSOR1_START,

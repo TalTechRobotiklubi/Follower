@@ -49,20 +49,10 @@ const PacketParameter psPacketTrackedObjectParameterList[4] =
 // ----------------------------------------------------------------------------
 // Packet "MotorSpeeds" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter psPacketMotorSpeedsParameterList[3] = 
+const PacketParameter psPacketMotorSpeedsParameterList[2] = 
 {
 	{ DLParamMotor1RequestSpeed,  0, 16 },
-	{ DLParamMotor2RequestSpeed, 16, 16 },
-	{ DLParamMotor3RequestSpeed, 32, 16 }
-};
-
-// ----------------------------------------------------------------------------
-// Packet "MotorPID" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketMotorPIDParameterList[2] = 
-{
-	{ DLParamConstantAddress,  0, 32 },
-	{ DLParamConstantValue,   32, 32 }
+	{ DLParamMotor2RequestSpeed, 16, 16 }
 };
 
 // ----------------------------------------------------------------------------
@@ -108,15 +98,14 @@ const PacketParameter psPacketDepthRawParameterList[8] =
 // ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
-PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
+PacketDescriptor psPacketDescriptorList[NumberOfPackets] = 
 {
 	/* Motor1Status    */ { 0xD1, -1, psPacketMotor1StatusParameterList,    6,  7 },
 	/* Motor2Status    */ { 0xD2, -1, psPacketMotor2StatusParameterList,    6,  7 },
 	/* TrackedObject   */ { 0xC0, -1, psPacketTrackedObjectParameterList,   4,  8 },
-	/* MotorSpeeds     */ { 0xD0, -1, psPacketMotorSpeedsParameterList,     3,  6 },
-	/* MotorPID        */ { 0xD4, -1, psPacketMotorPIDParameterList,        2,  8 },
-	/* DistanceSensors */ { 0xF0, -1, psPacketDistanceSensorsParameterList, 8,  8 },
-	/* Acceleration    */ { 0xF1, -1, psPacketAccelerationParameterList,    3,  3 },
+	/* MotorSpeeds     */ { 0xD0, -1, psPacketMotorSpeedsParameterList,     2,  4 },
+	/* DistanceSensors */ { 0xF0,  0, psPacketDistanceSensorsParameterList, 8,  8 },
+	/* Acceleration    */ { 0xF1,  0, psPacketAccelerationParameterList,    3,  3 },
     /* DepthRaw        */ { 0xC1, -1, psPacketDepthRawParameterList,        8, 32 }
 };
 #define NUMBER_OF_PACKETS (sizeof(psPacketDescriptorList)/sizeof(Packet))

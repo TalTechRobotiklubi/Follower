@@ -4,7 +4,6 @@
 #include "USART.h"
 #include "GPIO.h"
 #include "DataLayer.h"
-#include "TaskHandler.h"
 #include "InterfaceHandler.h"
 
 /* splitted u16 type, which can be accessed in separate byte manner*/
@@ -57,7 +56,9 @@ static GPIO_IdDef UARTx_GPIO_init(USART_TypeDef *uartX);
 static void UARTx_IRQ_init(GPIO_IdDef);
 static void UARTxBuffersInit(USART_TypeDef *uartX);
 static void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, ReceivingDataState* rxState);
+static void sendMessage(USART_TypeDef *uartX, InterfaceMessage* msg);
 static void sendMessageToUSART2(InterfaceMessage* msg);
+static void sendMessageToUART4(InterfaceMessage* msg);
 static void handleTransmitData(void);
 static Interface findInterface(USART_TypeDef *uartX);
 
@@ -433,41 +434,50 @@ void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, ReceivingD
 	USART_ITConfig(activeUART, USART_IT_RXNE, ENABLE);  // enable UART receive interrupts
 }
 
-
-void sendMessageToUSART2(InterfaceMessage* msg)
+void sendMessage(USART_TypeDef *uartX, InterfaceMessage* msg)
 {
 	splitU16 crc;
 	uint16_t j;
 
-	USART_SendChar(USART2, 0xAA);
+	USART_SendChar(uartX, 0xAA);
 	crc.u16 = 0xAA;
-	USART_SendChar(USART2, msg->id);
+	USART_SendChar(uartX, msg->id);
 	crc.u16 += msg->id;
-	USART_SendChar(USART2, msg->length);
+	USART_SendChar(uartX, msg->length);
 	crc.u16 += msg->length;
 	for (j = 0; j < msg->length; j++)
 	{
-		USART_SendChar(USART2, msg->data[j]);
+		USART_SendChar(uartX, msg->data[j]);
 		crc.u16 += msg->data[j];
 	}
-	USART_SendChar(USART2, crc.u8.byteHigh);
-	USART_SendChar(USART2, crc.u8.byteLow);
+	USART_SendChar(uartX, crc.u8.byteHigh);
+	USART_SendChar(uartX, crc.u8.byteLow);
+}
+
+void sendMessageToUSART2(InterfaceMessage* msg)
+{
+	sendMessage(USART2, msg);
+}
+
+void sendMessageToUART4(InterfaceMessage* msg)
+{
+	sendMessage(UART4, msg);
 }
 
 Interface findInterface(USART_TypeDef *uartX)
 {
 	Interface interface = NumberOfInterfaces;
 	if (uartX == UART4)
-		interface = InterfaceUART_Kinect;
+		interface = InterfaceUART_Zotac;
 	else if (uartX == USART2)
 		interface = InterfaceUART_Remote;
 	return interface;
 }
 
-
 void handleTransmitData(void)
 {
-	InterfaceHandler_transmitData(findInterface(USART2), sendMessageToUSART2, TaskHandler_tableOfTasks[TASK_USART].period);
+	InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(findInterface(UART4), sendMessageToUART4);
+	InterfaceHandler_transmitData(findInterface(USART2), sendMessageToUSART2);
 }
 
 void USART_init()

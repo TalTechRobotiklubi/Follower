@@ -2,7 +2,6 @@
 #include "stm32f4xx.h"
 #include "GPIO.h"
 #include "InterfaceHandler.h"
-#include "TaskHandler.h"
 
 typedef enum
 {
@@ -211,7 +210,7 @@ void handleReceivedData(void)
 
 void handleTransmitData(void)
 {
-	InterfaceHandler_transmitData(InterfaceCAN, sendCANmessage, TaskHandler_tableOfTasks[TASK_CAN].period);
+	InterfaceHandler_transmitData(InterfaceCAN, sendCANmessage);
 }
 
 

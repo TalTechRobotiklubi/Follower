@@ -21,11 +21,10 @@ typedef enum
 	PacketMotor2Status,    // 1
 	PacketTrackedObject,   // 2
 	PacketMotorSpeeds,     // 3
-	PacketMotorPID,        // 4
-	PacketDistanceSensors, // 5
-	PacketAcceleration,    // 6
-	PacketDepthRaw,        // 7
-	// Count of items is 8
+	PacketDistanceSensors, // 4
+	PacketAcceleration,    // 5
+	PacketDepthRaw,        // 6
+	// Count of items is 7
 	NumberOfPackets
 }
 Packet;

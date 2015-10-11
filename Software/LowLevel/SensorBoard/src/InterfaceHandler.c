@@ -5,7 +5,7 @@ void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage
 uint8_t getBitmaskForMessage(uint8_t bitPosition, int16_t length);
 void initalizeInterfaceMessage(InterfaceMessage *message, PacketDescriptor* packetDesc);
 
-void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(InterfaceMessage* msg), int16_t elapsedTime)
+void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(InterfaceMessage* msg))
 {
 	uint8_t i;
 	InterfaceMessage message;
@@ -19,10 +19,8 @@ void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(Int
 		// periodic packets
 		if (transmitPacket.ulPeriod >= 0)
 		{
-			packetDesc->iPeriod += elapsedTime;
-			if (packetDesc->iPeriod >= transmitPacket.ulPeriod)
+			if (packetDesc->iPeriod == transmitPacket.ulPeriod)
 			{
-				packetDesc->iPeriod = 0;
 				message.packet = transmitPacket.ePacket;
 				initalizeInterfaceMessage(&message, packetDesc);
 				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
@@ -40,6 +38,28 @@ void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(Int
 	}
 }
 
+/*peeks async data and transmits it if needed. Does not affect the status*/
+void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interface, void (*funcToDriver)(InterfaceMessage* msg))
+{
+	uint8_t i;
+	InterfaceMessage message;
+
+	NodeInterfaceDescriptor interfaceDesc = psInterfaceList[interface];
+	for (i = 0; i < interfaceDesc.uiTransmitPacketCount; i++)
+	{
+		InterfaceTransmitPacket transmitPacket = interfaceDesc.psTransmitPacketList[i];
+		PacketDescriptor *packetDesc = &psPacketDescriptorList[transmitPacket.ePacket];
+
+		if (transmitPacket.ulPeriod < 0) // aperiodic packets
+		{
+			if (packetDesc->iPeriod == PACKET_READY_TO_SEND)
+			{
+				initalizeInterfaceMessage(&message, packetDesc);
+				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
+			}
+		}
+	}
+}
 
 /* NB! May be called from interrupt!!! Function not re-entrant, so disable interrupt(s) when calling it from main*/
 Bool InterfaceHandler_checkIfReceivedMessageExists(Interface interface, InterfaceMessage* msg)

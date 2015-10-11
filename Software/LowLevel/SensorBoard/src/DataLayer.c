@@ -45,7 +45,6 @@ Boolean DL_getData(DLParam param, DLValuePointer pValue)
 					asyncData = TRUE;
 					if (packet->iPeriod != PACKET_WAITING)
 					{
-
 						packet->iPeriod = PACKET_WAITING;
 						valid = TRUE;
 					}

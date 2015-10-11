@@ -34,29 +34,26 @@ typedef enum
 	DLParamTrackedObjectWidth,  // 15
 	DLParamMotor1RequestSpeed,  // 16
 	DLParamMotor2RequestSpeed,  // 17
-	DLParamMotor3RequestSpeed,  // 18
-	DLParamConstantAddress,     // 19
-	DLParamConstantValue,       // 20
-	DLParamDistanceSensor1,     // 21
-	DLParamDistanceSensor2,     // 22
-	DLParamDistanceSensor3,     // 23
-	DLParamDistanceSensor4,     // 24
-	DLParamDistanceSensor5,     // 25
-	DLParamDistanceSensor6,     // 26
-	DLParamDistanceSensor7,     // 27
-	DLParamDistanceSensor8,     // 28
-	DLParamAccelerationX,       // 29
-	DLParamAccelerationY,       // 30
-	DLParamAccelerationZ,       // 31
-	DLParamDepthRaw0,           // 32
-	DLParamDepthRaw1,           // 33
-	DLParamDepthRaw2,           // 34
-	DLParamDepthRaw3,           // 35
-	DLParamDepthRaw4,           // 36
-	DLParamDepthRaw5,           // 37
-	DLParamDepthRaw6,           // 38
-	DLParamDepthRaw7,           // 39
-	// Count of items is 40
+	DLParamDistanceSensor1,     // 18
+	DLParamDistanceSensor2,     // 19
+	DLParamDistanceSensor3,     // 20
+	DLParamDistanceSensor4,     // 21
+	DLParamDistanceSensor5,     // 22
+	DLParamDistanceSensor6,     // 23
+	DLParamDistanceSensor7,     // 24
+	DLParamDistanceSensor8,     // 25
+	DLParamAccelerationX,       // 26
+	DLParamAccelerationY,       // 27
+	DLParamAccelerationZ,       // 28
+	DLParamDepthRaw0,           // 29
+	DLParamDepthRaw1,           // 30
+	DLParamDepthRaw2,           // 31
+	DLParamDepthRaw3,           // 32
+	DLParamDepthRaw4,           // 33
+	DLParamDepthRaw5,           // 34
+	DLParamDepthRaw6,           // 35
+	DLParamDepthRaw7,           // 36
+	// Count of items is 37
 	DLNumberOfParams
 }
 DLParam;

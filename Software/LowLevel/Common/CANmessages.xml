@@ -10,10 +10,6 @@
       <Type>S16</Type>
     </Parameter>
     <Parameter>
-      <Name>Motor3RequestSpeed</Name>
-      <Type>S16</Type>
-    </Parameter>
-    <Parameter>
       <Name>Motor1ActualSpeed</Name>
       <Type>S16</Type>
     </Parameter>
@@ -60,14 +56,6 @@
     <Parameter>
       <Name>Motor2EncoderClicks</Name>
       <Type>S16</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ConstantAddress</Name>
-      <Type>U32</Type>
-    </Parameter>
-    <Parameter>
-      <Name>ConstantValue</Name>
-      <Type>U32</Type>
     </Parameter>
     <Parameter>
       <Name>DistanceSensor1</Name>
@@ -174,9 +162,6 @@
         <PacketParameter>
           <Parameter>Motor2RequestSpeed</Parameter>
         </PacketParameter>
-        <PacketParameter>
-          <Parameter>Motor3RequestSpeed</Parameter>
-        </PacketParameter>
       </PacketParameters>
     </Packet>
     <Packet>
@@ -226,19 +211,6 @@
         </PacketParameter>
         <PacketParameter>
           <Parameter>Motor2BridgeBFault</Parameter>
-        </PacketParameter>
-      </PacketParameters>
-    </Packet>
-    <Packet>
-      <ID>212</ID>
-      <Name>MotorPID</Name>
-      <NominalPeriod>0</NominalPeriod>
-      <PacketParameters>
-        <PacketParameter>
-          <Parameter>ConstantAddress</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>ConstantValue</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
@@ -343,43 +315,39 @@
   <Nodes>
     <Node>
       <ID>0</ID>
-      <Name>PC</Name>
+      <Name>Remote</Name>
       <Interfaces>
         <Interface>
           <Name>UART</Name>
           <ReceivePackets>
             <ReceivePacket>
               <Packet>Motor1Status</Packet>
-              <Period>0</Period>
+              <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
               <Packet>Motor2Status</Packet>
-              <Period>0</Period>
+              <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
               <Packet>DistanceSensors</Packet>
-              <Period>0</Period>
+              <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
               <Packet>Acceleration</Packet>
-              <Period>0</Period>
+              <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
               <Packet>TrackedObject</Packet>
-              <Period>0</Period>
+              <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
               <Packet>DepthRaw</Packet>
-              <Period>0</Period>
+              <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>MotorSpeeds</Packet>
-              <Period>0</Period>
-            </TransmitPacket>
-            <TransmitPacket>
-              <Packet>MotorPID</Packet>
               <Period>0</Period>
             </TransmitPacket>
           </TransmitPackets>
@@ -411,10 +379,6 @@
               <Packet>MotorSpeeds</Packet>
               <Period>-1</Period>
             </TransmitPacket>
-            <TransmitPacket>
-              <Packet>MotorPID</Packet>
-              <Period>-1</Period>
-            </TransmitPacket>
           </TransmitPackets>
         </Interface>
         <Interface>
@@ -422,10 +386,6 @@
           <ReceivePackets>
             <ReceivePacket>
               <Packet>MotorSpeeds</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>MotorPID</Packet>
               <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
@@ -457,7 +417,7 @@
           </TransmitPackets>
         </Interface>
         <Interface>
-          <Name>UART_Kinect</Name>
+          <Name>UART_Zotac</Name>
           <ReceivePackets>
             <ReceivePacket>
               <Packet>TrackedObject</Packet>
@@ -467,8 +427,29 @@
               <Packet>DepthRaw</Packet>
               <Period>-1</Period>
             </ReceivePacket>
+            <ReceivePacket>
+              <Packet>MotorSpeeds</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
           </ReceivePackets>
-          <TransmitPackets />
+          <TransmitPackets>
+            <TransmitPacket>
+              <Packet>Motor1Status</Packet>
+              <Period>-1</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>Motor2Status</Packet>
+              <Period>-1</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>DistanceSensors</Packet>
+              <Period>100</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>Acceleration</Packet>
+              <Period>100</Period>
+            </TransmitPacket>
+          </TransmitPackets>
         </Interface>
       </Interfaces>
     </Node>
@@ -481,17 +462,13 @@
           <ReceivePackets>
             <ReceivePacket>
               <Packet>MotorSpeeds</Packet>
-              <Period>0</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>MotorPID</Packet>
-              <Period>0</Period>
+              <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>Motor1Status</Packet>
-              <Period>0</Period>
+              <Period>20</Period>
             </TransmitPacket>
           </TransmitPackets>
         </Interface>
@@ -506,17 +483,13 @@
           <ReceivePackets>
             <ReceivePacket>
               <Packet>MotorSpeeds</Packet>
-              <Period>0</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>MotorPID</Packet>
-              <Period>0</Period>
+              <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>Motor2Status</Packet>
-              <Period>0</Period>
+              <Period>20</Period>
             </TransmitPacket>
           </TransmitPackets>
         </Interface>
@@ -524,15 +497,40 @@
     </Node>
     <Node>
       <ID>0</ID>
-      <Name>VisionModule</Name>
+      <Name>Zotac</Name>
       <Interfaces>
         <Interface>
-          <Name>CAN</Name>
-          <ReceivePackets />
+          <Name>UART</Name>
+          <ReceivePackets>
+            <ReceivePacket>
+              <Packet>Motor1Status</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>Motor2Status</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>DistanceSensors</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>Acceleration</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+          </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
+              <Packet>MotorSpeeds</Packet>
+              <Period>20</Period>
+            </TransmitPacket>
+            <TransmitPacket>
               <Packet>TrackedObject</Packet>
-              <Period>0</Period>
+              <Period>100</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>DepthRaw</Packet>
+              <Period>100</Period>
             </TransmitPacket>
           </TransmitPackets>
         </Interface>

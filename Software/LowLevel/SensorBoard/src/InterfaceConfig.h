@@ -19,7 +19,7 @@ typedef enum
 {
 	InterfaceCAN,        
 	InterfaceUART_Remote,
-	InterfaceUART_Kinect,
+	InterfaceUART_Zotac, 
 	// Count of items is 3
 	NumberOfInterfaces
 }
