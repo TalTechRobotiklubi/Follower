@@ -1,3 +1,7 @@
+Needed 3rd party libraries: 
+* OpenCV 2.4.11
+* Boost 1.55
+
 Zotac build
 
 ```
