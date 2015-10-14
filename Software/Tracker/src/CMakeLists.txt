@@ -1,14 +1,7 @@
-if (WIN32)
-  include_directories(
-    "${bx_INCLUDE_DIR}/compat/msvc"
-  )
-endif()
-
 include_directories(
   ${KINECTV2_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
   ${bx_INCLUDE_DIR}
-  ${bgfx_INCLUDE_DIR}
   "${CMAKE_SOURCE_DIR}/src"
   ${OpenCV_INCLUDE_DIRS}
 )
@@ -103,7 +96,7 @@ target_link_libraries(
   imgui
   ${Boost_LIBRARIES}
   ${KINECTV2_LIBRARY}
-  ${bgfx_LIBRARY}
+  bgfx
   glfw
   ${GLFW_LIBRARIES}
   ${OpenCV_LIBS}
