@@ -4,11 +4,11 @@
 
 float gaussian(float mu, float sigma, float x) {
   const float variance = sigma * sigma;
-  return std::exp(-std::pow(mu - x, 2) / variance * 0.5f) / std::sqrt(2.f * M_PI * variance);
+  return std::exp(-std::pow(mu - x, 2) / variance * 0.5f) /
+         std::sqrt(2.f * M_PI * variance);
 }
 
 void pf_update(particle_filter* pf, vec2 position) {
-
   const float noise = 10.f;
   std::normal_distribution<float> x_dist(position.x, noise);
   std::normal_distribution<float> y_dist(position.y, noise);
@@ -20,7 +20,8 @@ void pf_update(particle_filter* pf, vec2 position) {
   pf->weights.clear();
   pf->max_w = 0.f;
   for (vec2 p : pf->particles) {
-    float prob = gaussian(p.x, noise, position.x) * gaussian(p.y, noise, position.y);
+    float prob =
+        gaussian(p.x, noise, position.x) * gaussian(p.y, noise, position.y);
     pf->weights.push_back(prob);
 
     if (prob > pf->max_w) {
@@ -50,7 +51,7 @@ void pf_update(particle_filter* pf, vec2 position) {
 }
 
 vec2 pf_sample(particle_filter* pf) {
-  vec2 mean = { 0.0f, 0.0f };
+  vec2 mean = {0.0f, 0.0f};
   for (const vec2& p : pf->particles) {
     mean.x += p.x;
     mean.y += p.y;

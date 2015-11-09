@@ -6,7 +6,6 @@
 #include <random>
 
 struct particle_filter {
-
   std::vector<vec2> particles;
   std::vector<float> weights;
   float measure_noise = 10.0f;
@@ -17,6 +16,5 @@ struct particle_filter {
 
 void pf_update(particle_filter* pf, vec2 position);
 vec2 pf_sample(particle_filter* pf);
-
 
 #endif

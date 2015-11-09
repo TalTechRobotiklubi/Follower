@@ -17,6 +17,7 @@ void hog_destroy(hog_detect* hog);
 
 void hog_load_cascade(hog_detect* hog, const char* name);
 
-hog_result hog_do_detect(hog_detect* hog, uint8_t* image, int width, int height);
+hog_result hog_do_detect(hog_detect* hog, uint8_t* image, int width,
+                         int height);
 
 #endif
