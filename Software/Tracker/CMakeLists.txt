@@ -27,7 +27,7 @@ add_subdirectory("third_party/glfw-3.1.1")
 add_subdirectory("third_party/bgfx")
 
 if (WIN32)
-  find_package(KinectV2 REQUIRED)
+  #find_package(KinectV2 REQUIRED)
   add_definitions(
     -D_WIN32_WINNT=0x0501
     -D_SCL_SECURE_NO_WARNINGS

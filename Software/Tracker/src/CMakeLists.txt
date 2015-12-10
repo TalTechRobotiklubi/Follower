@@ -73,8 +73,8 @@ set(FOLLOWER_INCLUDES
 )
 
 if (WIN32)
-  list(APPEND FOLLOWER_SOURCES kinect_live_source.cpp)
-  list(APPEND FOLLOWER_INCLUDES kinect_live_source.h)
+#  list(APPEND FOLLOWER_SOURCES kinect_live_source.cpp)
+#  list(APPEND FOLLOWER_INCLUDES kinect_live_source.h)
 endif()
 
 add_library(imgui

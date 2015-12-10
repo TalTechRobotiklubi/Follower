@@ -4,14 +4,14 @@
 enum INITS
 {
 	INIT_GPIO,
-	INIT_VISION,
-	INIT_CAN
+	INIT_CAN,
+	INIT_USB
 };
 
 enum TASKS
 {
-	TASK_VISION,
 	TASK_CAN,
+	TASK_USB,
 	TASK_LED
 };
 

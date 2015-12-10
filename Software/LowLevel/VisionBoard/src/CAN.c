@@ -221,8 +221,9 @@ void CAN_init(void)
 }
 
 
-void CAN_TASK(void)
+void CAN_task(void)
 {
+	handleReceivedData();
 	handleTransmitData();
 }
 

@@ -104,7 +104,7 @@ GPIO_InputDef GPIO_inputValue(GPIO_IdDef io)
 }
 
 
-void GPIO_TASK_blinkLED(void)
+void GPIO_task(void)
 {
 	static uint8_t state = 0;
 

@@ -335,7 +335,7 @@ int main(int argc, char *argv[]) {
 	}
 	else {
 		printf("frame source: kinect\n");
-#ifdef WIN32
+#if 0 //def WIN32
 		follower.frame_source.reset(new kinect_live_source());
 #else
     follower.frame_source.reset(new kinect_null_frame_source());

@@ -41,7 +41,7 @@ extern void   GPIO_init(void);
 extern void   GPIO_outputOn(GPIO_IdDef io);
 extern void   GPIO_outputOff(GPIO_IdDef io);
 GPIO_InputDef GPIO_inputValue(GPIO_IdDef io);
-extern void   GPIO_TASK_blinkLED(void);
+extern void   GPIO_task(void);
 
 extern const GPIO_Struct GPIO_table[];
 

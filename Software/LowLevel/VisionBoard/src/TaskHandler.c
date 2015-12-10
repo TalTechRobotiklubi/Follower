@@ -2,16 +2,16 @@
 #include "TaskHandler.h"
 #include "SystemTicks.h"
 #include "GPIO.h"
-#include "Vision.h"
 #include "CAN.h"
+#include "usb.h"
 
 /*Table of initialization tasks. All functions in tables are called once after initializing system clock.
  * With adding new init check that id is corresponding to enum value.*/
 const INIT_STRUCT TaskHandler_tableOfInits[] = {
 		/*id              	   taskPointer */
 		{INIT_GPIO,				GPIO_init   },
-		{INIT_VISION,			Vision_init },
-		{INIT_CAN,				CAN_init    }
+		{INIT_CAN,				CAN_init    },
+		{INIT_USB,				USB_init	}
 };
 #define NUMBER_OF_INITS  (sizeof(TaskHandler_tableOfInits) / sizeof(INIT_STRUCT))
 
@@ -19,9 +19,9 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
  *Check that id is corresponding to enum value.*/
 const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		/*id              	  period (ms)   offset (ms)   taskPointer */
-		{TASK_VISION,			  200,		    0,			Vision_TASK      	    },
-		{TASK_CAN,			       20,		   10,			CAN_TASK      	        },
-		{TASK_LED,				  200,		    0,			GPIO_TASK_blinkLED	    },
+		{TASK_CAN,			       20,		   10,			CAN_task      	},
+		{TASK_USB,				   20,		    0,			USB_task		},
+		{TASK_LED,				  200,		    0,			GPIO_task		},
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))
 

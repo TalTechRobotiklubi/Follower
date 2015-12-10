@@ -102,52 +102,12 @@
       <Type>S8</Type>
     </Parameter>
     <Parameter>
-      <Name>TrackedObjectX</Name>
-      <Type>U16</Type>
+      <Name>CameraRequestXDegree</Name>
+      <Type>S8</Type>
     </Parameter>
     <Parameter>
-      <Name>TrackedObjectY</Name>
-      <Type>U16</Type>
-    </Parameter>
-    <Parameter>
-      <Name>TrackedObjectHeight</Name>
-      <Type>U16</Type>
-    </Parameter>
-    <Parameter>
-      <Name>TrackedObjectWidth</Name>
-      <Type>U16</Type>
-    </Parameter>
-    <Parameter>
-      <Name>DepthRaw0</Name>
-      <Type>U32</Type>
-    </Parameter>
-    <Parameter>
-      <Name>DepthRaw1</Name>
-      <Type>U32</Type>
-    </Parameter>
-    <Parameter>
-      <Name>DepthRaw2</Name>
-      <Type>U32</Type>
-    </Parameter>
-    <Parameter>
-      <Name>DepthRaw3</Name>
-      <Type>U32</Type>
-    </Parameter>
-    <Parameter>
-      <Name>DepthRaw4</Name>
-      <Type>U32</Type>
-    </Parameter>
-    <Parameter>
-      <Name>DepthRaw5</Name>
-      <Type>U32</Type>
-    </Parameter>
-    <Parameter>
-      <Name>DepthRaw6</Name>
-      <Type>U32</Type>
-    </Parameter>
-    <Parameter>
-      <Name>DepthRaw7</Name>
-      <Type>U32</Type>
+      <Name>CameraRequestZDegree</Name>
+      <Type>S8</Type>
     </Parameter>
   </Parameters>
   <Packets>
@@ -262,52 +222,15 @@
       </PacketParameters>
     </Packet>
     <Packet>
-      <ID>192</ID>
-      <Name>TrackedObject</Name>
+      <ID>224</ID>
+      <Name>CameraControl</Name>
       <NominalPeriod>0</NominalPeriod>
       <PacketParameters>
         <PacketParameter>
-          <Parameter>TrackedObjectX</Parameter>
+          <Parameter>CameraRequestXDegree</Parameter>
         </PacketParameter>
         <PacketParameter>
-          <Parameter>TrackedObjectY</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>TrackedObjectHeight</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>TrackedObjectWidth</Parameter>
-        </PacketParameter>
-      </PacketParameters>
-    </Packet>
-    <Packet>
-      <ID>193</ID>
-      <Name>DepthRaw</Name>
-      <NominalPeriod>0</NominalPeriod>
-      <PacketParameters>
-        <PacketParameter>
-          <Parameter>DepthRaw0</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>DepthRaw1</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>DepthRaw2</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>DepthRaw3</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>DepthRaw4</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>DepthRaw5</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>DepthRaw6</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>DepthRaw7</Parameter>
+          <Parameter>CameraRequestZDegree</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
@@ -336,14 +259,6 @@
               <Packet>Acceleration</Packet>
               <Period>-1</Period>
             </ReceivePacket>
-            <ReceivePacket>
-              <Packet>TrackedObject</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>DepthRaw</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
@@ -356,7 +271,7 @@
     </Node>
     <Node>
       <ID>0</ID>
-      <Name>CommModule</Name>
+      <Name>SensorBoard</Name>
       <Interfaces>
         <Interface>
           <Name>CAN</Name>
@@ -369,15 +284,19 @@
               <Packet>Motor2Status</Packet>
               <Period>-1</Period>
             </ReceivePacket>
-            <ReceivePacket>
-              <Packet>TrackedObject</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>MotorSpeeds</Packet>
               <Period>-1</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>DistanceSensors</Packet>
+              <Period>100</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>Acceleration</Packet>
+              <Period>100</Period>
             </TransmitPacket>
           </TransmitPackets>
         </Interface>
@@ -405,49 +324,6 @@
             <TransmitPacket>
               <Packet>Motor2Status</Packet>
               <Period>-1</Period>
-            </TransmitPacket>
-            <TransmitPacket>
-              <Packet>TrackedObject</Packet>
-              <Period>-1</Period>
-            </TransmitPacket>
-            <TransmitPacket>
-              <Packet>DepthRaw</Packet>
-              <Period>-1</Period>
-            </TransmitPacket>
-          </TransmitPackets>
-        </Interface>
-        <Interface>
-          <Name>UART_Zotac</Name>
-          <ReceivePackets>
-            <ReceivePacket>
-              <Packet>TrackedObject</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>DepthRaw</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>MotorSpeeds</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
-          </ReceivePackets>
-          <TransmitPackets>
-            <TransmitPacket>
-              <Packet>Motor1Status</Packet>
-              <Period>-1</Period>
-            </TransmitPacket>
-            <TransmitPacket>
-              <Packet>Motor2Status</Packet>
-              <Period>-1</Period>
-            </TransmitPacket>
-            <TransmitPacket>
-              <Packet>DistanceSensors</Packet>
-              <Period>100</Period>
-            </TransmitPacket>
-            <TransmitPacket>
-              <Packet>Acceleration</Packet>
-              <Period>100</Period>
             </TransmitPacket>
           </TransmitPackets>
         </Interface>
@@ -525,12 +401,68 @@
               <Period>20</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>TrackedObject</Packet>
-              <Period>100</Period>
+              <Packet>CameraControl</Packet>
+              <Period>20</Period>
+            </TransmitPacket>
+          </TransmitPackets>
+        </Interface>
+      </Interfaces>
+    </Node>
+    <Node>
+      <ID>0</ID>
+      <Name>VisionBoard</Name>
+      <Interfaces>
+        <Interface>
+          <Name>CAN</Name>
+          <ReceivePackets>
+            <ReceivePacket>
+              <Packet>Motor1Status</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>Motor2Status</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>DistanceSensors</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>Acceleration</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+          </ReceivePackets>
+          <TransmitPackets>
+            <TransmitPacket>
+              <Packet>MotorSpeeds</Packet>
+              <Period>-1</Period>
+            </TransmitPacket>
+          </TransmitPackets>
+        </Interface>
+        <Interface>
+          <Name>UART_Zotac</Name>
+          <ReceivePackets>
+            <ReceivePacket>
+              <Packet>MotorSpeeds</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
+          </ReceivePackets>
+          <TransmitPackets>
+            <TransmitPacket>
+              <Packet>Motor1Status</Packet>
+              <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>DepthRaw</Packet>
-              <Period>100</Period>
+              <Packet>Motor2Status</Packet>
+              <Period>-1</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>DistanceSensors</Packet>
+              <Period>-1</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>Acceleration</Packet>
+              <Period>-1</Period>
             </TransmitPacket>
           </TransmitPackets>
         </Interface>
