@@ -9,11 +9,7 @@ set(Boost_USE_STATIC_RUNTIME    OFF)
 
 find_package(Boost 1.55 COMPONENTS
   system
-  program_options
-  date_time
-  regex
   thread
-  chrono
   REQUIRED)
 
 find_package(OpenCV REQUIRED)
@@ -23,11 +19,12 @@ if (WIN32)
   include_directories("${bx_INCLUDE_DIR}/compat/msvc")
 endif()
 
+add_subdirectory("third_party/libyuv")
 add_subdirectory("third_party/glfw-3.1.1")
 add_subdirectory("third_party/bgfx")
 
 if (WIN32)
-  #find_package(KinectV2 REQUIRED)
+  find_package(KinectV2 REQUIRED)
   add_definitions(
     -D_WIN32_WINNT=0x0501
     -D_SCL_SECURE_NO_WARNINGS
@@ -40,6 +37,7 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 INCLUDE_DIRECTORIES(
+  "third_party/libyuv/include"
   "third_party/glfw-3.1.1/include"
   "third_party/eigen"
   "third_party/bgfx/include"

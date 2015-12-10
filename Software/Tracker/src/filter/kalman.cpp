@@ -9,7 +9,7 @@ void kalman_update(kalman_filter* filter, const Eigen::Vector2f& measurement) {
 }
 
 Eigen::Vector4f kalman_predict(kalman_filter* filter) {
-  filter->state = filter->F * filter->state; // +u
+  filter->state = filter->F * filter->state;  // +u
   filter->P = filter->F * filter->P * filter->F.transpose() + filter->Q;
   return filter->state;
 }

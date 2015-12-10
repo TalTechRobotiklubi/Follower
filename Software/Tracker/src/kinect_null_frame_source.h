@@ -4,7 +4,7 @@
 #include "kinect_frame_source.h"
 
 struct kinect_null_frame_source : kinect_frame_source {
-	const kinect_frame* get_frame(float) override { return nullptr; }
+  const kinect_frame* get_frame(float) override { return nullptr; }
 };
 
 #endif

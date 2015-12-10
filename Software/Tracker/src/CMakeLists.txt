@@ -32,8 +32,6 @@ set(FOLLOWER_SOURCES
   AABB.cpp
   AsyncSerial.cpp
   crc.cpp
-  kinect_recording.cpp
-  kinect_record_source.cpp
   msgpack.cpp
   pos_texcoord_vertex.cpp
   follower_ctx.cpp
@@ -43,38 +41,50 @@ set(FOLLOWER_SOURCES
   filter/kalman.cpp
   filter/particle_filter.cpp
 
+  fl_block_alloc.cpp
+  fl_kinect_stream_source.cpp
   fl_math.cpp
+  fl_render.cpp
+  fl_stream_reader.cpp
+  fl_stream_writer.cpp
+  fl_ui_layout.cpp
+  fl_yuy2_convert.cpp
 
   interp/cubic_hermite.cpp
-
-  stb_image_resize.cpp
 )
 
 set(FOLLOWER_INCLUDES
   AABB.h
   AsyncSerial.h
+
+  fl_constants.h
+
   crc.h
 
+  fl_block_alloc.h
+  fl_kinect_stream_source.h
   fl_math.h
+  fl_render.h
+  fl_stream.h
+  fl_stream_reader.h
+  fl_stream_writer.h
+  fl_ui_layout.h
+  fl_yuy2_convert.h
 
   follower_ctx.h
-  kinect_recording.h
   kinect_frame.h
   kinect_frame_source.h
   kinect_null_frame_source.h
-  kinect_record_source.h
   msgpack.h
   shaders.h
-
-  stb_image_resize.h
 
   vec2.h
   hog_detect.h
 )
 
 if (WIN32)
-#  list(APPEND FOLLOWER_SOURCES kinect_live_source.cpp)
-#  list(APPEND FOLLOWER_INCLUDES kinect_live_source.h)
+  list(APPEND FOLLOWER_SOURCES kinect_live_source.cpp)
+  list(APPEND FOLLOWER_INCLUDES kinect_live_source.h)
 endif()
 
 add_library(imgui
@@ -100,4 +110,5 @@ target_link_libraries(
   glfw
   ${GLFW_LIBRARIES}
   ${OpenCV_LIBS}
+  yuv
 )

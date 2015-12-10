@@ -2,11 +2,12 @@
 #define __VEC2_H__
 
 struct vec2 {
-	float x;
-	float y;
+  float x;
+  float y;
 };
 
 vec2 vec2_mul(vec2 a, float s);
+vec2 vec2_mul_pcw(vec2 a, vec2 b);
 float vec2_distance(vec2 a, vec2 b);
 
 #endif

@@ -10,9 +10,7 @@ struct hog_detect {
   std::vector<AABB> boxes;
 };
 
-hog_detect* hog_alloc() {
-  return (hog_detect*)calloc(1, sizeof(hog_detect));
-}
+hog_detect* hog_alloc() { return (hog_detect*)calloc(1, sizeof(hog_detect)); }
 
 void hog_init(hog_detect* hog) {
   hog->descriptor = new cv::CascadeClassifier();
@@ -31,7 +29,8 @@ void hog_load_cascade(hog_detect* hog, const char* name) {
   }
 }
 
-hog_result hog_do_detect(hog_detect* hog, uint8_t* image, int width, int height) {
+hog_result hog_do_detect(hog_detect* hog, uint8_t* image, int width,
+                         int height) {
   cv::Mat img(height, width, CV_8UC4, image);
 
   hog->locations.clear();
@@ -41,13 +40,10 @@ hog_result hog_do_detect(hog_detect* hog, uint8_t* image, int width, int height)
 
   for (const cv::Rect& r : hog->locations) {
     AABB aabb;
-    aabb.top_left = { float(r.tl().x), float(r.tl().y) };
-    aabb.bot_right = { float(r.br().x), float(r.br().y) };
+    aabb.top_left = {float(r.tl().x), float(r.tl().y)};
+    aabb.bot_right = {float(r.br().x), float(r.br().y)};
     hog->boxes.push_back(aabb);
   }
 
-  return {
-    hog->boxes.data(),
-    hog->boxes.size()
-  };
+  return {hog->boxes.data(), hog->boxes.size()};
 }
