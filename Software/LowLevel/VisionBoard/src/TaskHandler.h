@@ -5,14 +5,16 @@ enum INITS
 {
 	INIT_GPIO,
 	INIT_CAN,
-	INIT_USB
+	INIT_USB,
+	INIT_SERVO
 };
 
 enum TASKS
 {
 	TASK_CAN,
 	TASK_USB,
-	TASK_LED
+	TASK_LED,
+	TASK_SERVO
 };
 
 typedef struct

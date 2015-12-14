@@ -17,6 +17,7 @@ const GPIO_Struct GPIO_table[] = {
 /*CAN1*/
 	{CAN1_Tx,				GPIOD,	GPIO_Pin_1,		RCC_AHB1Periph_GPIOD,	EXTI_Line1, 	EXTI_PortSourceGPIOD,	GPIO_PinSource1,	CAN1_TX_IRQn},  //PD1
 	{CAN1_Rx,				GPIOD,	GPIO_Pin_0,		RCC_AHB1Periph_GPIOD,	EXTI_Line0, 	EXTI_PortSourceGPIOD,	GPIO_PinSource0,	CAN1_RX0_IRQn},  //PD0
+/*Servo (PE5, PE6)*/
 };
 
 

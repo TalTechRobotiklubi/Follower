@@ -22,7 +22,8 @@ typedef enum
 	PacketDistanceSensors, // 2
 	PacketAcceleration,    // 3
 	PacketMotorSpeeds,     // 4
-	// Count of items is 5
+	PacketCameraControl,   // 5
+	// Count of items is 6
 	NumberOfPackets
 }
 Packet;

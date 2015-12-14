@@ -446,6 +446,10 @@
               <Packet>MotorSpeeds</Packet>
               <Period>-1</Period>
             </ReceivePacket>
+            <ReceivePacket>
+              <Packet>CameraControl</Packet>
+              <Period>-1</Period>
+            </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>

@@ -4,6 +4,7 @@
 #include "GPIO.h"
 #include "CAN.h"
 #include "usb.h"
+#include "servo.h"
 
 /*Table of initialization tasks. All functions in tables are called once after initializing system clock.
  * With adding new init check that id is corresponding to enum value.*/
@@ -11,7 +12,8 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
 		/*id              	   taskPointer */
 		{INIT_GPIO,				GPIO_init   },
 		{INIT_CAN,				CAN_init    },
-		{INIT_USB,				USB_init	}
+		{INIT_USB,				USB_init	},
+		{INIT_SERVO,			servo_init	}
 };
 #define NUMBER_OF_INITS  (sizeof(TaskHandler_tableOfInits) / sizeof(INIT_STRUCT))
 
@@ -22,6 +24,7 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_CAN,			       20,		   10,			CAN_task      	},
 		{TASK_USB,				   20,		    0,			USB_task		},
 		{TASK_LED,				  200,		    0,			GPIO_task		},
+		{TASK_SERVO,			   20,			5,			servo_task		}
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))
 
