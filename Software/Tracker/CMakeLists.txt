@@ -31,7 +31,7 @@ if (WIN32)
     -D_CRT_SECURE_NO_WARNINGS
   )
 else()
-  add_definitions(-std=c++11 -Wall -Wextra -D_GLIBCXX_USE_CXX11_ABI=0)
+  add_definitions(-std=c++11 -Wall -Wextra)
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

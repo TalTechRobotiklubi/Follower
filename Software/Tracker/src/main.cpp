@@ -291,18 +291,12 @@ int main(int argc, char* argv[]) {
       }
 
       if (follower_has_serial(&follower)) {
-        uint8_t depth_field_msg[DEPTH_FIELD_LENGTH];
-        fill_depth_field_message(follower.depth_map.data(),
-                                 follower.depth_map.size(), depth_field_msg);
-        send_serial_message(&follower, depth_field_msg, DEPTH_FIELD_LENGTH);
-
         if (follower.has_target) {
-          uint8_t bodypos_msg[BODYPOS_MSG_LENGTH];
-          const AABB* target = &follower.possible_target;
-          fill_bodypos_message(target->top_left.x, target->top_left.y,
-                               target->bot_right.x, target->bot_right.y,
-                               bodypos_msg);
-          send_serial_message(&follower, bodypos_msg, BODYPOS_MSG_LENGTH);
+          uint8_t camera_degrees[CAMERA_MSG_LENGTH];
+          fill_camera_message(int8_t(follower.camera_degrees.x),
+                              int8_t(follower.camera_degrees.y),
+                              camera_degrees);
+          send_serial_message(&follower, camera_degrees, CAMERA_MSG_LENGTH);
         }
       }
     }
@@ -322,6 +316,8 @@ int main(int argc, char* argv[]) {
     imguiSlider("playback rate", record_speedup, 0.0f, 10.0f, 0.1f);
     imguiSlider("max body ttl", follower.body_time_to_live, 0.0f, 5.0f, 0.1f);
     imguiBool("IR processing", ir_processing_enabled);
+    imguiLabel("camera %.1f %.1f", follower.camera_degrees.x,
+               follower.camera_degrees.y);
     imguiEndScrollArea();
     imguiEndFrame();
 

@@ -62,6 +62,8 @@ struct follower_ctx {
 
   depth_window depth_map;
 
+  vec2 camera_degrees = { 0.f, 0.f };
+
   ~follower_ctx();
 };
 

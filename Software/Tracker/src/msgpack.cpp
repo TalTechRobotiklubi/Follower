@@ -55,3 +55,8 @@ void fill_depth_field_message(const uint16_t* depth_field, size_t len,
   crc_begin[0] = crc << 8;
   crc_begin[1] = (uint8_t)crc;
 }
+
+void fill_camera_message(int8_t hdeg, int8_t vdeg, uint8_t* dest) {
+  dest[0] = hdeg;
+  dest[1] = vdeg;
+}
