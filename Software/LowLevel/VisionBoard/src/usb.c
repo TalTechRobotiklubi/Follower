@@ -26,7 +26,7 @@ void USB_task()
 		if (TM_USB_VCP_Getc(&c) == TM_USB_VCP_DATA_OK)
 		{
 			/* Return data back */
-			TM_USB_VCP_Putc(c + 1);
+			TM_USB_VCP_Putc(c);
 			int8_t servo1 = (int8_t)c;
 			DL_setData(DLParamCameraRequestXDegree, &servo1);
 		}

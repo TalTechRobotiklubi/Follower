@@ -4,7 +4,7 @@
 
 #include "DataLayer.h"
 
-#define CENTER_POINT	100
+#define CENTER_POINT	150
 
 static void gpioConfig(void);
 static void interruptConfig(void);
@@ -22,6 +22,11 @@ void servo_init()
 void servo_task()
 {
 	DL_getData(DLParamCameraRequestXDegree, &servoX);
+	if (servoX > 100)
+		servoX = 100;
+	else if (servoX < -100)
+		servoX = -100;
+	servoX = servoX / 2;   // fit 100 degrees to 50 timer clicks
 }
 
 
@@ -55,7 +60,7 @@ void timerConfig()
 	uint32_t CCRx_val = CENTER_POINT;  // x ms
 
 	/* Compute the prescaler value*/
-	prescalerValue = (uint16_t) ((SystemCoreClock / 2) / 100000) - 1;  // 0.01 milli sec resolution
+	prescalerValue = (uint16_t) ((SystemCoreClock / 2) / 50000) - 1;  // 0.01 milli sec resolution
 
 	/* Time base configuration */
 	TIM_TimeBaseStructure.TIM_Period = 2000;  // 20 ms

@@ -70,6 +70,15 @@ const PacketParameter psPacketMotorSpeedsParameterList[2] =
 };
 
 // ----------------------------------------------------------------------------
+// Packet "CameraControl" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter psPacketCameraControlParameterList[2] = 
+{
+	{ DLParamCameraRequestXDegree, 0, 8 },
+	{ DLParamCameraRequestZDegree, 8, 8 }
+};
+
+// ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
 PacketDescriptor psPacketDescriptorList[NumberOfPackets] = 
@@ -78,6 +87,7 @@ PacketDescriptor psPacketDescriptorList[NumberOfPackets] =
 	/* Motor2Status    */ { 0xD2, -1, psPacketMotor2StatusParameterList,    6, 7 },
 	/* DistanceSensors */ { 0xF0, -1, psPacketDistanceSensorsParameterList, 8, 8 },
 	/* Acceleration    */ { 0xF1, -1, psPacketAccelerationParameterList,    3, 3 },
-	/* MotorSpeeds     */ { 0xD0, -1, psPacketMotorSpeedsParameterList,     2, 4 }
+	/* MotorSpeeds     */ { 0xD0, -1, psPacketMotorSpeedsParameterList,     2, 4 },
+	/* CameraControl   */ { 0xE0, -1, psPacketCameraControlParameterList,   2, 2 }
 };
 
