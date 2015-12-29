@@ -1,5 +1,16 @@
 #include "follower_ctx.h"
 #include "hog_detect.h"
+#include "fl_math.h"
+
+void follower_update_camera_pos(follower_ctx* follower, const AABB* target) {
+  const float target_x =
+      (target->top_left.x + target->bot_right.x) * 0.5f / 512.f;
+  const float target_y =
+      (target->top_left.y + target->bot_right.y) * 0.5f / 424.f;
+
+  follower->camera_degrees.x = fl_map_range(target_x, 0.f, 1.0f, -45.f, 45.f);
+  follower->camera_degrees.y = fl_map_range(target_y, 0.f, 1.0f, 45.f, -45.f);
+}
 
 std::vector<merged_aabb> aabb_combine_overlapping(const AABB* aabb,
                                                   size_t len) {
@@ -201,4 +212,6 @@ void follower_update_possible_position(follower_ctx* follower,
   follower->has_target = true;
   follower->possible_target = possible_target;
   follower->target_ttl = follower->body_time_to_live;
+
+  follower_update_camera_pos(follower, &possible_target);
 }
