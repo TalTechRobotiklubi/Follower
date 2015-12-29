@@ -16,32 +16,34 @@
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	DLParamMotor1ActualSpeed,   // 0
-	DLParamMotor1EncoderClicks, // 1
-	DLParamMotor1CurrentDraw,   // 2
-	DLParamMotor1DriverTemp,    // 3
-	DLParamMotor1BridgeAFault,  // 4
-	DLParamMotor1BridgeBFault,  // 5
-	DLParamMotor2ActualSpeed,   // 6
-	DLParamMotor2EncoderClicks, // 7
-	DLParamMotor2CurrentDraw,   // 8
-	DLParamMotor2DriverTemp,    // 9
-	DLParamMotor2BridgeAFault,  // 10
-	DLParamMotor2BridgeBFault,  // 11
-	DLParamMotor1RequestSpeed,  // 12
-	DLParamMotor2RequestSpeed,  // 13
-	DLParamDistanceSensor1,     // 14
-	DLParamDistanceSensor2,     // 15
-	DLParamDistanceSensor3,     // 16
-	DLParamDistanceSensor4,     // 17
-	DLParamDistanceSensor5,     // 18
-	DLParamDistanceSensor6,     // 19
-	DLParamDistanceSensor7,     // 20
-	DLParamDistanceSensor8,     // 21
-	DLParamAccelerationX,       // 22
-	DLParamAccelerationY,       // 23
-	DLParamAccelerationZ,       // 24
-	// Count of items is 25
+	DLParamMotor1ActualSpeed,    // 0
+	DLParamMotor1EncoderClicks,  // 1
+	DLParamMotor1CurrentDraw,    // 2
+	DLParamMotor1DriverTemp,     // 3
+	DLParamMotor1BridgeAFault,   // 4
+	DLParamMotor1BridgeBFault,   // 5
+	DLParamMotor2ActualSpeed,    // 6
+	DLParamMotor2EncoderClicks,  // 7
+	DLParamMotor2CurrentDraw,    // 8
+	DLParamMotor2DriverTemp,     // 9
+	DLParamMotor2BridgeAFault,   // 10
+	DLParamMotor2BridgeBFault,   // 11
+	DLParamDistanceSensor1,      // 12
+	DLParamDistanceSensor2,      // 13
+	DLParamDistanceSensor3,      // 14
+	DLParamDistanceSensor4,      // 15
+	DLParamDistanceSensor5,      // 16
+	DLParamDistanceSensor6,      // 17
+	DLParamDistanceSensor7,      // 18
+	DLParamDistanceSensor8,      // 19
+	DLParamAccelerationX,        // 20
+	DLParamAccelerationY,        // 21
+	DLParamAccelerationZ,        // 22
+	DLParamMotor1RequestSpeed,   // 23
+	DLParamMotor2RequestSpeed,   // 24
+	DLParamCameraRequestXDegree, // 25
+	DLParamCameraRequestZDegree, // 26
+	// Count of items is 27
 	DLNumberOfParams
 }
 DLParam;
@@ -65,7 +67,11 @@ DLParamDescriptor;
 // ----------------------------------------------------------------------------
 // Export parameters descriptors
 // ----------------------------------------------------------------------------
+#ifdef __cplusplus
+extern "C" {
 extern const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams];
+}
+#endif
 
 #endif
 

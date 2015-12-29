@@ -36,15 +36,6 @@ const PacketParameter psPacketMotor2StatusParameterList[6] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "MotorSpeeds" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketMotorSpeedsParameterList[2] = 
-{
-	{ DLParamMotor1RequestSpeed,  0, 16 },
-	{ DLParamMotor2RequestSpeed, 16, 16 }
-};
-
-// ----------------------------------------------------------------------------
 // Packet "DistanceSensors" parameters table
 // ----------------------------------------------------------------------------
 const PacketParameter psPacketDistanceSensorsParameterList[8] = 
@@ -70,14 +61,33 @@ const PacketParameter psPacketAccelerationParameterList[3] =
 };
 
 // ----------------------------------------------------------------------------
+// Packet "MotorSpeeds" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter psPacketMotorSpeedsParameterList[2] = 
+{
+	{ DLParamMotor1RequestSpeed,  0, 16 },
+	{ DLParamMotor2RequestSpeed, 16, 16 }
+};
+
+// ----------------------------------------------------------------------------
+// Packet "CameraControl" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter psPacketCameraControlParameterList[2] = 
+{
+	{ DLParamCameraRequestXDegree, 0, 8 },
+	{ DLParamCameraRequestZDegree, 8, 8 }
+};
+
+// ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
 PacketDescriptor psPacketDescriptorList[NumberOfPackets] = 
 {
 	/* Motor1Status    */ { 0xD1, 0, psPacketMotor1StatusParameterList,    6, 7 },
 	/* Motor2Status    */ { 0xD2, 0, psPacketMotor2StatusParameterList,    6, 7 },
-	/* MotorSpeeds     */ { 0xD0, 0, psPacketMotorSpeedsParameterList,     2, 4 },
 	/* DistanceSensors */ { 0xF0, 0, psPacketDistanceSensorsParameterList, 8, 8 },
-	/* Acceleration    */ { 0xF1, 0, psPacketAccelerationParameterList,    3, 3 }
+	/* Acceleration    */ { 0xF1, 0, psPacketAccelerationParameterList,    3, 3 },
+	/* MotorSpeeds     */ { 0xD0, 0, psPacketMotorSpeedsParameterList,     2, 4 },
+	/* CameraControl   */ { 0xE0, 0, psPacketCameraControlParameterList,   2, 2 }
 };
 

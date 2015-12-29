@@ -1,75 +1,49 @@
-/*
- * usb.c
- *
- *  Created on: Dec 10, 2015
- *      Author: peeter
- */
+#include "SerialComm.h"
 
-#include "usb.h"
+#include <assert.h>
+#include <cstdio>
+#include <string>
 
-#include "tm_stm32f4_usb_vcp.h"
+#include "datalayer.h"
 
-#include "DataLayer.h"
-#include "InterfaceHandler.h"
-
+// splitted u16 type, which can be accessed in separate byte manner
 typedef union
 {
-	struct
-	{
-		uint8_t byteLow;
-		uint8_t byteHigh;
-	} u8;
-	uint16_t u16;
+    struct
+    {
+        uint8_t byteLow;
+        uint8_t byteHigh;
+    } u8;
+    uint16_t u16;
 } splitU16;
 
-typedef enum
-{
-	noData,
-	preambulaFound,
-	idOK,
-	lengthOK,
-	crcFirstbyte,
-	crcCheck,
-	messageOk
-}
-MessageAnalyseState;
+// UART-CAN message format
+// +---------+--------+---------------------+---------+---------+-----+----------+----------+----------+
+// | Byte 1  | Byte 2 | Byte 3              | Byte 4  | Byte 5  | ... | Byte 3+N | Byte 4+N | Byte 5+N |
+// +---------+--------+---------------------+---------+---------+-----+----------+----------+----------+
+// | 0xAA    | Msg ID | length (n), n = 1-8 | Data[0] | Data[1] | ... | Data[N]  | Checksum | Checksum |
+// +---------+--------+---------------------+---------+---------+-----+----------+----------+----------+
 
-static void parseMessages(uint8_t* buffer, uint16_t size);
-static void handleRecievedData();
-static void clearMessageStorage(InterfaceMessage* message);
-static void handleTransmitData(void);
+// For UART_CAN message parsing a local state machine is used
+enum MessageAnalyseState
+{
+    noData,
+    preambulaFound,
+    idOK,
+    lengthOK,
+    crcFirstbyte,
+    crcCheck,
+    messageOk
+};
+
 static void sendMessage(InterfaceMessage* msg);
 
-void USB_init()
+SerialComm::SerialComm(void)
 {
-	TM_USB_VCP_Init();
+	DL_init();
 }
 
-void USB_task()
-{
-	handleRecievedData();
-	handleTransmitData();
-}
-
-void handleRecievedData()
-{
-	/* USB configured OK, drivers OK */
-	if (TM_USB_VCP_GetStatus() == TM_USB_VCP_CONNECTED)
-	{
-		uint8_t buffer[100];
-		int i = 0;
-		/* If something arrived at VCP */
-		while (TM_USB_VCP_Getc(&buffer[i]) == TM_USB_VCP_DATA_OK)
-		{
-			if (++i == 100)
-				break;
-		}
-		if (i > 0)
-			parseMessages(buffer, i);
-	}
-}
-
-void parseMessages(uint8_t* buffer, uint16_t size)
+void SerialComm::parseMessages(const char* buffer, size_t size)
 {
     static MessageAnalyseState analyseState = noData;
 	static InterfaceMessage message;
@@ -77,10 +51,9 @@ void parseMessages(uint8_t* buffer, uint16_t size)
     static uint16_t dataIndex;
     static splitU16 messageCrc;
 	static uint16_t calcCrc;
-	uint16_t i;
 
     // go through all the buffer, search valid messages
-    for(i = 0; i < size; i++)
+    for(unsigned int i = 0; i < size; i++)
     {
 		switch (analyseState)
 		{
@@ -89,7 +62,7 @@ void parseMessages(uint8_t* buffer, uint16_t size)
 			if (buffer[i] == 0xaa || buffer[i] == 0xAA)
 			{
 				// clear message and variables for next data
-				clearMessageStorage(&message);
+				clearMessageStorage(message);
 				length = 0;
 				dataIndex = 0;
 				messageCrc.u16 = 0;
@@ -105,8 +78,7 @@ void parseMessages(uint8_t* buffer, uint16_t size)
 			break;
 		case idOK:
 			message.length = buffer[i];
-			__disable_irq();
-			if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceUSB, &message))
+			if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceUART, &message))
 			{
 				calcCrc += message.length;
 				length = message.length;
@@ -117,7 +89,6 @@ void parseMessages(uint8_t* buffer, uint16_t size)
 				// not valid message, continue with seaching next preambula
 				analyseState = noData;
 			}
-			__enable_irq();
 			break;
 		case lengthOK:
 			// copy data
@@ -167,36 +138,22 @@ void parseMessages(uint8_t* buffer, uint16_t size)
     }
 }
 
-void clearMessageStorage(InterfaceMessage* message)
+// clears the element from UART_CAN Rx message storage
+void SerialComm::clearMessageStorage(InterfaceMessage& message)
 {
-	uint16_t i;
-    message->id = 0;
-    message->length = 0;
-	for (i = 0; i < INTERFACE_MSG_SIZE; ++i)
-        message->data[i] = 0;
+    message.id = 0;
+    message.length = 0;
+	for (int i = 0; i < INTERFACE_MSG_SIZE; ++i)
+        message.data[i] = 0;
 }
 
-void handleTransmitData(void)
+// send data to serial port
+void SerialComm::sendControllerCommands()
 {
-	InterfaceHandler_transmitData(InterfaceUSB, sendMessage);
+	InterfaceHandler_transmitData(InterfaceUART, sendMessage);
 }
 
 void sendMessage(InterfaceMessage* msg)
 {
-	splitU16 crc;
-	uint16_t j;
 
-	TM_USB_VCP_Putc(0xAA);
-	crc.u16 = 0xAA;
-	TM_USB_VCP_Putc(msg->id);
-	crc.u16 += msg->id;
-	TM_USB_VCP_Putc(msg->length);
-	crc.u16 += msg->length;
-	for (j = 0; j < msg->length; j++)
-	{
-		TM_USB_VCP_Putc(msg->data[j]);
-		crc.u16 += msg->data[j];
-	}
-	TM_USB_VCP_Putc(crc.u8.byteHigh);
-	TM_USB_VCP_Putc(crc.u8.byteLow);
 }

@@ -5,14 +5,15 @@
 #include "USART.h"
 #include "CAN.h"
 #include "Acceleration.h"
-#include "datahandler.h"
+#include "DataHandler.h"
+#include "Timer.h"
 
 /*Table of initialization tasks. All functions in tables are called once after initializing system clock.
  * With adding new init check that id is corresponding to enum value.*/
 const INIT_STRUCT TaskHandler_tableOfInits[] = {
 		/*id              	   taskPointer */
 		{INIT_GPIO,				GPIO_init    },
-		{INIT_Sensor,			Sensor_init  },
+		{INIT_SENSOR,			Sensor_init  },
 		{INIT_CAN,				CAN_init     },
 		{INIT_USART,			USART_init   },
 		{INIT_ACCELERATION,		Acceleration_init				},
@@ -24,7 +25,7 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
  *With adding new task check that id is corresponding to enum value.*/
 const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		/*id              	  period (ms)   offset (ms)   taskPointer */
-		{TASK_DATAHANDLER,			5,			0,			DataHandler_TASK					},
+		{TASK_DATAHANDLER,			5,			0,			DataHandler_task					},
 		{TASK_CAN,		  	  	  	5,		    1,			CAN_TASK							},
 		{TASK_USART,		  	    5,		    3,			USART_TASK							},
 		{TASK_SENSOR1_START,	  200,			0,			Sensor_TASK_startMeasurement1		},

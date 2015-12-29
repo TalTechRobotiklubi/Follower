@@ -32,6 +32,11 @@ uint16_t calculateDistance(SensorInputStatus_Typedef state, uint16_t measurement
 /*function definitions*/
 void Sensor_init(void)
 {
+	// init timers with max counting time 40 ms
+	Timer_setOneShotCounter(TIMER2_ID, 40000, FALSE);
+	Timer_setOneShotCounter(TIMER3_ID, 40000, FALSE);
+	//Timer_setOneShotCounter(TIMER4_ID, 40000, FALSE);
+
 	/* init variables*/
 	int i = 0;
 	for (i = 0; i < 8; i++)

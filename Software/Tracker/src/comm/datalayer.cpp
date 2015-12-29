@@ -1,21 +1,20 @@
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
-#include "DataLayer.h"
-#include "DataLayerConfig.h"
-#include "PacketConfig.h"
+#include "dataLayer.h"
+#include "datalayerconfig.h"
+#include "packetconfig.h"
 
+static void SetDataAccordingToType(DLParam param, DLValuePointer value, Type type);
+static void GetDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 
-// ----------------------------------------------------------------------------
-// Variables
-// ----------------------------------------------------------------------------
-Bool priv_validFlags[DLNumberOfParams];
+static bool pbValidFlags_[DLNumberOfParams];
 
-// ----------------------------------------------------------------------------
-// Function prototypes
-// ----------------------------------------------------------------------------
-void setDataAccordingToType(DLParam param, DLValuePointer value, Type type);
-void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
+void DL_init()
+{
+    for (int i = 0; i < DLNumberOfParams; ++i)
+        pbValidFlags_[i] = false;
+}
 
 // ----------------------------------------------------------------------------
 // Use this function in logic layer to get data from DL. Handle also status for asynchronous data,
@@ -24,11 +23,11 @@ void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 // pValue as pointer to place where data will be stored from DL
 // Returns if the value is valid or not
 // ----------------------------------------------------------------------------
-Boolean DL_getData(DLParam param, DLValuePointer pValue)
+bool DL_getData(DLParam param, DLValuePointer pValue)
 {
 	uint8_t i, j;
 
-	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
+	GetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
 	/*check if parameter is part of any async packets*/
 	for (i = 0; i < NumberOfPackets; i++)
@@ -43,16 +42,16 @@ Boolean DL_getData(DLParam param, DLValuePointer pValue)
 					if (packet->iPeriod != PACKET_WAITING)
 					{
 						packet->iPeriod = PACKET_WAITING;
-                        priv_validFlags[param] = TRUE;
+                        pbValidFlags_[param] = true;
 					}
                     else
-                        priv_validFlags[param] = FALSE;
+                        pbValidFlags_[param] = false;
                     break;
 				}
 			}
 		}
 	}
-    return priv_validFlags[param];
+    return pbValidFlags_[param];
 }
 // ----------------------------------------------------------------------------
 // Use this function in logic layer to peek data from DL. Peeking does not affect the
@@ -62,18 +61,18 @@ Boolean DL_getData(DLParam param, DLValuePointer pValue)
 // ----------------------------------------------------------------------------
 void DL_peekData(DLParam param, DLValuePointer pValue)
 {
-	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
+	GetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 }
 
 /*Use this function in COMM driver layer (CAN, UART etc.) to get data from DL.
  *Param as parameter
  *pValue as pointer to place where data will be stored from DL
  *Returns if the value is valid or not*/
-Boolean DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer pValue)
+bool DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer pValue)
 {
-	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
+	GetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
-	return priv_validFlags[param];
+	return pbValidFlags_[param];
 }
 
 /*Use this function in logic layer to set data to DL. Handles status for asynchronous data
@@ -81,16 +80,17 @@ Boolean DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer pValue)
  *pValue as pointer to place where data will be stored from DL*/
 void DL_setData(DLParam param, DLValuePointer pValue)
 {
-	uint32_t tempData, newValue;
-	uint32_t mask = 0;
-	uint8_t i, j;
-	Type type;
+	uint32_t tempData;
+	uint32_t newValue;
+    uint32_t mask = 0;
 	uint32_t size;
+	uint8_t i, j;
+    Type type;
 
     /*format data so they are comparable*/
 	type = psDLParamDescriptorList[param].eType;
-	getDataAccordingToType(param, &tempData, type);
-	size = Type_getSize(type);
+	GetDataAccordingToType(param, &tempData, type);
+	size = psTypeSize[type];
 	for (i = 0; i < size; i++)
 	{
 		mask |= (1 << i);
@@ -100,7 +100,7 @@ void DL_setData(DLParam param, DLValuePointer pValue)
 	/*check if data has changed*/
     if (tempData != newValue )
 	{
-		setDataAccordingToType(param, pValue, type);
+		SetDataAccordingToType(param, pValue, type);
 
 		/*check if parameter is part of any async packets*/
 		for (i = 0; i < NumberOfPackets; i++)
@@ -127,9 +127,9 @@ void DL_setData(DLParam param, DLValuePointer pValue)
  *pValue as pointer to data for storing to DL*/
 void DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value)
 {
-	setDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
+	SetDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
 	
-	priv_validFlags[param] = TRUE;
+	pbValidFlags_[param] = true;
 }
 
 Type DL_getDataType(DLParam param)
@@ -137,19 +137,21 @@ Type DL_getDataType(DLParam param)
 	return psDLParamDescriptorList[param].eType;
 }
 
-void DL_setDataValidity(DLParam param, Boolean validity)
+void DL_setDataValidity(DLParam param, bool validity)
 {
-	priv_validFlags[param] = validity;
+	pbValidFlags_[param] = validity;
 }
 
 /*gets data from data layer*/
-void getDataAccordingToType(DLParam param, DLValuePointer value, Type type)
+void GetDataAccordingToType(DLParam param, DLValuePointer value, Type type)
 {
 	#define GETCASE(type) case Type ## type: *((type *)value) = *((type *)psDLParamDescriptorList[param].pValue); break;
 
 	switch(type)
 	{
-		GETCASE(Bool)
+		case TypeBool:
+            *((U8 *)value) = *((U8 *)psDLParamDescriptorList[param].pValue);
+            break;
 		GETCASE(U2)
 		GETCASE(S2)
 		GETCASE(U4)
@@ -167,13 +169,15 @@ void getDataAccordingToType(DLParam param, DLValuePointer value, Type type)
 }
 
 /*sets data to data layer*/
-void setDataAccordingToType(DLParam param, DLValuePointer value, Type type)
+void SetDataAccordingToType(DLParam param, DLValuePointer value, Type type)
 {
 	#define SETCASE(type) case Type ## type: *((type *)psDLParamDescriptorList[param].pValue) = *((type *)value); break;
 
 	switch (type)
 	{
-		SETCASE(Bool)
+		case TypeBool:
+            *((U8 *)psDLParamDescriptorList[param].pValue) = *((U8 *)value);
+            break;
 		SETCASE(U2)
 		SETCASE(S2)
 		SETCASE(U4)
@@ -188,4 +192,14 @@ void setDataAccordingToType(DLParam param, DLValuePointer value, Type type)
 		default:
 			break;
 	}
+}
+
+/*give default values for all parameters in data layer. Currently set them all just 0.*/
+void DL_setDefaultValuesForParameters(void)
+{
+    int defaultVal = 0;
+    for (int i = 0; i < DLNumberOfParams; i++)
+    {
+        SetDataAccordingToType((DLParam)i, &defaultVal, psDLParamDescriptorList[((DLParam)i)].eType);
+    }
 }

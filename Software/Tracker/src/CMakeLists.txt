@@ -51,6 +51,15 @@ set(FOLLOWER_SOURCES
   fl_yuy2_convert.cpp
 
   interp/cubic_hermite.cpp
+  
+  comm/datahandler.cpp
+  comm/datalayer.cpp
+  comm/datalayerconfig.cpp
+  comm/interfaceconfig.cpp
+  comm/interfacehandler.cpp
+  comm/packetconfig.cpp
+  comm/serialcomm.cpp
+  comm/typedef.cpp
 )
 
 set(FOLLOWER_INCLUDES
@@ -80,6 +89,15 @@ set(FOLLOWER_INCLUDES
 
   vec2.h
   hog_detect.h
+  
+  comm/datahandler.h
+  comm/datalayer.h
+  comm/datalayerconfig.h
+  comm/interfaceconfig.h
+  comm/interfacehandler.h
+  comm/packetconfig.h
+  comm/serialcomm.h
+  comm/typedef.h
 )
 
 if (WIN32)

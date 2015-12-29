@@ -7,7 +7,6 @@
 #define _DATALAYER_H_
 
 #include "DataLayerConfig.h"
-#include "Typedef.h"
 
 enum APERIODIC_PACKET_STATUS
 {
@@ -18,12 +17,12 @@ enum APERIODIC_PACKET_STATUS
 // ----------------------------------------------------------------------------
 // Function declarations
 // ----------------------------------------------------------------------------
-extern Boolean DL_getData(DLParam param, DLValuePointer value);
-extern void    DL_peekData(DLParam param, DLValuePointer pValue);
-extern Boolean DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer value);
-extern void    DL_setData(DLParam param, DLValuePointer value);
-extern void    DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value);
-extern Type    DL_getDataType(DLParam param);
-extern void    DL_setDataValidity(DLParam, Boolean validity);
+Boolean DL_getData(DLParam param, DLValuePointer value);
+void    DL_peekData(DLParam param, DLValuePointer pValue);
+Boolean DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer value);
+void    DL_setData(DLParam param, DLValuePointer value);
+void    DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value);
+Type    DL_getDataType(DLParam param);
+void    DL_setDataValidity(DLParam, Boolean validity);
 
 #endif

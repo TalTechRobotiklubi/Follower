@@ -63,48 +63,12 @@ const PacketParameter psPacketAccelerationParameterList[3] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "TrackedObject" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketTrackedObjectParameterList[4] = 
-{
-	{ DLParamTrackedObjectX,       0, 16 },
-	{ DLParamTrackedObjectY,      16, 16 },
-	{ DLParamTrackedObjectHeight, 32, 16 },
-	{ DLParamTrackedObjectWidth,  48, 16 }
-};
-
-// ----------------------------------------------------------------------------
-// Packet "DepthRaw" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketDepthRawParameterList[8] = 
-{
-	{ DLParamDepthRaw0,   0, 32 },
-	{ DLParamDepthRaw1,  32, 32 },
-	{ DLParamDepthRaw2,  64, 32 },
-	{ DLParamDepthRaw3,  96, 32 },
-	{ DLParamDepthRaw4, 128, 32 },
-	{ DLParamDepthRaw5, 160, 32 },
-	{ DLParamDepthRaw6, 192, 32 },
-	{ DLParamDepthRaw7, 224, 32 }
-};
-
-// ----------------------------------------------------------------------------
 // Packet "MotorSpeeds" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter psPacketMotorSpeedsParameterList[3] = 
+const PacketParameter psPacketMotorSpeedsParameterList[2] = 
 {
 	{ DLParamMotor1RequestSpeed,  0, 16 },
-	{ DLParamMotor2RequestSpeed, 16, 16 },
-	{ DLParamMotor3RequestSpeed, 32, 16 }
-};
-
-// ----------------------------------------------------------------------------
-// Packet "MotorPID" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketMotorPIDParameterList[2] = 
-{
-	{ DLParamConstantAddress,  0, 32 },
-	{ DLParamConstantValue,   32, 32 }
+	{ DLParamMotor2RequestSpeed, 16, 16 }
 };
 
 // ----------------------------------------------------------------------------
@@ -112,14 +76,11 @@ const PacketParameter psPacketMotorPIDParameterList[2] =
 // ----------------------------------------------------------------------------
 const PacketDescriptor psPacketDescriptorList[NumberOfPackets] = 
 {
-	/* Motor1Status    */ { 0xD1, 0, psPacketMotor1StatusParameterList,    6,  7 },
-	/* Motor2Status    */ { 0xD2, 0, psPacketMotor2StatusParameterList,    6,  7 },
-	/* DistanceSensors */ { 0xF0, 0, psPacketDistanceSensorsParameterList, 8,  8 },
-	/* Acceleration    */ { 0xF1, 0, psPacketAccelerationParameterList,    3,  3 },
-    /* TrackedObject   */ { 0xC0, -1, psPacketTrackedObjectParameterList,   4,  8 },
-    /* DepthRaw        */ { 0xC1, -1, psPacketDepthRawParameterList,        8, 32 },
-	/* MotorSpeeds     */ { 0xD0, 15, psPacketMotorSpeedsParameterList,    3,  6 },
-	/* MotorPID        */ { 0xD4, 0, psPacketMotorPIDParameterList,        2,  8 }
+	/* Motor1Status    */ { 0xD1, 0, psPacketMotor1StatusParameterList,    6, 7 },
+	/* Motor2Status    */ { 0xD2, 0, psPacketMotor2StatusParameterList,    6, 7 },
+	/* DistanceSensors */ { 0xF0, 0, psPacketDistanceSensorsParameterList, 8, 8 },
+	/* Acceleration    */ { 0xF1, 0, psPacketAccelerationParameterList,    3, 3 },
+	/* MotorSpeeds     */ { 0xD0, 15, psPacketMotorSpeedsParameterList,    2, 4 }
 };
 #define NUMBER_OF_PACKETS (sizeof(psPacketDescriptorList)/sizeof(Packet))
 

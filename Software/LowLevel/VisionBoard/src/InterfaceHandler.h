@@ -10,16 +10,19 @@
 
 #include "InterfaceConfig.h"
 
+#define INTERFACE_MSG_SIZE  32
+
 typedef struct
 {
 	uint16_t id;
-	uint8_t length;
-	uint8_t data[20];
+	uint16_t length;
+	uint8_t data[INTERFACE_MSG_SIZE];
 	Packet packet;
 	int16_t period;
 } InterfaceMessage;
 
-extern void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(InterfaceMessage* msg), int16_t elapsedTime);
+extern void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(InterfaceMessage* msg));
+extern void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interface, void (*funcToDriver)(InterfaceMessage* msg));
 extern Bool InterfaceHandler_checkIfReceivedMessageExists(Interface interface, InterfaceMessage* msg);
 extern void InterfaceHandler_storeReceivedData(InterfaceMessage* msg);
 

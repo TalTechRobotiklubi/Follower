@@ -1,59 +1,63 @@
 // ----------------------------------------------------------------------------
 //
-// Casecatcher generated node interfaces header file
+// Data types
 //
 // ----------------------------------------------------------------------------
-#ifndef _INTERFACE_CONFIG_
-#define _INTERFACE_CONFIG_
+#ifndef _TYPEDEF_H_
+#define _TYPEDEF_H_
 
 // ----------------------------------------------------------------------------
-// Includes
+// Include standard types
 // ----------------------------------------------------------------------------
-#include "Typedef.h"
-#include "PacketConfig.h"
+#include "stdint.h"
 
 // ----------------------------------------------------------------------------
-// Interfaces
+// Project types
+// ----------------------------------------------------------------------------
+    
+typedef uint8_t  U2;
+typedef int8_t   S2;
+typedef uint8_t  U4;
+typedef int8_t   S4;
+typedef uint8_t  U8;
+typedef int8_t   S8;
+typedef uint16_t U16;
+typedef int16_t  S16;
+typedef uint32_t U32;
+typedef int32_t  S32;
+typedef float    Float;
+
+// ----------------------------------------------------------------------------
+// Parameter types enumeration
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	InterfaceCAN,        
-	InterfaceUART_Remote,
-	// Count of items is 2
-	NumberOfInterfaces
+	TypeNone,
+	TypeBool,
+	TypeU2,
+	TypeS2,
+	TypeU4,
+	TypeS4,
+	TypeU8,
+	TypeS8,
+	TypeU16,
+	TypeS16,
+	TypeU32,
+	TypeS32,
+	TypeFloat,
+	NumberOfTypes
 }
-Interface;
+Type;
 
 // ----------------------------------------------------------------------------
-// Interface structures
+// Types sizes in bits
 // ----------------------------------------------------------------------------
-typedef struct
-{
-	Packet ePacket;
-	int16_t ulPeriod;
+#ifdef __cplusplus
+extern "C" {
+extern const U32 psTypeSize[NumberOfTypes];
+//extern U32 Type_getSize(Type eType);
+
 }
-InterfaceReceivePacket;
-
-typedef struct
-{
-	Packet ePacket;
-	int16_t ulPeriod;
-}
-InterfaceTransmitPacket;
-
-typedef struct
-{
-	InterfaceReceivePacket const * psReceivePacketList;
-	uint32_t uiReceivePacketCount;
-	InterfaceTransmitPacket const * psTransmitPacketList;
-	uint32_t uiTransmitPacketCount;
-}
-NodeInterfaceDescriptor;
-
-// ----------------------------------------------------------------------------
-// Export interface descriptors
-// ----------------------------------------------------------------------------
-extern const NodeInterfaceDescriptor psInterfaceList[NumberOfInterfaces];
-
 #endif
 
+#endif

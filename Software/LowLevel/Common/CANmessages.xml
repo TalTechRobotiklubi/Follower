@@ -376,7 +376,7 @@
       <Name>Zotac</Name>
       <Interfaces>
         <Interface>
-          <Name>UART</Name>
+          <Name>USB</Name>
           <ReceivePackets>
             <ReceivePacket>
               <Packet>Motor1Status</Packet>
@@ -440,7 +440,7 @@
           </TransmitPackets>
         </Interface>
         <Interface>
-          <Name>UART_Zotac</Name>
+          <Name>USB</Name>
           <ReceivePackets>
             <ReceivePacket>
               <Packet>MotorSpeeds</Packet>

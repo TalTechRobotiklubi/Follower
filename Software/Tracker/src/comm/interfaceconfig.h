@@ -9,17 +9,16 @@
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
-#include "Typedef.h"
-#include "PacketConfig.h"
+#include "typedef.h"
+#include "packetconfig.h"
 
 // ----------------------------------------------------------------------------
 // Interfaces
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	InterfaceCAN,        
-	InterfaceUART_Remote,
-	// Count of items is 2
+	InterfaceUART,
+	// Count of items is 1
 	NumberOfInterfaces
 }
 Interface;
@@ -30,14 +29,14 @@ Interface;
 typedef struct
 {
 	Packet ePacket;
-	int16_t ulPeriod;
+	uint32_t ulPeriod;
 }
 InterfaceReceivePacket;
 
 typedef struct
 {
 	Packet ePacket;
-	int16_t ulPeriod;
+	uint32_t ulPeriod;
 }
 InterfaceTransmitPacket;
 

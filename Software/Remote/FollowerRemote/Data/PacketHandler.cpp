@@ -18,9 +18,7 @@ PacketWithIndex psUARTRxPackets[] =
     /* Motor1Status    */ { 0xD1, 0, PacketMotor1Status },
     /* Motor2Status    */ { 0xD2, 0, PacketMotor2Status },
     /* DistanceSensors */ { 0xF0, 0, PacketDistanceSensors },
-    /* Acceleration    */ { 0xF1, 0, PacketAcceleration },
-    /* TrackedObject   */ { 0xC0, -1, PacketTrackedObject },
-    /* DepthRaw        */ { 0xC1, -1, PacketDepthRaw }
+    /* Acceleration    */ { 0xF1, 0, PacketAcceleration }
 };
 #define NUMBER_OF_UART_RX_PACKETS (sizeof(psUARTRxPackets)/sizeof(PacketWithIndex))
 

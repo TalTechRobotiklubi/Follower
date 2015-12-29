@@ -1,5 +1,5 @@
-#include "InterfaceHandler.h"
-#include "DataLayer.h"
+#include "interfacehandler.h"
+#include "datalayer.h"
 
 void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage* msg, void (*funcToDriver)(InterfaceMessage* msg));
 uint8_t getBitmaskForMessage(uint8_t bitPosition, int16_t length);
@@ -62,9 +62,9 @@ void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interfac
 }
 
 /* NB! May be called from interrupt!!! Function not re-entrant, so disable interrupt(s) when calling it from main*/
-Bool InterfaceHandler_checkIfReceivedMessageExists(Interface interface, InterfaceMessage* msg)
+U8 InterfaceHandler_checkIfReceivedMessageExists(Interface interface, InterfaceMessage* msg)
 {
-	Bool result = FALSE;
+	U8 result = 0;
 	uint8_t i;
 
 	NodeInterfaceDescriptor interfaceDesc = psInterfaceList[interface];
@@ -75,7 +75,7 @@ Bool InterfaceHandler_checkIfReceivedMessageExists(Interface interface, Interfac
 
 		if (packetDesc->uiID == msg->id && packetDesc->uiDLC == msg->length)
 		{
-			result = TRUE;
+			result = 1;
 			msg->packet = receivePacket.ePacket;
 			msg->period = receivePacket.ulPeriod;
 			break;

@@ -211,7 +211,7 @@ void handleReceivedData(void)
 
 void handleTransmitData(void)
 {
-	InterfaceHandler_transmitData(InterfaceCAN, sendCANmessage, TaskHandler_tableOfTasks[TASK_CAN].period);
+	InterfaceHandler_transmitData(InterfaceCAN, sendCANmessage);
 }
 
 

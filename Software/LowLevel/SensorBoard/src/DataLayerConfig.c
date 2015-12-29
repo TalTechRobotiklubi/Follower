@@ -15,9 +15,7 @@
 Bool  pDLValueBool[4];
 U8    pDLValueU8[12];
 S8    pDLValueS8[3];
-U16   pDLValueU16[4];
 S16   pDLValueS16[6];
-U32   pDLValueU32[8];
 
 // ----------------------------------------------------------------------------
 // Parameters descriptors
@@ -36,10 +34,6 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* Motor2DriverTemp    */ { TypeU8,   &pDLValueU8[3]   },
 	/* Motor2BridgeAFault  */ { TypeBool, &pDLValueBool[2] },
 	/* Motor2BridgeBFault  */ { TypeBool, &pDLValueBool[3] },
-	/* TrackedObjectX      */ { TypeU16,  &pDLValueU16[0]  },
-	/* TrackedObjectY      */ { TypeU16,  &pDLValueU16[1]  },
-	/* TrackedObjectHeight */ { TypeU16,  &pDLValueU16[2]  },
-	/* TrackedObjectWidth  */ { TypeU16,  &pDLValueU16[3]  },
 	/* Motor1RequestSpeed  */ { TypeS16,  &pDLValueS16[4]  },
 	/* Motor2RequestSpeed  */ { TypeS16,  &pDLValueS16[5]  },
 	/* DistanceSensor1     */ { TypeU8,   &pDLValueU8[4]   },
@@ -52,14 +46,6 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* DistanceSensor8     */ { TypeU8,   &pDLValueU8[11]  },
 	/* AccelerationX       */ { TypeS8,   &pDLValueS8[0]   },
 	/* AccelerationY       */ { TypeS8,   &pDLValueS8[1]   },
-	/* AccelerationZ       */ { TypeS8,   &pDLValueS8[2]   },
-	/* DepthRaw0           */ { TypeU32,  &pDLValueU32[0]  },
-	/* DepthRaw1           */ { TypeU32,  &pDLValueU32[1]  },
-	/* DepthRaw2           */ { TypeU32,  &pDLValueU32[2]  },
-	/* DepthRaw3           */ { TypeU32,  &pDLValueU32[3]  },
-	/* DepthRaw4           */ { TypeU32,  &pDLValueU32[4]  },
-	/* DepthRaw5           */ { TypeU32,  &pDLValueU32[5]  },
-	/* DepthRaw6           */ { TypeU32,  &pDLValueU32[6]  },
-	/* DepthRaw7           */ { TypeU32,  &pDLValueU32[7]  }
+	/* AccelerationZ       */ { TypeS8,   &pDLValueS8[2]   }
 };
 

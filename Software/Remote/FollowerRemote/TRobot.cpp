@@ -15,8 +15,6 @@ TRobot::TRobot(void)
 	int s3 =s2+int (sidelen*0.71);
 
 	int s0 = -s3;
-	int s1 = -s2;
-	double s = zoom;
 	int s4 = s2+int (sidelen*0.355);
 	
 	if (!LoadFromFile()){
@@ -76,7 +74,7 @@ QRectF TRobot::boundingRect() const
 }
 
 
-void TRobot::paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWidget *widget)
+void TRobot::paint(QPainter *painter,const QStyleOptionGraphicsItem* ,QWidget*)
 {
 	int i;
 

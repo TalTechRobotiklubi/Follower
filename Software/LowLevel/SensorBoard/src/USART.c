@@ -467,16 +467,14 @@ void sendMessageToUART4(InterfaceMessage* msg)
 Interface findInterface(USART_TypeDef *uartX)
 {
 	Interface interface = NumberOfInterfaces;
-	if (uartX == UART4)
-		interface = InterfaceUART_Zotac;
-	else if (uartX == USART2)
+	if (uartX == USART2)
 		interface = InterfaceUART_Remote;
 	return interface;
 }
 
 void handleTransmitData(void)
 {
-	InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(findInterface(UART4), sendMessageToUART4);
+	//InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(findInterface(UART4), sendMessageToUART4);
 	InterfaceHandler_transmitData(findInterface(USART2), sendMessageToUSART2);
 }
 

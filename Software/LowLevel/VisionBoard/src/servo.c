@@ -12,14 +12,14 @@ static void timerConfig(void);
 
 static int8_t servoX = 0;
 
-void servo_init()
+void Servo_init()
 {
 	gpioConfig();
 	interruptConfig();
 	timerConfig();
 }
 
-void servo_task()
+void Servo_task()
 {
 	DL_getData(DLParamCameraRequestXDegree, &servoX);
 	if (servoX > 100)

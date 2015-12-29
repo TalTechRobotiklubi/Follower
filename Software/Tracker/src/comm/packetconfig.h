@@ -9,8 +9,8 @@
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
-#include "Typedef.h"
-#include "DataLayerConfig.h"
+#include "typedef.h"
+#include "datalayerconfig.h"
 
 // ----------------------------------------------------------------------------
 // Packets enumeration
@@ -22,7 +22,8 @@ typedef enum
 	PacketDistanceSensors, // 2
 	PacketAcceleration,    // 3
 	PacketMotorSpeeds,     // 4
-	// Count of items is 5
+	PacketCameraControl,   // 5
+	// Count of items is 6
 	NumberOfPackets
 }
 Packet;
@@ -48,12 +49,12 @@ typedef struct
 }
 PacketDescriptor;
 
-// ----------------------------------------------------------------------------
-// Export packet descriptors
-// ----------------------------------------------------------------------------
 #ifdef __cplusplus
 extern "C" {
-extern const PacketDescriptor psPacketDescriptorList[NumberOfPackets];
+	// ----------------------------------------------------------------------------
+	// Export packet descriptors
+	// ----------------------------------------------------------------------------
+	extern PacketDescriptor psPacketDescriptorList[NumberOfPackets];
 }
 #endif
 

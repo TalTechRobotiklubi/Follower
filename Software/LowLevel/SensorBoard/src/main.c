@@ -12,18 +12,10 @@
 
 int main(void)
 {
-	// init timers with max counting time 40 ms
-	Timer_setOneShotCounter(TIMER2_ID, 40000, FALSE);
-	Timer_setOneShotCounter(TIMER3_ID, 40000, FALSE);
-	//Timer_setOneShotCounter(TIMER4_ID, 40000, FALSE);
-
 	//Initialize task handler timer
 	TaskHandler_init();
 	// run infinitely
 	TaskHandler_run();
-
-	//__disable_irq();
-
 	return 0;
 }
 

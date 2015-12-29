@@ -1,6 +1,8 @@
 #ifndef _TASKHANDLER_H_
 #define _TASKHANDLER_H_
 
+#include <stdint.h>
+
 enum INITS
 {
 	INIT_GPIO,
@@ -11,6 +13,7 @@ enum INITS
 
 enum TASKS
 {
+	TASK_DATAHANDLER,
 	TASK_CAN,
 	TASK_USB,
 	TASK_LED,

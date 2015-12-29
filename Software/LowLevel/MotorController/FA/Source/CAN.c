@@ -3,7 +3,7 @@
 #include "EEPROM.h"
 
 #define ABS(A)	((A)<(0) ? (-A) : (A))			//!< Calculateas absolute value of a value
-#define RX_MESSAGE_DLC  		6
+#define RX_MESSAGE_DLC  		4
 #define TX_MESSAGE_DLC  		7
 #define QEI_TX_MESSAGE_DLC		2
 #define RX_MESSAGE_ID   		0xD0
@@ -175,11 +175,6 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 	  else if(g_u8ControllerID == 0xD2)
 	  {
 		  priv_requestedSpeed = (int16_t)(((uint16_t)priv_RxMessage.Data[2] << 8) | (uint16_t)priv_RxMessage.Data[3]);
-		  priv_timeoutCounter = 0;
-	  }
-	  else if(g_u8ControllerID == 0xD3)
-	  {
-		  priv_requestedSpeed = (int16_t)(((uint16_t)priv_RxMessage.Data[4] << 8) | (uint16_t)priv_RxMessage.Data[5]);
 		  priv_timeoutCounter = 0;
 	  }
   }

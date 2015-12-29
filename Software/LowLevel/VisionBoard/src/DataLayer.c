@@ -9,7 +9,7 @@
 // ----------------------------------------------------------------------------
 // Variables
 // ----------------------------------------------------------------------------
-Bool pbValidFlags[DLNumberOfParams];
+Bool priv_validFlags[DLNumberOfParams];
 
 // ----------------------------------------------------------------------------
 // Function prototypes
@@ -27,8 +27,6 @@ void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 Boolean DL_getData(DLParam param, DLValuePointer pValue)
 {
 	uint8_t i, j;
-	Boolean valid = FALSE;
-	Boolean asyncData = FALSE;
 
 	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
@@ -42,30 +40,20 @@ Boolean DL_getData(DLParam param, DLValuePointer pValue)
 			{
 				if ((packet->psParameterList + j)->eParam == param)
 				{
-					asyncData = TRUE;
 					if (packet->iPeriod != PACKET_WAITING)
 					{
 						packet->iPeriod = PACKET_WAITING;
-						valid = TRUE;
+                        priv_validFlags[param] = TRUE;
 					}
-					break;
+                    else
+                        priv_validFlags[param] = FALSE;
+                    break;
 				}
 			}
 		}
-		if (asyncData)
-			break;
 	}
-
-	if (asyncData)
-	{
-		return valid;
-	}
-	else
-	{
-		return pbValidFlags[param];
-	}
+    return priv_validFlags[param];
 }
-
 // ----------------------------------------------------------------------------
 // Use this function in logic layer to peek data from DL. Peeking does not affect the
 // status of the data.
@@ -85,7 +73,7 @@ Boolean DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer pValue)
 {
 	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
-	return pbValidFlags[param];
+	return priv_validFlags[param];
 }
 
 /*Use this function in logic layer to set data to DL. Handles status for asynchronous data
@@ -99,7 +87,7 @@ void DL_setData(DLParam param, DLValuePointer pValue)
 	Type type;
 	uint32_t size;
 
-	/*format data so they are comparable*/
+    /*format data so they are comparable*/
 	type = psDLParamDescriptorList[param].eType;
 	getDataAccordingToType(param, &tempData, type);
 	size = Type_getSize(type);
@@ -110,7 +98,7 @@ void DL_setData(DLParam param, DLValuePointer pValue)
 	tempData = tempData & mask;
 	newValue = (*(uint32_t*)pValue) & mask;
 	/*check if data has changed*/
-	if ( tempData != newValue )
+    if (tempData != newValue )
 	{
 		setDataAccordingToType(param, pValue, type);
 
@@ -141,7 +129,7 @@ void DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value)
 {
 	setDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
 	
-	pbValidFlags[param] = TRUE;
+	priv_validFlags[param] = TRUE;
 }
 
 Type DL_getDataType(DLParam param)
@@ -151,7 +139,7 @@ Type DL_getDataType(DLParam param)
 
 void DL_setDataValidity(DLParam param, Boolean validity)
 {
-	pbValidFlags[param] = validity;
+	priv_validFlags[param] = validity;
 }
 
 /*gets data from data layer*/

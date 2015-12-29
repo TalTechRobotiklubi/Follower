@@ -10,6 +10,9 @@ set(Boost_USE_STATIC_RUNTIME    OFF)
 find_package(Boost 1.55 COMPONENTS
   system
   thread
+  date_time
+  chrono
+  regex
   REQUIRED)
 
 find_package(OpenCV REQUIRED)
