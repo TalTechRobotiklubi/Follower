@@ -15,4 +15,7 @@ Software/LowLevel/Documents/stsw-stm32068
 Software/LowLevel/Pixy
 Software/LowLevel/SensorBoard_
 
+Software/Tracker/bin
+Software/Tracker/build
+
 Hardware
