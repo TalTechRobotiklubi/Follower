@@ -8,7 +8,7 @@ enum AperiodicPacketStatus
 	PACKET_READY_TO_SEND = -2
 };
 
-void	DL_init();
+void DL_init();
 bool DL_getData(DLParam param, DLValuePointer value);
 void DL_peekData(DLParam param, DLValuePointer pValue);
 bool DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer value);

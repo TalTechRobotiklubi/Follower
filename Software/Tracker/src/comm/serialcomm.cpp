@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <string>
 
+#include "AsyncSerial.h"
+
 #include "datalayer.h"
 
 // splitted u16 type, which can be accessed in separate byte manner
@@ -38,28 +40,86 @@ enum MessageAnalyseState
 
 static void sendMessage(InterfaceMessage* msg);
 
+static std::unique_ptr<CallbackAsyncSerial> serial_ = nullptr;
+
 SerialComm::SerialComm(void)
 {
 	DL_init();
 }
 
+SerialComm::~SerialComm(void)
+{
+	if (serial_)
+		serial_->clearCallback();
+	serial_->close();
+}
+
+bool SerialComm::start(const std::string& port, uint32_t baud)
+{
+	try 
+	{
+		serial_.reset(new CallbackAsyncSerial(port, baud));
+		serial_->setCallback(std::bind(&SerialComm::parseMessages,
+			this,
+			std::placeholders::_1,
+			std::placeholders::_2));
+	}
+	catch (std::exception& e) 
+	{
+		printf("failed to open serial: %s\n", e.what());
+		return false;
+	}
+	return true;
+}
+
+bool SerialComm::isOpen()
+{
+  return serial_ ? serial_->isOpen() : false;
+}
+
+void SerialComm::serviceSend()
+{
+  if (isOpen())
+	  InterfaceHandler_transmitData(InterfaceUART, sendMessage);
+}
+
+void SerialComm::takeLock()
+{
+	mutex_.lock();
+}
+
+void SerialComm::releaseLock()
+{
+	mutex_.unlock();
+}
+
+bool SerialComm::get(DLParam param, DLValuePointer value)
+{
+	return DL_getData(param, value);
+}
+
+void SerialComm::set(DLParam param, DLValuePointer value)
+{
+	DL_setData(param, value);
+}
+
 void SerialComm::parseMessages(const char* buffer, size_t size)
 {
-    static MessageAnalyseState analyseState = noData;
+  static MessageAnalyseState analyseState = noData;
 	static InterfaceMessage message;
-    static uint16_t length;
-    static uint16_t dataIndex;
-    static splitU16 messageCrc;
+  static uint16_t length;
+  static uint16_t dataIndex;
+  static splitU16 messageCrc;
 	static uint16_t calcCrc;
 
-    // go through all the buffer, search valid messages
-    for(unsigned int i = 0; i < size; i++)
-    {
+  // go through all the buffer, search valid messages
+  for(unsigned int i = 0; i < size; i++)
+  {
 		switch (analyseState)
 		{
 		case noData:
 			// search preambula '0xAA'
-			if (buffer[i] == 0xaa || buffer[i] == 0xAA)
+      if ((uint8_t)buffer[i] == 0xaa || (uint8_t)buffer[i] == 0xAA)
 			{
 				// clear message and variables for next data
 				clearMessageStorage(message);
@@ -67,17 +127,17 @@ void SerialComm::parseMessages(const char* buffer, size_t size)
 				dataIndex = 0;
 				messageCrc.u16 = 0;
 				// preambula is part of CRC
-				calcCrc = buffer[i];
+				calcCrc = (uint8_t)buffer[i];
 				analyseState = preambulaFound;
 			}
 			break;
 		case preambulaFound:
-			message.id = buffer[i];
+      message.id = (uint8_t)buffer[i];
 			calcCrc += message.id;
 			analyseState = idOK;
 			break;
 		case idOK:
-			message.length = buffer[i];
+      message.length = (uint8_t)buffer[i];
 			if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceUART, &message))
 			{
 				calcCrc += message.length;
@@ -94,8 +154,8 @@ void SerialComm::parseMessages(const char* buffer, size_t size)
 			// copy data
 			if (length != 0)
 			{
-				message.data[dataIndex] = buffer[i];
-				calcCrc += buffer[i];
+        message.data[dataIndex] = (uint8_t)buffer[i];
+        calcCrc += (uint8_t)buffer[i];
 				dataIndex++;
 				length--;
 				if (length == 0)
@@ -112,17 +172,19 @@ void SerialComm::parseMessages(const char* buffer, size_t size)
 			break;
 		case crcFirstbyte:
 			// store crc first byte
-			messageCrc.u8.byteHigh = buffer[i];
+      messageCrc.u8.byteHigh = (uint8_t)buffer[i];
 			analyseState = crcCheck;
 			break;
 		case crcCheck:
 			// store 2nd byte
-			messageCrc.u8.byteLow = buffer[i];
+      messageCrc.u8.byteLow = (uint8_t)buffer[i];
 			// check CRC
 			if (calcCrc == messageCrc.u16)
 			{
+				mutex_.lock();
 				// new valid message received, copy data into data layer
 				InterfaceHandler_storeReceivedData(&message);
+				mutex_.unlock();
 				// ready for next packet
 				analyseState = noData;
 			}
@@ -135,25 +197,37 @@ void SerialComm::parseMessages(const char* buffer, size_t size)
 
 			break;
 		}
-    }
+  }
 }
 
 // clears the element from UART_CAN Rx message storage
 void SerialComm::clearMessageStorage(InterfaceMessage& message)
 {
-    message.id = 0;
-    message.length = 0;
+  message.id = 0;
+  message.length = 0;
 	for (int i = 0; i < INTERFACE_MSG_SIZE; ++i)
-        message.data[i] = 0;
-}
-
-// send data to serial port
-void SerialComm::sendControllerCommands()
-{
-	InterfaceHandler_transmitData(InterfaceUART, sendMessage);
+    message.data[i] = 0;
 }
 
 void sendMessage(InterfaceMessage* msg)
 {
-
+	splitU16 crc;
+	char data = (char)0xAA;
+	serial_->write(&data, 1);
+	crc.u16 = (uint16_t)data;
+	data = msg->id;
+	serial_->write(&data, 1);
+	crc.u16 += data;
+	data = (char)msg->length;
+	crc.u16 += data;
+	for (int i = 0; i < msg->length; ++i)
+	{
+		data = msg->data[i];
+		serial_->write(&data, 1);
+		crc.u16 += data;
+	}
+	data = crc.u8.byteHigh;
+	serial_->write(&data, 1);
+	data = crc.u8.byteLow;
+	serial_->write(&data, 1);
 }

@@ -166,26 +166,15 @@ depth_window calculate_range_map(const uint16_t* depth_data, uint32_t w,
   return intervals;
 }
 
-bool follower_begin_serial(follower_ctx* follower, const std::string& port,
-                           uint32_t baud) {
-  try {
-    follower->serial.reset(new CallbackAsyncSerial(port, baud));
-    return true;
-  } catch (std::exception& e) {
-    printf("failed to open serial: %s\n", e.what());
-  }
-
-  return false;
-}
-
-bool follower_has_serial(const follower_ctx* follower) {
-  return follower->serial && follower->serial->isOpen();
-}
-
-void send_serial_message(follower_ctx* follower, const uint8_t* data,
-                         size_t len) {
-  if (follower->serial && follower->serial->isOpen()) {
-    follower->serial->write((const char*)data, len);
+void send_serial_message(follower_ctx* follower) 
+{
+  if (follower->serial.isOpen()) 
+  {
+    int8_t x = (int8_t)follower->camera_degrees.x;
+    int8_t z = (int8_t)follower->camera_degrees.y;
+    follower->serial.set(DLParamCameraRequestXDegree, &x);
+    follower->serial.set(DLParamCameraRequestZDegree, &z);
+    follower->serial.serviceSend();
   }
 }
 

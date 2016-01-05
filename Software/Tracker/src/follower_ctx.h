@@ -14,6 +14,7 @@
 #include <random>
 #include <bgfx/bgfx.h>
 #include "fl_constants.h"
+#include "comm/serialcomm.h"
 
 const uint16_t MIN_RELIABLE_DIST = 500;
 const uint16_t MAX_RELIABLE_DIST = 4500;
@@ -38,7 +39,7 @@ struct follower_ctx {
   bgfx::TextureHandle color_texture;
   bgfx::TextureHandle infrared_texture;
 
-  std::unique_ptr<CallbackAsyncSerial> serial;
+  SerialComm serial;
   std::unique_ptr<kinect_frame_source> frame_source;
   std::unordered_map<uint64_t, body> bodies;
 
@@ -62,7 +63,7 @@ struct follower_ctx {
 
   depth_window depth_map;
 
-  vec2 camera_degrees = { 0.f, 0.f };
+  vec2 camera_degrees;// = { 0.f, 0.f };
 
   ~follower_ctx();
 };
@@ -76,8 +77,7 @@ depth_window calculate_range_map(const uint16_t* depth_data, uint32_t w,
 bool follower_begin_serial(follower_ctx* follower, const std::string& port,
                            uint32_t baud);
 bool follower_has_serial(const follower_ctx* follower);
-void send_serial_message(follower_ctx* follower, const uint8_t* data,
-                         size_t len);
+void send_serial_message(follower_ctx* follower);
 
 void follower_update_possible_position(follower_ctx* follower, const AABB* detections, size_t len);
 

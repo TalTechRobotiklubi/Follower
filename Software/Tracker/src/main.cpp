@@ -159,9 +159,8 @@ int main(int argc, char* argv[]) {
   }
 
   const char* serial_port = cmd_line.findOption('s');
-  if (serial_port) {
-    follower_begin_serial(&follower, serial_port, 115200);
-  }
+  if (serial_port)
+    follower.serial.start(serial_port, 115200);
 
   float record_speedup = 1.f;
   cmd_line.hasArg(record_speedup, 'x', "speedup");
@@ -290,15 +289,8 @@ int main(int argc, char* argv[]) {
                                           follower.hog_boxes.size());
       }
 
-      if (follower_has_serial(&follower)) {
-        if (follower.has_target) {
-          uint8_t camera_degrees[CAMERA_MSG_LENGTH];
-          fill_camera_message(int8_t(follower.camera_degrees.x),
-                              int8_t(follower.camera_degrees.y),
-                              camera_degrees);
-          send_serial_message(&follower, camera_degrees, CAMERA_MSG_LENGTH);
-        }
-      }
+      if (follower.serial.isOpen() && follower.has_target)
+        send_serial_message(&follower);
     }
 
     follower_update(&follower, float(dt_seconds) * record_speedup);
