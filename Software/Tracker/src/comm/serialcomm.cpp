@@ -1,4 +1,4 @@
-#include "SerialComm.h"
+#include "serialcomm.h"
 
 #include <assert.h>
 #include <cstdio>

@@ -29,7 +29,7 @@ Interface;
 typedef struct
 {
 	Packet ePacket;
-	uint32_t ulPeriod;
+	int32_t ulPeriod;
 }
 InterfaceReceivePacket;
 

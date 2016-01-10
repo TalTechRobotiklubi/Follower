@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DataLayerConfig.h"
+#include "datalayerconfig.h"
 
 enum AperiodicPacketStatus
 {

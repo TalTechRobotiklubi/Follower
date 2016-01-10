@@ -3,7 +3,7 @@
 // Data layer parameter types
 //
 // ----------------------------------------------------------------------------
-#include "Typedef.h"
+#include "typedef.h"
 
 #ifdef __cplusplus
 extern "C" {

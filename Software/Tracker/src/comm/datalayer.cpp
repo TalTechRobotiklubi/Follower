@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
-#include "dataLayer.h"
+#include "datalayer.h"
 #include "datalayerconfig.h"
 #include "packetconfig.h"
 
