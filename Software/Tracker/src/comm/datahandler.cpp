@@ -23,7 +23,7 @@ void DataHandler_TASK(uint16_t elapsedMs)
 			if (transmitPacket.ulPeriod > 0 && packetDesc->iPeriod >= 0)
 			{
 				packetDesc->iPeriod += elapsedMs;
-				if (packetDesc->iPeriod > transmitPacket.ulPeriod)
+				if (uint32_t(packetDesc->iPeriod) > transmitPacket.ulPeriod)
 					packetDesc->iPeriod = elapsedMs;
 			}
 		}

@@ -1,6 +1,7 @@
 #include "fl_yuy2_convert.h"
 #include <stdlib.h>
 #include <libyuv.h>
+#include "fl_math.h"
 
 struct fl_yuy2_convert {
   int output_width;
@@ -9,6 +10,7 @@ struct fl_yuy2_convert {
   int input_width;
   int input_height;
   int input_stride;
+  int quality;
 
   size_t rgba_buffer_length;
   uint8_t* rgba_buffer;
@@ -30,6 +32,7 @@ fl_yuy2_convert* fl_yuy2_convert_create(int input_width, int input_height,
   converter->input_width = input_width;
   converter->input_height = input_height;
   converter->input_stride = input_width * 2;
+  converter->quality = 0;
 
   converter->rgba_buffer_length = output_width * output_height * 4;
   converter->rgba_buffer = (uint8_t*)malloc(converter->rgba_buffer_length);
@@ -65,7 +68,7 @@ uint8_t* fl_yuy2_to_rgba(fl_yuy2_convert* converter, const uint8_t* yuy2) {
       downscale_stride,
       converter->i420_downscale_buffer + 2 * downscale_chan_offset,
       downscale_stride, converter->output_width, converter->output_height,
-      libyuv::kFilterNone);
+      libyuv::FilterModeEnum(converter->quality));
 
   libyuv::I420ToARGB(
       converter->i420_downscale_buffer, downscale_stride,
@@ -83,4 +86,9 @@ void fl_yuy2_convert_destroy(fl_yuy2_convert* converter) {
   free(converter->i420_buffer);
   free(converter->i420_downscale_buffer);
   free(converter);
+}
+
+void fl_yuy2_set_quality(fl_yuy2_convert* converter, int quality) {
+  converter->quality =
+      fl_clamp(quality, int(libyuv::kFilterNone), int(libyuv::kFilterBox));
 }

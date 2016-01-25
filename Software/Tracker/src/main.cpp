@@ -4,6 +4,7 @@
 #include "follower_ctx.h"
 #include "kinect_frame_source.h"
 #include "fl_kinect_stream_source.h"
+#include "fl_video_source.h"
 #include "kinect_live_source.h"
 #include "kinect_null_frame_source.h"
 #include <GLFW/glfw3.h>
@@ -14,7 +15,6 @@
 #include "imgui/imgui.h"
 #include "imgui/droidsans.ttf.h"
 #include "pos_texcoord_vertex.h"
-#include "hog_detect.h"
 #include "fl_math.h"
 #include "fl_render.h"
 #include "nanovg/nanovg.h"
@@ -35,10 +35,11 @@ struct window_info {
   fl_ui_layout layout;
 };
 
-void update_depth_texture(uint8_t* texture_data, const kinect_frame* frame) {
+void update_depth_texture(uint8_t* texture_data, const uint16_t* depth,
+                          size_t len) {
   uint8_t* pixelData = (uint8_t*)texture_data;
-  for (uint32_t i = 0; i < frame->depth_length; i++) {
-    uint16_t reading = frame->depth_data[i];
+  for (uint32_t i = 0; i < len; i++) {
+    uint16_t reading = depth[i];
     uint8_t normalized =
         fl_depth_to_byte(reading, MIN_RELIABLE_DIST, MAX_RELIABLE_DIST);
 
@@ -146,31 +147,33 @@ int main(int argc, char* argv[]) {
 
   follower_ctx follower;
 
-  const char* playback_file = cmd_line.findOption('p');
-  if (playback_file) {
+  if (const char* playback_file = cmd_line.findOption('p')) {
+    printf("frame source: fl_stream\n");
     follower.frame_source.reset(new fl_kinect_stream_source(playback_file));
+  } else if (const char* video_file = cmd_line.findOption('v')) {
+    printf("frame source: video\n");
+    follower.frame_source.reset(new fl_video_source(video_file));
   } else {
+#ifdef FL_KINECT_ENBABLED
     printf("frame source: kinect\n");
-#ifdef WIN32
-    follower.frame_source.reset(new kinect_live_source());
+    follower.frame_source.reset(new kinect_live_source(&follower));
 #else
+    printf("frame source: null\n");
     follower.frame_source.reset(new kinect_null_frame_source());
 #endif
   }
 
   const char* serial_port = cmd_line.findOption('s');
-  if (serial_port)
-    follower.serial.start(serial_port, 115200);
+  if (serial_port) follower.serial.start(serial_port, 115200);
 
   float record_speedup = 1.f;
   cmd_line.hasArg(record_speedup, 'x', "speedup");
 
   const char* cascade_file = cmd_line.findOption('c');
   if (cascade_file) {
-    hog_detect* hog = hog_alloc();
-    hog_init(hog);
-    hog_load_cascade(hog, cascade_file);
-    follower.hog = hog;
+    auto hog = hog_create();
+    hog_load_cascade(hog.get(), cascade_file);
+    follower.hog = std::move(hog);
   }
 
   pos_texcoord_vertex::init();
@@ -198,8 +201,11 @@ int main(int argc, char* argv[]) {
   // rgba
   const size_t texture_pitch = fl::KINECT_DEPTH_W * 4;
   const size_t texture_bytes = texture_pitch * fl::KINECT_DEPTH_H;
-  uint8_t* depth_texture_data = (uint8_t*)malloc(texture_bytes);
-  uint8_t* ir_texture_data = (uint8_t*)malloc(texture_bytes);
+  uint8_t* depth_texture_data = (uint8_t*)calloc(texture_bytes, 1);
+  bgfx::updateTexture2D(
+      follower.depth_texture, 0, 0, 0, fl::KINECT_DEPTH_W, fl::KINECT_DEPTH_H,
+      bgfx::makeRef(depth_texture_data, texture_bytes), texture_pitch);
+  uint8_t* ir_texture_data = (uint8_t*)calloc(texture_bytes, 1);
 
   int64_t current_time = bx::getHPCounter();
   int64_t prev_time = current_time;
@@ -233,7 +239,8 @@ int main(int argc, char* argv[]) {
 
     if (frame) {
       if (frame->depth_data) {
-        update_depth_texture(depth_texture_data, frame);
+        update_depth_texture(depth_texture_data, frame->depth_data,
+                             frame->depth_length);
         const bgfx::Memory* m =
             bgfx::makeRef(depth_texture_data, texture_bytes);
         bgfx::updateTexture2D(follower.depth_texture, 0, 0, 0,
@@ -262,14 +269,10 @@ int main(int argc, char* argv[]) {
                               fl::KINECT_IR_W * 4);
       }
 
-      if (frame->num_bodies > 0) {
-        follower_kinect_update(&follower, frame);
-      }
-
       if (follower.hog) {
         hog_result results =
-            hog_do_detect(follower.hog, frame->rgba_data, frame->rgba_width,
-                          frame->rgba_height);
+            hog_do_detect(follower.hog.get(), frame->rgba_data,
+                          frame->rgba_width, frame->rgba_height);
         follower.hog_boxes.clear();
         const float scale_x = float(win_info.layout.kinect_image_width) /
                               float(frame->rgba_width);
@@ -307,6 +310,12 @@ int main(int argc, char* argv[]) {
                          win_info.layout.win_height, &right_scroll_area);
     imguiSlider("playback rate", record_speedup, 0.0f, 10.0f, 0.1f);
     imguiSlider("max body ttl", follower.body_time_to_live, 0.0f, 5.0f, 0.1f);
+    imguiSlider("img scale quality", follower.downscale_quality, 0.0f, 3.0f,
+                1.0f);
+    if (follower.hog) {
+      imguiSlider("HOG scaling factor", follower.hog->detect_scale_factor, 1.01f,
+        2.f, 0.01f);
+    }
     imguiBool("IR processing", ir_processing_enabled);
     imguiLabel("camera %.1f %.1f", follower.camera_degrees.x,
                follower.camera_degrees.y);

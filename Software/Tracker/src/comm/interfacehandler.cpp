@@ -269,7 +269,7 @@ uint8_t getBitmaskForMessage(uint8_t bitPosition, int16_t length)
 
 void initalizeInterfaceMessage(InterfaceMessage* message, PacketDescriptor* packetDesc)
 {
-	message->id = packetDesc->uiID;
+	message->id = uint8_t(packetDesc->uiID);
 	message->length = packetDesc->uiDLC;
 
 	int i;

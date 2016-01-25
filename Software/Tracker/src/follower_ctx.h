@@ -10,11 +10,12 @@
 #include "AsyncSerial.h"
 #include "kinect_frame_source.h"
 #include "kinect_frame.h"
-#include "filter/kalman.h"
 #include <random>
 #include <bgfx/bgfx.h>
 #include "fl_constants.h"
 #include "comm/serialcomm.h"
+#include "hog_detect.h"
+#include <opencv2/video/tracking.hpp>
 
 const uint16_t MIN_RELIABLE_DIST = 500;
 const uint16_t MAX_RELIABLE_DIST = 4500;
@@ -31,10 +32,28 @@ struct body {
   kinect_body kbody;
   std::vector<AABB> prev_positions;
   std::vector<vec2> prev_kalmans;
-  kalman_filter filter;
+};
+
+struct body_target {
+  AABB location;
+  float time_to_live;
+
+  cv::KalmanFilter kf;
+  cv::Mat_<float> z_t;
+  cv::Mat_<float> x_t;
+  cv::Mat_<float> w_k; 
+
+  body_target();
+  void update_kalman(const AABB* aabb);
+
+  AABB kf_prediction;
 };
 
 struct follower_ctx {
+  
+  follower_ctx();
+  ~follower_ctx();
+
   bgfx::TextureHandle depth_texture;
   bgfx::TextureHandle color_texture;
   bgfx::TextureHandle infrared_texture;
@@ -43,13 +62,12 @@ struct follower_ctx {
   std::unique_ptr<kinect_frame_source> frame_source;
   std::unordered_map<uint64_t, body> bodies;
 
-  struct hog_detect* hog = nullptr;
+  std::unique_ptr<hog_detect> hog;
   std::vector<AABB> hog_boxes;
   std::vector<merged_aabb> combined_hogs;
 
   bool has_target = false;
-  AABB possible_target;
-  float target_ttl;
+  body_target possible_target;
 
   // offset of depth calculation
   // depth window height = depth_height - (depth_height * depth_cutoff)
@@ -60,15 +78,14 @@ struct follower_ctx {
   float min_body_latch_distance = 50.f;
 
   float body_time_to_live = 1.f;
+  float downscale_quality = 0.f;
 
   depth_window depth_map;
 
-  vec2 camera_degrees;// = { 0.f, 0.f };
+  vec2 camera_degrees;
 
-  ~follower_ctx();
 };
 
-void follower_kinect_update(follower_ctx* follower, const kinect_frame* frame);
 void follower_update(follower_ctx* follower, float dt);
 
 depth_window calculate_range_map(const uint16_t* depth_data, uint32_t w,

@@ -81,7 +81,7 @@ void fl_stream_prefetch(fl_stream_reader* reader) {
         if (block_data == nullptr)
           fprintf(stderr, "Failed to allocate block for channel %d\n", i);
 
-        fseek(chan->stream, chan->file_offset, SEEK_SET);
+        fseek(chan->stream, long(chan->file_offset), SEEK_SET);
         size_t actual_read = fread(block_data, 1, frame_length, chan->stream);
 
         chan->file_offset += actual_read;
@@ -92,7 +92,7 @@ void fl_stream_prefetch(fl_stream_reader* reader) {
 
         if (chan->file_offset - chan->initial_file_offset >= channel_length) {
           chan->file_offset = chan->initial_file_offset;
-          fseek(chan->stream, chan->file_offset, SEEK_SET);
+          fseek(chan->stream, long(chan->file_offset), SEEK_SET);
         }
       }
     }

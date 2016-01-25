@@ -15,6 +15,7 @@ find_package(Boost 1.55 COMPONENTS
   regex
   REQUIRED)
 
+set(OpenCV_STATIC OFF)
 find_package(OpenCV REQUIRED)
 
 set(bx_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/third_party/bx/include")
@@ -26,13 +27,21 @@ add_subdirectory("third_party/libyuv")
 add_subdirectory("third_party/glfw-3.1.1")
 add_subdirectory("third_party/bgfx")
 
+option(KINECT_ENABLED "Enable using Kinect SDK" OFF)
+
 if (WIN32)
-  find_package(KinectV2 REQUIRED)
   add_definitions(
     -D_WIN32_WINNT=0x0501
     -D_SCL_SECURE_NO_WARNINGS
     -D_CRT_SECURE_NO_WARNINGS
   )
+
+  if (KINECT_ENABLED)
+    find_package(KinectV2 REQUIRED)
+    add_definitions(
+      -DFL_KINECT_ENABLED=1
+    )
+  endif()
 else()
   add_definitions(-std=c++11 -Wall -Wextra)
 endif()
@@ -42,7 +51,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 INCLUDE_DIRECTORIES(
   "third_party/libyuv/include"
   "third_party/glfw-3.1.1/include"
-  "third_party/eigen"
   "third_party/bgfx/include"
 )
 

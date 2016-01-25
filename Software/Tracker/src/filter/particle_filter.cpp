@@ -4,8 +4,8 @@
 
 float gaussian(float mu, float sigma, float x) {
   const float variance = sigma * sigma;
-  return std::exp(-std::pow(mu - x, 2) / variance * 0.5f) /
-         std::sqrt(2.f * M_PI * variance);
+  return std::expf(-std::powf(mu - x, 2) / variance * 0.5f) /
+         std::sqrtf(2.f * float(M_PI) * variance);
 }
 
 void pf_update(particle_filter* pf, vec2 position) {
