@@ -119,13 +119,6 @@ void draw_tracked_bodies(fl_render_context* ctx, const fl_ui_layout* layout,
     nvgText(nvg, x + tl.x + border_width, y + tl.y + border_width + 20, tex_buf,
             nullptr);
 
-    // Kalman prediction
-    nvgBeginPath(nvg);
-    nvgCircle(nvg, x + body->filter.state(0) * sx,
-              y + body->filter.state(1) * sy, 5);
-    nvgFillColor(nvg, nvgRGBA(255, 255, 0, 220));
-    nvgFill(nvg);
-
     nvgRestore(nvg);
   }
 }
@@ -158,9 +151,9 @@ void draw_prediction_plots(fl_render_context* ctx, const fl_ui_layout* layout,
     for (size_t i = beginIdx; i < num_possible_points; i++) {
       const vec2& pos = body->prev_positions[i].top_left;
       const float x_y_pos =
-          fl_map_range(pos.x, 0, fl::KINECT_DEPTH_W, single_plot_height, 0);
+          fl_map_range(pos.x, 0.f, float(fl::KINECT_DEPTH_W), single_plot_height, 0.f);
       const float y_y_pos =
-          fl_map_range(pos.y, fl::KINECT_DEPTH_H, 0, single_plot_height, 0);
+          fl_map_range(pos.y, float(fl::KINECT_DEPTH_H), 0.f, single_plot_height, 0.f);
 
       nvgFillColor(nvg, nvgRGBA(255, 255, 255, 220));
 
@@ -174,9 +167,9 @@ void draw_prediction_plots(fl_render_context* ctx, const fl_ui_layout* layout,
 
       const vec2& kpos = body->prev_kalmans[i];
       const float kx_y_pos =
-          fl_map_range(kpos.x, 0, fl::KINECT_DEPTH_W, single_plot_height, 0);
+        fl_map_range(kpos.x, 0, float(fl::KINECT_DEPTH_W), single_plot_height, 0);
       const float ky_y_pos =
-          fl_map_range(kpos.y, fl::KINECT_DEPTH_H, 0, single_plot_height, 0);
+          fl_map_range(kpos.y, float(fl::KINECT_DEPTH_H), 0, single_plot_height, 0);
 
       nvgFillColor(nvg, nvgRGBA(255, 255, 0, 220));
 
@@ -195,18 +188,15 @@ void draw_prediction_plots(fl_render_context* ctx, const fl_ui_layout* layout,
   }
 }
 
-void draw_hog_detections(fl_render_context* ctx, const fl_ui_layout* layout,
+void draw_hog_detections(fl_render_context* ctx, float x, float y,
                          const follower_ctx* follower) {
   NVGcontext* nvg = ctx->nvg;
-
-  const float x = layout->toolbar_width;
-  const float y = 0.f;
 
   for (const AABB& aabb : follower->hog_boxes) {
     const float w = aabb.bot_right.x - aabb.top_left.x;
     const float h = aabb.bot_right.y - aabb.top_left.y;
     draw_rect_outline(nvg, x + aabb.top_left.x, y + aabb.top_left.y, w, h, 1.f,
-                      nvgRGBA(255, 255, 255, 255));
+                      nvgRGBA(191, 85, 236, 50));
   }
 
   for (const merged_aabb& node : follower->combined_hogs) {
@@ -218,11 +208,19 @@ void draw_hog_detections(fl_render_context* ctx, const fl_ui_layout* layout,
 
   if (follower->has_target) {
     const float max_r = 15.f;
-    const float r = follower->target_ttl / follower->body_time_to_live * max_r;
-    const vec2 target = aabb_center(&follower->possible_target);
+    const float r = follower->possible_target.time_to_live /
+                    follower->body_time_to_live * max_r;
+
+    const vec2 target = aabb_center(&follower->possible_target.location);
     nvgBeginPath(nvg);
-    nvgCircle(nvg, x + target.x, y + target.y, r);
-    nvgFillColor(nvg, nvgRGBA(255, 0, 0, 255));
+    nvgCircle(nvg, x + target.x, y + target.y, r * 0.8f);
+    nvgFillColor(nvg, nvgRGBA(65, 131, 215, 255));
+    nvgFill(nvg);
+
+    const vec2 predicted_position = aabb_center(&follower->possible_target.kf_prediction);
+    nvgBeginPath(nvg);
+    nvgCircle(nvg, x + predicted_position.x, y + predicted_position.y, r);
+    nvgFillColor(nvg, nvgRGBA(207, 0, 15, 255));
     nvgFill(nvg);
   }
 }
@@ -304,10 +302,10 @@ void fl_render(fl_render_context* ctx, fl_ui_layout* layout,
   bgfx::setTexture(0, ctx->unif_tex_color, follower->infrared_texture);
   bgfx::submit(0, ctx->tex_program);
 
-  nvgBeginFrame(ctx->nvg, layout->win_widthf, layout->win_heightf, 1.f);
+  nvgBeginFrame(ctx->nvg, layout->win_width, layout->win_height, 1.f);
   draw_depth_summary(ctx, layout, follower);
   draw_tracked_bodies(ctx, layout, follower);
-  draw_hog_detections(ctx, layout, follower);
+  draw_hog_detections(ctx, layout->toolbar_width, 0.f, follower);
   draw_prediction_plots(ctx, layout, follower);
   nvgEndFrame(ctx->nvg);
 }

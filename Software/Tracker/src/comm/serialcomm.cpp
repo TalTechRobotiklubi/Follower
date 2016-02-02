@@ -49,9 +49,10 @@ SerialComm::SerialComm(void)
 
 SerialComm::~SerialComm(void)
 {
-	if (serial_)
-		serial_->clearCallback();
-	serial_->close();
+  if (serial_) {
+    serial_->clearCallback();
+    serial_->close();
+  }
 }
 
 bool SerialComm::start(const std::string& port, uint32_t baud)

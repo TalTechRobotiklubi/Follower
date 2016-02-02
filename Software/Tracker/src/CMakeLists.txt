@@ -1,3 +1,7 @@
+if(KINECT_ENABLED)
+  add_definitions(-DFL_KINECT_ENABLED=1)
+endif()
+
 include_directories(
   ${KINECTV2_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
@@ -38,7 +42,6 @@ set(FOLLOWER_SOURCES
   vec2.cpp
   hog_detect.cpp
 
-  filter/kalman.cpp
   filter/particle_filter.cpp
 
   fl_block_alloc.cpp
@@ -48,6 +51,7 @@ set(FOLLOWER_SOURCES
   fl_stream_reader.cpp
   fl_stream_writer.cpp
   fl_ui_layout.cpp
+  fl_video_source.cpp
   fl_yuy2_convert.cpp
 
   interp/cubic_hermite.cpp
@@ -100,7 +104,7 @@ set(FOLLOWER_INCLUDES
   comm/typedef.h
 )
 
-if (WIN32)
+if (KINECT_ENABLED)
   list(APPEND FOLLOWER_SOURCES kinect_live_source.cpp)
   list(APPEND FOLLOWER_INCLUDES kinect_live_source.h)
 endif()

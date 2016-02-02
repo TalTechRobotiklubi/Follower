@@ -3,17 +3,23 @@
 
 #include "AABB.h"
 #include <stdint.h>
+#include <vector>
+#include <opencv2/objdetect/objdetect.hpp>
+#include <memory>
 
-struct hog_detect;
+struct hog_detect {
+  cv::CascadeClassifier descriptor;
+  float detect_scale_factor = 1.1f;
+  std::vector<cv::Rect> locations;
+  std::vector<AABB> boxes;
+};
 
 struct hog_result {
   AABB* boxes;
   size_t len;
 };
 
-hog_detect* hog_alloc();
-void hog_init(hog_detect* hog);
-void hog_destroy(hog_detect* hog);
+std::unique_ptr<hog_detect> hog_create();
 
 void hog_load_cascade(hog_detect* hog, const char* name);
 

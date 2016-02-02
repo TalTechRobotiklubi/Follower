@@ -14,8 +14,10 @@ struct IColorFrameReader;
 struct IInfraredFrameReader;
 struct fl_yuy2_convert;
 
+struct follower_ctx;
+
 struct kinect_live_source : kinect_frame_source {
-  kinect_live_source();
+  kinect_live_source(const follower_ctx* follower);
   ~kinect_live_source();
 
   const kinect_frame* get_frame(float dt) override;
@@ -36,6 +38,8 @@ struct kinect_live_source : kinect_frame_source {
   size_t kinect_rgba_buf_len = 0;
 
   kinect_frame current_frame;
+
+  const follower_ctx* follower = nullptr;
 };
 
 #endif

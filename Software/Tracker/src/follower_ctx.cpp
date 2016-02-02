@@ -1,5 +1,4 @@
 #include "follower_ctx.h"
-#include "hog_detect.h"
 #include "fl_math.h"
 
 void follower_update_camera_pos(follower_ctx* follower, const AABB* target) {
@@ -53,72 +52,10 @@ std::vector<merged_aabb> aabb_combine_overlapping(const AABB* aabb,
   return parent_nodes;
 }
 
-void follower_kinect_update(follower_ctx* follower, const kinect_frame* frame) {
-  for (size_t i = 0; i < frame->num_bodies; i++) {
-    const kinect_body* kbody = &frame->bodies[i];
-
-    auto it = follower->bodies.find(kbody->identifier);
-    if (it != follower->bodies.end()) {
-      body* fb = &it->second;
-      const AABB* aabb = &fb->kbody.body_box;
-      Eigen::Vector2f meas;
-      meas << aabb->top_left.x, aabb->top_left.y;
-      kalman_predict(&fb->filter);
-      kalman_update(&fb->filter, meas);
-
-      fb->time_to_live = follower->body_time_to_live;
-      fb->kbody = *kbody;
-
-      const size_t history_limit = 512;
-      if (fb->prev_positions.size() > history_limit) {
-        fb->prev_positions.erase(
-            fb->prev_positions.begin(),
-            fb->prev_positions.begin() + history_limit / 2);
-      }
-      fb->prev_positions.push_back(kbody->body_box);
-
-      if (fb->prev_kalmans.size() > history_limit) {
-        fb->prev_kalmans.erase(fb->prev_kalmans.begin(),
-                               fb->prev_kalmans.begin() + history_limit / 2);
-      }
-      fb->prev_kalmans.push_back({fb->filter.state(0), fb->filter.state(1)});
-
-    } else {
-      body b;
-      b.time_to_live = follower->body_time_to_live;
-      b.kbody = *kbody;
-      const vec2 track_point = kbody->body_box.top_left;
-      b.filter.state << track_point.x, track_point.y, 0, 0;
-      b.filter.H << 1, 0, 0, 0, 0, 1, 0, 0;
-
-      b.filter.P = Eigen::Matrix4f::Identity() * 1000.f;
-      b.filter.R = Eigen::Matrix2f::Identity() * 1000.f;
-      b.filter.F << 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1;
-
-      b.filter.Q = Eigen::Matrix4f::Random() * 0.001f;
-
-      follower->bodies[kbody->identifier] = b;
-    }
-  }
-}
-
 void follower_update(follower_ctx* follower, float dt) {
-  auto& bodies = follower->bodies;
-
-  for (auto it = bodies.begin(); it != bodies.end();) {
-    body& b = it->second;
-    b.time_to_live -= dt;
-
-    if (b.time_to_live <= 0.0f) {
-      it = bodies.erase(it);
-    } else {
-      it++;
-    }
-  }
-
   if (follower->has_target) {
-    follower->target_ttl -= dt;
-    if (follower->target_ttl <= 0.f) {
+    follower->possible_target.time_to_live -= dt;
+    if (follower->possible_target.time_to_live <= 0.f) {
       follower->has_target = false;
     }
   }
@@ -166,10 +103,8 @@ depth_window calculate_range_map(const uint16_t* depth_data, uint32_t w,
   return intervals;
 }
 
-void send_serial_message(follower_ctx* follower) 
-{
-  if (follower->serial.isOpen()) 
-  {
+void send_serial_message(follower_ctx* follower) {
+  if (follower->serial.isOpen()) {
     int8_t x = (int8_t)follower->camera_degrees.x;
     int8_t z = (int8_t)follower->camera_degrees.y;
     follower->serial.set(DLParamCameraRequestXDegree, &x);
@@ -178,9 +113,9 @@ void send_serial_message(follower_ctx* follower)
   }
 }
 
-follower_ctx::~follower_ctx() {
-  if (hog) hog_destroy(hog);
-}
+follower_ctx::follower_ctx() {}
+
+follower_ctx::~follower_ctx() {}
 
 void follower_update_possible_position(follower_ctx* follower,
                                        const AABB* detections, size_t len) {
@@ -188,19 +123,83 @@ void follower_update_possible_position(follower_ctx* follower,
 
   if (follower->combined_hogs.empty()) return;
 
-  AABB possible_target;
+  AABB possible_target_pos;
   int num_nodes = 0;
   for (size_t i = 0; i < follower->combined_hogs.size(); i++) {
     const merged_aabb* node = &follower->combined_hogs[i];
     if (node->num_aabbs > num_nodes) {
-      possible_target = node->aabb;
+      possible_target_pos = node->aabb;
       num_nodes = node->num_aabbs;
     }
   }
 
   follower->has_target = true;
-  follower->possible_target = possible_target;
-  follower->target_ttl = follower->body_time_to_live;
+  follower->possible_target.location = possible_target_pos;
+  follower->possible_target.time_to_live = follower->body_time_to_live;
+  follower->possible_target.update_kalman(&possible_target_pos);
 
-  follower_update_camera_pos(follower, &possible_target);
+  follower_update_camera_pos(follower, &follower->possible_target.location);
+}
+
+body_target::body_target()
+  : kf(6, 4, 0)
+  , z_t(4, 1, CV_32F)
+  , x_t(6, 1, CV_32F)
+  , w_k(6, 1, CV_32F) {
+
+  w_k << 0.05f, 0.05f, 0.05f, 0.05f, 0.1f, 0.1f;
+
+  z_t.setTo(cv::Scalar(0));
+
+  x_t << 256.f, 212.f, 256.f, 212.f, 0.f, 0.f;
+
+  cv::Mat_<float> transition_matrix(6, 6);
+  transition_matrix <<
+    1.f, 0.f, 0.f, 0.f, 1.f, 0.f,
+    0.f, 1.f, 0.f, 0.f, 0.f, 1.f,
+    0.f, 0.f, 1.f, 0.f, 1.f, 0.f,
+    0.f, 0.f, 0.f, 1.f, 0.f, 1.f,
+    0.f, 0.f, 0.f, 0.f, 1.f, 0.f,
+    0.f, 0.f, 0.f, 0.f, 0.f, 1.f;
+
+  kf.transitionMatrix = transition_matrix;
+
+  cv::Mat_<float> measurement_matrix(4, 6);
+  measurement_matrix <<
+    1.f, 0.f, 0.f, 0.f, 0.f, 0.f,
+    0.f, 1.f, 0.f, 0.f, 0.f, 0.f,
+    0.f, 0.f, 1.f, 0.f, 0.f, 0.f,
+    0.f, 0.f, 0.f, 1.f, 0.f, 0.f;
+
+  kf.measurementMatrix = measurement_matrix;
+
+  cv::Mat_<float> process_noise_cov(6, 6);
+  process_noise_cov <<
+    0.25f, 0.f, 0.f, 0.f, 0.5f, 0.f,
+    0.f, 0.25f, 0.f, 0.f, 0.f, 0.5f,
+    0.f, 0.f, 0.25f, 0.f, 0.5f, 0.f,
+    0.f, 0.f, 0.f, 0.25f, 0.f, 0.5f,
+    0.5f, 0.f, 0.5f, 0.f, 1.f, 0.f,
+    0.f, 0.5f, 0.f, 0.5, 0.f, 1.f;
+
+  kf.processNoiseCov = process_noise_cov * 0.001f;
+
+  setIdentity(kf.measurementNoiseCov, cv::Scalar::all(500.f));
+  setIdentity(kf.errorCovPost, cv::Scalar::all(1e+5));
+  x_t.copyTo(kf.statePost);
+}
+
+void body_target::update_kalman(const AABB* aabb) {
+  const vec2 tl = aabb->top_left;
+  const vec2 br = aabb->bot_right;
+
+  cv::Mat predicted = kf.predict();
+  kf_prediction.top_left.x = predicted.at<float>(0);  
+  kf_prediction.top_left.y = predicted.at<float>(1);  
+  kf_prediction.bot_right.x = predicted.at<float>(2);  
+  kf_prediction.bot_right.y = predicted.at<float>(3);  
+
+  z_t << tl.x, tl.y, br.x, br.y;
+
+  kf.correct(z_t);
 }

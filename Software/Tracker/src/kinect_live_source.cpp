@@ -105,6 +105,7 @@ bool read_rgb_data(kinect_live_source* source) {
     UINT capacity;
     BYTE* yuy2_buffer;
     frame->AccessRawUnderlyingBuffer(&capacity, &yuy2_buffer);
+    fl_yuy2_set_quality(source->yuy2_converter, int(source->follower->downscale_quality));
     source->kinect_rgba_buf =
         fl_yuy2_to_rgba(source->yuy2_converter, yuy2_buffer);
   }
@@ -176,7 +177,8 @@ size_t read_body_data(kinect_live_source* source) {
 }
 }
 
-kinect_live_source::kinect_live_source() {
+kinect_live_source::kinect_live_source(const follower_ctx* follower) :
+  follower(follower) {
   HRESULT hr = GetDefaultKinectSensor(&kinect);
   if (FAILED(hr)) {
     fprintf(stderr, "Failed to get the kinect sensor\n");
