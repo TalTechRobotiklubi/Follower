@@ -8,7 +8,7 @@ WorkerThreadBase::WorkerThreadBase(QObject *parent)	: QThread(parent)
 
 void WorkerThreadBase::StartThread()
 {
-    onStart();
+  onStart();
 	QThread::start();
 }
 

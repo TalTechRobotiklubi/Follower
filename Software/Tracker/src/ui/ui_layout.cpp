@@ -1,8 +1,10 @@
-#include "fl_ui_layout.h"
+#include "ui_layout.h"
 #include "fl_constants.h"
 
-void fl_ui_layout_calculate(fl_ui_layout* layout, int win_width,
-                            int win_height) {
+namespace Fl {
+
+void ui_layout_calculate(ui_layout* layout, int win_width,
+  int win_height) {
   layout->win_width = win_width;
   layout->win_height = win_height;
   layout->win_widthf = float(win_width);
@@ -16,5 +18,7 @@ void fl_ui_layout_calculate(fl_ui_layout* layout, int win_width,
   layout->kinect_image_height = 424.f;
 
   layout->depth_bar_width =
-      layout->kinect_image_width / float(fl::DEPTH_RANGE_INTERVALS);
+    layout->kinect_image_width / float(fl::DEPTH_RANGE_INTERVALS);
+}
+
 }

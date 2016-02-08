@@ -1,7 +1,9 @@
 #ifndef FL_UI_LAYOUT
 #define FL_UI_LAYOUT
 
-struct fl_ui_layout {
+namespace Fl {
+
+struct ui_layout {
   int win_width;
   int win_height;
   float win_widthf;
@@ -17,7 +19,8 @@ struct fl_ui_layout {
   float depth_bar_width;
 };
 
-void fl_ui_layout_calculate(fl_ui_layout* layout, int win_width,
-                            int win_height);
+void ui_layout_calculate(ui_layout* layout, int win_width,
+  int win_height);
 
+}
 #endif

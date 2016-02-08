@@ -50,7 +50,6 @@ set(FOLLOWER_SOURCES
   fl_render.cpp
   fl_stream_reader.cpp
   fl_stream_writer.cpp
-  fl_ui_layout.cpp
   fl_video_source.cpp
   fl_yuy2_convert.cpp
 
@@ -64,6 +63,9 @@ set(FOLLOWER_SOURCES
   comm/packetconfig.cpp
   comm/serialcomm.cpp
   comm/typedef.cpp
+
+  ui/main_window.cpp
+  ui/ui_layout.cpp
 )
 
 set(FOLLOWER_INCLUDES
@@ -81,7 +83,6 @@ set(FOLLOWER_INCLUDES
   fl_stream.h
   fl_stream_reader.h
   fl_stream_writer.h
-  fl_ui_layout.h
   fl_yuy2_convert.h
 
   follower_ctx.h
@@ -102,6 +103,9 @@ set(FOLLOWER_INCLUDES
   comm/packetconfig.h
   comm/serialcomm.h
   comm/typedef.h
+
+  ui/main_window.h
+  ui/ui_layout.h
 )
 
 if (KINECT_ENABLED)

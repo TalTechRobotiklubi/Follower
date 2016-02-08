@@ -1,5 +1,15 @@
+// Copyright 2016 TUT Robotics Club
+
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
+#include <chrono>
+
+//#include <bgfx/bgfxplatform.h>
+//#include <bgfx/bgfx.h>
+#include <bx/timer.h>
+#include <bx/commandline.h>
+
 #include "msgpack.h"
 #include "follower_ctx.h"
 #include "kinect_frame_source.h"
@@ -7,33 +17,27 @@
 #include "fl_video_source.h"
 #include "kinect_live_source.h"
 #include "kinect_null_frame_source.h"
-#include <GLFW/glfw3.h>
-#include <bgfx/bgfxplatform.h>
-#include <bgfx/bgfx.h>
-#include <bx/timer.h>
-#include <bx/commandline.h>
 #include "imgui/imgui.h"
 #include "imgui/droidsans.ttf.h"
 #include "pos_texcoord_vertex.h"
 #include "fl_math.h"
 #include "fl_render.h"
 #include "nanovg/nanovg.h"
-#include "fl_ui_layout.h"
+#include "ui/main_window.h"
 #include "fl_constants.h"
 #include "fl_stream_writer.h"
-#include <math.h>
 
-struct mouse_state {
-  int32_t x = 0;
-  int32_t y = 0;
-  uint8_t button = 0;
-  int32_t scroll = 0;
-};
-
-struct window_info {
-  mouse_state mouse;
-  fl_ui_layout layout;
-};
+//struct mouse_state {
+//  int32_t x = 0;
+//  int32_t y = 0;
+//  uint8_t button = 0;
+//  int32_t scroll = 0;
+//};
+//
+//struct window_info {
+//  mouse_state mouse;
+//  fl_ui_layout layout;
+//};
 
 void update_depth_texture(uint8_t* texture_data, const uint16_t* depth,
                           size_t len) {
@@ -75,67 +79,9 @@ void update_ir_texture(uint8_t* texture_data, const kinect_frame* frame) {
   }
 }
 
-void glfwErrorCallback(int error, const char* description) {
-  fprintf(stderr, "GLFW error %i: %s\n", error, description);
-}
-
-void on_win_resize(GLFWwindow* window, int w, int h) {
-  window_info* win_info = (window_info*)glfwGetWindowUserPointer(window);
-  fl_ui_layout_calculate(&win_info->layout, w, h);
-  bgfx::reset(w, h, BGFX_RESET_VSYNC);
-}
-
-void on_key(GLFWwindow* window, int key, int, int action, int) {
-  switch (key) {
-    case GLFW_KEY_ESCAPE:
-      if (action == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
-      break;
-    default:
-      break;
-  }
-}
-
-void on_mouse_move(GLFWwindow* window, double x, double y) {
-  window_info* win_info = (window_info*)glfwGetWindowUserPointer(window);
-  win_info->mouse.x = int32_t(x);
-  win_info->mouse.y = int32_t(y);
-}
-
-void on_mouse_button(GLFWwindow* window, int button, int action, int) {
-  window_info* win_info = (window_info*)glfwGetWindowUserPointer(window);
-
-  switch (button) {
-    case GLFW_MOUSE_BUTTON_LEFT:
-      win_info->mouse.button ^=
-          (-action ^ win_info->mouse.button) & IMGUI_MBUT_LEFT;
-      break;
-    default:
-      break;
-  }
-}
-
 int main(int argc, char* argv[]) {
-  glfwSetErrorCallback(glfwErrorCallback);
-  glfwInit();
-
-  window_info win_info;
-  fl_ui_layout_calculate(&win_info.layout, 1400, 800);
-
-  GLFWwindow* window =
-      glfwCreateWindow(win_info.layout.win_width, win_info.layout.win_height,
-                       "Follower", nullptr, nullptr);
-
-  glfwSetWindowUserPointer(window, &win_info);
-  glfwSetWindowSizeCallback(window, on_win_resize);
-  glfwSetKeyCallback(window, on_key);
-  glfwSetCursorPosCallback(window, on_mouse_move);
-  glfwSetMouseButtonCallback(window, on_mouse_button);
-
-  bgfx::glfwSetWindow(window);
-  bgfx::init(bgfx::RendererType::OpenGL);
-  bgfx::reset(win_info.layout.win_width, win_info.layout.win_height,
-              BGFX_RESET_VSYNC);
-  bgfx::setDebug(BGFX_DEBUG_TEXT);
+  Fl::window_info win_info;
+  GLFWwindow* window = create_main_window(&win_info);
 
   bx::CommandLine cmd_line(argc, argv);
 
@@ -196,7 +142,7 @@ int main(int argc, char* argv[]) {
   nvgFontFace(nvg, "default");
   bgfx::setViewSeq(0, true);
 
-  fl_render_context* renderer = fl_renderer_create(nvg);
+  Fl::fl_render_context* renderer = Fl::fl_renderer_create(nvg);
 
   // rgba
   const size_t texture_pitch = fl::KINECT_DEPTH_W * 4;
@@ -300,7 +246,7 @@ int main(int argc, char* argv[]) {
 
     bgfx::touch(0);
 
-    fl_render(renderer, &win_info.layout, &follower);
+    Fl::render(renderer, &win_info.layout, &follower);
 
     static int32_t right_scroll_area = 0;
     imguiBeginFrame(win_info.mouse.x, win_info.mouse.y, win_info.mouse.button,

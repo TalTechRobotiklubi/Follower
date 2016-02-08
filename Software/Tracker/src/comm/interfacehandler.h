@@ -21,9 +21,9 @@ typedef struct
 	int16_t period;
 } InterfaceMessage;
 
-void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(InterfaceMessage* msg));
-void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interface, void (*funcToDriver)(InterfaceMessage* msg));
-U8 InterfaceHandler_checkIfReceivedMessageExists(Interface interface, InterfaceMessage* msg);
+void InterfaceHandler_transmitData(Interface interf, void (*funcToDriver)(InterfaceMessage* msg));
+void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interf, void(*funcToDriver)(InterfaceMessage* msg));
+U8 InterfaceHandler_checkIfReceivedMessageExists(Interface interf, InterfaceMessage* msg);
 void InterfaceHandler_storeReceivedData(InterfaceMessage* msg);
 
 #endif /* INTERFACEHANDLER_H_ */

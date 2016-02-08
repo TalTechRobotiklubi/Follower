@@ -5,12 +5,12 @@ void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage
 uint8_t getBitmaskForMessage(uint8_t bitPosition, int16_t length);
 void initalizeInterfaceMessage(InterfaceMessage *message, PacketDescriptor* packetDesc);
 
-void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(InterfaceMessage* msg))
+void InterfaceHandler_transmitData(Interface interf, void (*funcToDriver)(InterfaceMessage* msg))
 {
 	uint8_t i;
 	InterfaceMessage message;
 
-	NodeInterfaceDescriptor interfaceDesc = psInterfaceList[interface];
+	NodeInterfaceDescriptor interfaceDesc = psInterfaceList[interf];
 	for (i = 0; i < interfaceDesc.uiTransmitPacketCount; i++)
 	{
 		InterfaceTransmitPacket transmitPacket = interfaceDesc.psTransmitPacketList[i];
@@ -39,12 +39,12 @@ void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(Int
 }
 
 /*peeks async data and transmits it if needed. Does not affect the status*/
-void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interface, void (*funcToDriver)(InterfaceMessage* msg))
+void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interf, void (*funcToDriver)(InterfaceMessage* msg))
 {
 	uint8_t i;
 	InterfaceMessage message;
 
-	NodeInterfaceDescriptor interfaceDesc = psInterfaceList[interface];
+	NodeInterfaceDescriptor interfaceDesc = psInterfaceList[interf];
 	for (i = 0; i < interfaceDesc.uiTransmitPacketCount; i++)
 	{
 		InterfaceTransmitPacket transmitPacket = interfaceDesc.psTransmitPacketList[i];
@@ -62,12 +62,12 @@ void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interfac
 }
 
 /* NB! May be called from interrupt!!! Function not re-entrant, so disable interrupt(s) when calling it from main*/
-U8 InterfaceHandler_checkIfReceivedMessageExists(Interface interface, InterfaceMessage* msg)
+U8 InterfaceHandler_checkIfReceivedMessageExists(Interface interf, InterfaceMessage* msg)
 {
 	U8 result = 0;
 	uint8_t i;
 
-	NodeInterfaceDescriptor interfaceDesc = psInterfaceList[interface];
+	NodeInterfaceDescriptor interfaceDesc = psInterfaceList[interf];
 	for (i = 0; i < interfaceDesc.uiReceivePacketCount; i++)
 	{
 		InterfaceReceivePacket receivePacket = interfaceDesc.psReceivePacketList[i];

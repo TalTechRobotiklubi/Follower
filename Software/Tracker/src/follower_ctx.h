@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <vector>
 #include "AABB.h"
-#include "AsyncSerial.h"
 #include "kinect_frame_source.h"
 #include "kinect_frame.h"
 #include <random>
