@@ -12,7 +12,8 @@
 #include <random>
 #include <bgfx/bgfx.h>
 #include "fl_constants.h"
-#include "comm/serialcomm.h"
+#include "comm/serial_comm.h"
+#include "comm/comm_output.h"
 #include "hog_detect.h"
 #include <opencv2/video/tracking.hpp>
 
@@ -81,7 +82,7 @@ struct follower_ctx {
 
   depth_window depth_map;
 
-  vec2 camera_degrees;
+  CommOutput out_data;
 
 };
 
@@ -89,11 +90,6 @@ void follower_update(follower_ctx* follower, float dt);
 
 depth_window calculate_range_map(const uint16_t* depth_data, uint32_t w,
                                  uint32_t h, float img_height_offset = 0.8f);
-
-bool follower_begin_serial(follower_ctx* follower, const std::string& port,
-                           uint32_t baud);
-bool follower_has_serial(const follower_ctx* follower);
-void send_serial_message(follower_ctx* follower);
 
 void follower_update_possible_position(follower_ctx* follower, const AABB* detections, size_t len);
 

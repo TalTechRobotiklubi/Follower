@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <chrono>
+#include <thread>
 
 //#include <bgfx/bgfxplatform.h>
 //#include <bgfx/bgfx.h>
@@ -26,18 +27,23 @@
 #include "ui/main_window.h"
 #include "fl_constants.h"
 #include "fl_stream_writer.h"
+#include "algorithm\algorithm_runner.h"
 
-//struct mouse_state {
-//  int32_t x = 0;
-//  int32_t y = 0;
-//  uint8_t button = 0;
-//  int32_t scroll = 0;
-//};
-//
-//struct window_info {
-//  mouse_state mouse;
-//  fl_ui_layout layout;
-//};
+typedef std::chrono::milliseconds msec;
+
+void waitTillLoopTimeElapses()
+{
+  static auto loop_time = std::chrono::system_clock::now();
+
+  while (std::chrono::duration_cast<msec>(std::chrono::system_clock::now() - loop_time).count() < 20)
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  loop_time = std::chrono::system_clock::now();
+}
+
+void sendCommands(IComm* comm, const CommOutput& data) {
+  if (comm->isOpen())
+    comm->send(data);
+}
 
 void update_depth_texture(uint8_t* texture_data, const uint16_t* depth,
                           size_t len) {
@@ -155,11 +161,14 @@ int main(int argc, char* argv[]) {
 
   int64_t current_time = bx::getHPCounter();
   int64_t prev_time = current_time;
-  double total_frame_time = 0.0;
+
 
   bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0, 1.0f, 0);
 
+  double total_frame_time = 0.0;
   double smooth_frame_time = 0;
+
+  AlgorithmRunner::initialize();
 
   bool ir_processing_enabled = true;
   while (!glfwWindowShouldClose(window)) {
@@ -237,10 +246,10 @@ int main(int argc, char* argv[]) {
         follower_update_possible_position(&follower, follower.hog_boxes.data(),
                                           follower.hog_boxes.size());
       }
-
-      if (follower.serial.isOpen() && follower.has_target)
-        send_serial_message(&follower);
     }
+
+    AlgorithmRunner::run(0, &follower.out_data);
+    sendCommands(&follower.serial, follower.out_data);
 
     follower_update(&follower, float(dt_seconds) * record_speedup);
 
@@ -263,12 +272,19 @@ int main(int argc, char* argv[]) {
         2.f, 0.01f);
     }
     imguiBool("IR processing", ir_processing_enabled);
-    imguiLabel("camera %.1f %.1f", follower.camera_degrees.x,
-               follower.camera_degrees.y);
+    imguiLabel("camera %.1f %.1f", follower.out_data.camera_degrees.x,
+      follower.out_data.camera_degrees.y);
+    if (imguiButton("start algorithm"))
+      AlgorithmRunner::start(0);
+    if (imguiButton("stop algorithm"))
+      AlgorithmRunner::stop(0);
+
     imguiEndScrollArea();
     imguiEndFrame();
 
     bgfx::frame();
+
+    waitTillLoopTimeElapses();
   }
 
   if (stream_writer) {

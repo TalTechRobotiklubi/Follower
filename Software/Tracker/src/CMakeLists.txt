@@ -55,13 +55,16 @@ set(FOLLOWER_SOURCES
 
   interp/cubic_hermite.cpp
   
+  algorithm/algorithm_move.cpp
+  algorithm/algorithm_runner.cpp
+
   comm/datahandler.cpp
   comm/datalayer.cpp
   comm/datalayerconfig.cpp
   comm/interfaceconfig.cpp
   comm/interfacehandler.cpp
   comm/packetconfig.cpp
-  comm/serialcomm.cpp
+  comm/serial_comm.cpp
   comm/typedef.cpp
 
   ui/main_window.cpp
@@ -95,13 +98,19 @@ set(FOLLOWER_INCLUDES
   vec2.h
   hog_detect.h
   
+  algorithm/algorithm_move.h
+  algorithm/algorithm_runner.h
+  algorithm/ialgorithm.h
+
+  comm/comm_output.h
   comm/datahandler.h
   comm/datalayer.h
   comm/datalayerconfig.h
   comm/interfaceconfig.h
   comm/interfacehandler.h
+  comm/icomm.h
   comm/packetconfig.h
-  comm/serialcomm.h
+  comm/serial_comm.h
   comm/typedef.h
 
   ui/main_window.h

@@ -7,8 +7,8 @@ void follower_update_camera_pos(follower_ctx* follower, const AABB* target) {
   const float target_y =
       (target->top_left.y + target->bot_right.y) * 0.5f / 424.f;
 
-  follower->camera_degrees.x = fl_map_range(target_x, 0.f, 1.0f, -45.f, 45.f);
-  follower->camera_degrees.y = fl_map_range(target_y, 0.f, 1.0f, 45.f, -45.f);
+  follower->out_data.camera_degrees.x = fl_map_range(target_x, 0.f, 1.0f, -45.f, 45.f);
+  follower->out_data.camera_degrees.y = fl_map_range(target_y, 0.f, 1.0f, 45.f, -45.f);
 }
 
 std::vector<merged_aabb> aabb_combine_overlapping(const AABB* aabb,
@@ -101,16 +101,6 @@ depth_window calculate_range_map(const uint16_t* depth_data, uint32_t w,
   }
 
   return intervals;
-}
-
-void send_serial_message(follower_ctx* follower) {
-  if (follower->serial.isOpen()) {
-    int8_t x = (int8_t)follower->camera_degrees.x;
-    int8_t z = (int8_t)follower->camera_degrees.y;
-    follower->serial.set(DLParamCameraRequestXDegree, &x);
-    follower->serial.set(DLParamCameraRequestZDegree, &z);
-    follower->serial.serviceSend();
-  }
 }
 
 follower_ctx::follower_ctx() {}

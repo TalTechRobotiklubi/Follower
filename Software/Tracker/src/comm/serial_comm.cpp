@@ -1,6 +1,6 @@
 // Copyright 2016 TUT Robotics Club
 
-#include "comm\serialcomm.h"
+#include "comm\serial_comm.h"
 
 #include <assert.h>
 #include <cstdio>
@@ -66,7 +66,7 @@ bool SerialComm::start(const std::string& port, uint32_t baud) {
   return true;
 }
 
-bool SerialComm::isOpen() {
+bool SerialComm::isOpen() const {
   return serial_ ? serial_->isOpen() : false;
 }
 
@@ -81,6 +81,20 @@ void SerialComm::takeLock() {
 
 void SerialComm::releaseLock() {
   mutex_.unlock();
+}
+
+void SerialComm::send(const CommOutput& data) {
+  if (isOpen()) {
+    int8_t x = (int8_t)data.camera_degrees.x;
+    int8_t z = (int8_t)data.camera_degrees.y;
+    set(DLParamCameraRequestXDegree, &x);
+    set(DLParamCameraRequestZDegree, &z);
+    int16_t left = data.left_speed;
+    int16_t right = data.right_speed;
+    set(DLParamMotor1RequestSpeed, &left);
+    set(DLParamMotor2RequestSpeed, &right);
+    serviceSend();
+  }
 }
 
 bool SerialComm::get(DLParam param, DLValuePointer value) {
