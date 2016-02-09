@@ -27,7 +27,7 @@
 #include "ui/main_window.h"
 #include "fl_constants.h"
 #include "fl_stream_writer.h"
-#include "algorithm\algorithm_runner.h"
+#include "algorithm/algorithm_runner.h"
 
 typedef std::chrono::milliseconds msec;
 

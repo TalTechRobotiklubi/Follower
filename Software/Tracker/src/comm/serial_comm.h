@@ -6,8 +6,8 @@
 #include <memory>
 #include <mutex> // NOLINT
 
-#include "comm\interfacehandler.h" // NOLINT
-#include "comm\icomm.h"
+#include "comm/interfacehandler.h" // NOLINT
+#include "comm/icomm.h"
 
 class CallbackAsyncSerial;
 

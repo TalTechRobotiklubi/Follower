@@ -9,7 +9,7 @@ std::vector<std::unique_ptr<IAlgorithm>> AlgorithmRunner::algorithms_;
 void AlgorithmRunner::initialize() {
   if (algorithms_.size() == 0)
   {
-    algorithms_.push_back(std::make_unique<AlgorithmMove>()); // id == 0
+    algorithms_.push_back(std::unique_ptr<AlgorithmMove>(new AlgorithmMove())); // id == 0
   }
 }
 
@@ -19,9 +19,10 @@ void AlgorithmRunner::start(unsigned int id) {
 }
 
 void AlgorithmRunner::run(unsigned int id, CommOutput* outData) {
-
+  (void)id;
+  (void)outData;
 }
 
 void AlgorithmRunner::stop(unsigned int id) {
-
+  (void)id;
 }

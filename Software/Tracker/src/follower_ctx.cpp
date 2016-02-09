@@ -1,5 +1,6 @@
 #include "follower_ctx.h"
 #include "fl_math.h"
+#include <string.h>
 
 void follower_update_camera_pos(follower_ctx* follower, const AABB* target) {
   const float target_x =
@@ -73,7 +74,7 @@ depth_window calculate_range_map(const uint16_t* depth_data, uint32_t w,
   const uint32_t interval_width = w / fl::DEPTH_RANGE_INTERVALS;
 
   uint32_t temp[fl::DEPTH_RANGE_INTERVALS];
-  std::memset(&temp, 0, sizeof(temp));
+  memset(&temp, 0, sizeof(temp));
 
   uint32_t interval_counted_values[fl::DEPTH_RANGE_INTERVALS] = {0};
 
