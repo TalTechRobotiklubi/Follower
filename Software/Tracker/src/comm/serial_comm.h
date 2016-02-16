@@ -9,8 +9,6 @@
 #include "comm\interfacehandler.h" // NOLINT
 #include "comm\icomm.h"
 
-class CallbackAsyncSerial;
-
 class SerialComm : public IComm {
  public:
   SerialComm();

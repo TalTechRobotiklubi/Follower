@@ -51,8 +51,13 @@ struct body_target {
 
 struct follower_ctx {
   
-  follower_ctx();
-  ~follower_ctx();
+  follower_ctx() {
+    out_data.left_speed = 0;
+    out_data.right_speed = 0;
+    out_data.camera_degrees = { 0, 0 };
+  }
+
+  ~follower_ctx() {}
 
   bgfx::TextureHandle depth_texture;
   bgfx::TextureHandle color_texture;

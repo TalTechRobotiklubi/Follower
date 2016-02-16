@@ -14,14 +14,16 @@ void AlgorithmRunner::initialize() {
 }
 
 void AlgorithmRunner::start(unsigned int id) {
-  if (id <= algorithms_.size())
+  if (id < algorithms_.size())
     algorithms_[id]->start();
 }
 
 void AlgorithmRunner::run(unsigned int id, CommOutput* outData) {
-
+  if (id < algorithms_.size() && algorithms_[id]->isRunning())
+    algorithms_[id]->run(outData);
 }
 
 void AlgorithmRunner::stop(unsigned int id) {
-
+  if (id < algorithms_.size())
+    algorithms_[id]->stop();
 }

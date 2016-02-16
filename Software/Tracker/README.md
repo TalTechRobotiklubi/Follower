@@ -19,10 +19,8 @@ Coding
 2. Follow Google coding guidelines https://google.github.io/styleguide/cppguide.html
 	a) In /src folder there is a cpplint.py file to check your code against guidelines.
 	Install python 2.7 and run it like that: cpplint.py --linelength=120 comm/serialcomm.cpp
-	b) Though guideline says to keep a function size under 40 lines, it is very recommended to keep 
-	the size below 20 lines.
-	c) Exception. Function names are either all lower-case, with underscores between words (f.e. bool is_empty() const).
+	b) Exception. Function names are either all lower-case, with underscores between words (f.e. bool is_empty() const).
 	or lower camel case (f.e. bool isEmpty() const).
-	d) Try to give reasonable names so others understand the purpose of the variable/function. Use only
+	c) Try to give reasonable names so others understand the purpose of the variable/function. Use only
 	commonly used abbreviations.
 	

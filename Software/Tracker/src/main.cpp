@@ -28,6 +28,7 @@
 #include "fl_constants.h"
 #include "fl_stream_writer.h"
 #include "algorithm\algorithm_runner.h"
+#include "comm/datahandler.h"
 
 typedef std::chrono::milliseconds msec;
 
@@ -116,7 +117,8 @@ int main(int argc, char* argv[]) {
   }
 
   const char* serial_port = cmd_line.findOption('s');
-  if (serial_port) follower.serial.start(serial_port, 115200);
+  if (serial_port) 
+    follower.serial.start(serial_port, 115200);
 
   float record_speedup = 1.f;
   cmd_line.hasArg(record_speedup, 'x', "speedup");
@@ -249,6 +251,7 @@ int main(int argc, char* argv[]) {
     }
 
     AlgorithmRunner::run(0, &follower.out_data);
+    DataHandler_TASK(20);
     sendCommands(&follower.serial, follower.out_data);
 
     follower_update(&follower, float(dt_seconds) * record_speedup);
@@ -275,9 +278,17 @@ int main(int argc, char* argv[]) {
     imguiLabel("camera %.1f %.1f", follower.out_data.camera_degrees.x,
       follower.out_data.camera_degrees.y);
     if (imguiButton("start algorithm"))
+    {
       AlgorithmRunner::start(0);
+      follower.out_data.left_speed = 0;
+      follower.out_data.right_speed = 0;
+    }
     if (imguiButton("stop algorithm"))
+    {
       AlgorithmRunner::stop(0);
+      follower.out_data.left_speed = 0;
+      follower.out_data.right_speed = 0;
+    }
 
     imguiEndScrollArea();
     imguiEndFrame();

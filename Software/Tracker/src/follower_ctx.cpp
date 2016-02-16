@@ -103,10 +103,6 @@ depth_window calculate_range_map(const uint16_t* depth_data, uint32_t w,
   return intervals;
 }
 
-follower_ctx::follower_ctx() {}
-
-follower_ctx::~follower_ctx() {}
-
 void follower_update_possible_position(follower_ctx* follower,
                                        const AABB* detections, size_t len) {
   follower->combined_hogs = aabb_combine_overlapping(detections, len);

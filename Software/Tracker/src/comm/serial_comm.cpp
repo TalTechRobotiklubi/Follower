@@ -197,16 +197,17 @@ void sendMessage(InterfaceMessage* msg) {
   splitU16 crc;
   char data = static_cast<char>(0xAA);
   serial_->write(&data, 1);
-  crc.u16 = (uint16_t)data;
+  crc.u16 = 0xAA;
   data = msg->id;
   serial_->write(&data, 1);
-  crc.u16 += data;
+  crc.u16 += msg->id;
   data = static_cast<char>(msg->length);
-  crc.u16 += data;
+  serial_->write(&data, 1);
+  crc.u16 += msg->length;
   for (int i = 0; i < msg->length; ++i) {
     data = msg->data[i];
     serial_->write(&data, 1);
-    crc.u16 += data;
+    crc.u16 += msg->data[i];
   }
   data = crc.u8.byteHigh;
   serial_->write(&data, 1);
