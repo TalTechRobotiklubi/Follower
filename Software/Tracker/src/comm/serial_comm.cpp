@@ -1,6 +1,6 @@
 // Copyright 2016 TUT Robotics Club
 
-#include "comm\serial_comm.h"
+#include "comm/serial_comm.h"
 
 #include <assert.h>
 #include <cstdio>
@@ -8,7 +8,7 @@
 
 #include "AsyncSerial.h"
 
-#include "comm\datalayer.h"
+#include "comm/datalayer.h"
 
 // splitted u16 type, which can be accessed in separate byte manner
 typedef union {

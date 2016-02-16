@@ -42,8 +42,6 @@ set(FOLLOWER_SOURCES
   vec2.cpp
   hog_detect.cpp
 
-  filter/particle_filter.cpp
-
   fl_block_alloc.cpp
   fl_kinect_stream_source.cpp
   fl_math.cpp
