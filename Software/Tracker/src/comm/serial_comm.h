@@ -14,20 +14,21 @@ class SerialComm : public IComm {
   SerialComm();
   ~SerialComm();
 
-  bool isOpen() const override;
-  void send(const CommOutput& data) override;
-  
   bool start(const std::string& port, uint32_t baud);
-  void takeLock();
-  void releaseLock();
-
-  bool get(DLParam param, DLValuePointer value);  // use lock to preserve data integrity
+  bool isOpen() const override;
+  
+  void receive(CommInput* data) override;
+  void send(const CommOutput& data) override;
 
  private:
-  void serviceSend();
+  void takeLock();
+  void releaseLock();
+  bool get(DLParam param, DLValuePointer value);  // use lock to preserve data integrity
   void set(DLParam param, DLValuePointer value);
-  void parseMessages(const char*, size_t size);
-  void clearMessageStorage(InterfaceMessage& message);
+  void serviceSend();
+  
+  void parseMessages(const char*, size_t size);  // called from serial port thread
+  void clearMessageStorage(InterfaceMessage& message); // called from serial port thread
 
   std::mutex mutex_;
 };

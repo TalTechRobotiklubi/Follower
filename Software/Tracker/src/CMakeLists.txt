@@ -100,6 +100,7 @@ set(FOLLOWER_INCLUDES
   algorithm/algorithm_runner.h
   algorithm/ialgorithm.h
 
+  comm/comm_input.h
   comm/comm_output.h
   comm/datahandler.h
   comm/datalayer.h

@@ -83,6 +83,26 @@ void SerialComm::releaseLock() {
   mutex_.unlock();
 }
 
+void SerialComm::receive(CommInput* data)
+{
+  if (isOpen()) {
+    takeLock();
+    get(DLParamMotor1ActualSpeed, &data->left_motor_speed);
+    get(DLParamMotor1EncoderClicks, &data->left_motor_encoder);
+    get(DLParamMotor1ActualSpeed, &data->right_motor_speed);
+    get(DLParamMotor1EncoderClicks, &data->right_motor_encoder);
+    get(DLParamDistanceSensor1, &data->distance_sensor1);
+    get(DLParamDistanceSensor1, &data->distance_sensor2);
+    get(DLParamDistanceSensor1, &data->distance_sensor3);
+    get(DLParamDistanceSensor1, &data->distance_sensor4);
+    get(DLParamDistanceSensor1, &data->distance_sensor5);
+    get(DLParamDistanceSensor1, &data->distance_sensor6);
+    get(DLParamDistanceSensor1, &data->distance_sensor7);
+    get(DLParamDistanceSensor1, &data->distance_sensor8);
+    releaseLock();
+  }
+}
+
 void SerialComm::send(const CommOutput& data) {
   if (isOpen()) {
     int8_t x = (int8_t)data.camera_degrees.x;

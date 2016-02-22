@@ -18,9 +18,9 @@ void AlgorithmRunner::start(unsigned int id) {
     algorithms_[id]->start();
 }
 
-void AlgorithmRunner::run(unsigned int id, CommOutput* outData) {
+void AlgorithmRunner::run(unsigned int id, const CommInput& in_data, CommOutput* out_data) {
   if (id < algorithms_.size() && algorithms_[id]->isRunning())
-    algorithms_[id]->run(outData);
+    algorithms_[id]->run(in_data, out_data);
 }
 
 void AlgorithmRunner::stop(unsigned int id) {

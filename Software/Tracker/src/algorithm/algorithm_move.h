@@ -23,7 +23,7 @@ struct ParsedData {
 class AlgorithmMove : public IAlgorithm {
  public:
   void start() override;
-  void run(CommOutput* outData) override;
+  void run(const CommInput& in_data, CommOutput* out_data) override;
   bool isRunning() override;
   void stop() override;
 

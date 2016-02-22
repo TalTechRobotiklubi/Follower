@@ -29,6 +29,7 @@ bool DL_getData(DLParam param, DLValuePointer pValue)
 
 	GetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
+#ifdef ENABLE_ASYNC
 	/*check if parameter is part of any async packets*/
 	for (i = 0; i < NumberOfPackets; i++)
 	{
@@ -51,7 +52,8 @@ bool DL_getData(DLParam param, DLValuePointer pValue)
 			}
 		}
 	}
-    return pbValidFlags_[param];
+#endif
+  return pbValidFlags_[param];
 }
 // ----------------------------------------------------------------------------
 // Use this function in logic layer to peek data from DL. Peeking does not affect the

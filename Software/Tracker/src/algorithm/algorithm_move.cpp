@@ -75,11 +75,11 @@ void AlgorithmMove::start() {
   }
 }
 
-void AlgorithmMove::run(CommOutput* outData) {
+void AlgorithmMove::run(const CommInput& in_data, CommOutput* out_data) {
   calculateEulerDegrees();
 
-  outData->left_speed = 1000;
-  outData->right_speed = -1000;
+  out_data->left_speed = 1000;
+  out_data->right_speed = -1000;
 }
 
 bool AlgorithmMove::isRunning() {

@@ -41,11 +41,6 @@ void waitTillLoopTimeElapses()
   loop_time = std::chrono::system_clock::now();
 }
 
-void sendCommands(IComm* comm, const CommOutput& data) {
-  if (comm->isOpen())
-    comm->send(data);
-}
-
 void update_depth_texture(uint8_t* texture_data, const uint16_t* depth,
                           size_t len) {
   uint8_t* pixelData = (uint8_t*)texture_data;
@@ -250,9 +245,10 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    AlgorithmRunner::run(0, &follower.out_data);
+    follower.serial.receive(&follower.in_data);
+    AlgorithmRunner::run(0, follower.in_data, &follower.out_data);
     DataHandler_TASK(20);
-    sendCommands(&follower.serial, follower.out_data);
+    follower.serial.send(follower.out_data);
 
     follower_update(&follower, float(dt_seconds) * record_speedup);
 
