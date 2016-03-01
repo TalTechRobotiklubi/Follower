@@ -165,6 +165,8 @@ int main(int argc, char* argv[]) {
   double total_frame_time = 0.0;
   double smooth_frame_time = 0;
 
+  int32_t turn_degrees = 0;
+
   AlgorithmRunner::initialize();
 
   bool ir_processing_enabled = true;
@@ -275,7 +277,7 @@ int main(int argc, char* argv[]) {
       follower.out_data.camera_degrees.y);
     if (imguiButton("start algorithm"))
     {
-      AlgorithmRunner::start(0);
+      AlgorithmRunner::start(0, follower.in_data);
       follower.out_data.left_speed = 0;
       follower.out_data.right_speed = 0;
     }
@@ -285,6 +287,7 @@ int main(int argc, char* argv[]) {
       follower.out_data.left_speed = 0;
       follower.out_data.right_speed = 0;
     }
+    imguiSlider("turn", follower.in_data.degreesToTurn, -180, 180);
 
     imguiEndScrollArea();
     imguiEndFrame();

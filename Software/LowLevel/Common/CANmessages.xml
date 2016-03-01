@@ -1,113 +1,301 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<CaseCatcher>
+<CaseCatcher Version="0.6.0.0">
   <Parameters>
     <Parameter>
       <Name>Motor1RequestSpeed</Name>
       <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor2RequestSpeed</Name>
       <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor1ActualSpeed</Name>
       <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor2ActualSpeed</Name>
       <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor1CurrentDraw</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor2CurrentDraw</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor1DriverTemp</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor2DriverTemp</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor1BridgeAFault</Name>
       <Type>Bool</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor2BridgeAFault</Name>
       <Type>Bool</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor1BridgeBFault</Name>
       <Type>Bool</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor2BridgeBFault</Name>
       <Type>Bool</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor1EncoderClicks</Name>
       <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>Motor2EncoderClicks</Name>
       <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>DistanceSensor1</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>DistanceSensor2</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>DistanceSensor3</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>DistanceSensor4</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>DistanceSensor5</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>DistanceSensor6</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>DistanceSensor7</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>DistanceSensor8</Name>
       <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>AccelerationX</Name>
       <Type>S8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>AccelerationY</Name>
       <Type>S8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>AccelerationZ</Name>
       <Type>S8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>CameraRequestXDegree</Name>
       <Type>S8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
     <Parameter>
       <Name>CameraRequestZDegree</Name>
       <Type>S8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>ImuQ1</Name>
+      <Type>Float</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>ImuQ2</Name>
+      <Type>Float</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>ImuQ3</Name>
+      <Type>Float</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>ImuQ4</Name>
+      <Type>Float</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>RequestTranslationSpeed</Name>
+      <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>RequestRotationSpeed</Name>
+      <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>RobotFeedback1</Name>
+      <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>RobotFeedback2</Name>
+      <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>RobotFeedback3</Name>
+      <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>RobotFeedback4</Name>
+      <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
     </Parameter>
   </Parameters>
   <Packets>
@@ -234,6 +422,64 @@
         </PacketParameter>
       </PacketParameters>
     </Packet>
+    <Packet>
+      <ID>242</ID>
+      <Name>InertialMeasurement12</Name>
+      <NominalPeriod>0</NominalPeriod>
+      <PacketParameters>
+        <PacketParameter>
+          <Parameter>ImuQ1</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>ImuQ2</Parameter>
+        </PacketParameter>
+      </PacketParameters>
+    </Packet>
+    <Packet>
+      <ID>243</ID>
+      <Name>InertialMeasurement34</Name>
+      <NominalPeriod>0</NominalPeriod>
+      <PacketParameters>
+        <PacketParameter>
+          <Parameter>ImuQ3</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>ImuQ4</Parameter>
+        </PacketParameter>
+      </PacketParameters>
+    </Packet>
+    <Packet>
+      <ID>211</ID>
+      <Name>RobotControl</Name>
+      <NominalPeriod>0</NominalPeriod>
+      <PacketParameters>
+        <PacketParameter>
+          <Parameter>RequestTranslationSpeed</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>RequestRotationSpeed</Parameter>
+        </PacketParameter>
+      </PacketParameters>
+    </Packet>
+    <Packet>
+      <ID>212</ID>
+      <Name>RobotFeedback</Name>
+      <NominalPeriod>0</NominalPeriod>
+      <PacketParameters>
+        <PacketParameter>
+          <Parameter>RobotFeedback1</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>RobotFeedback2</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>RobotFeedback3</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>RobotFeedback4</Parameter>
+        </PacketParameter>
+      </PacketParameters>
+    </Packet>
   </Packets>
   <Nodes>
     <Node>
@@ -244,25 +490,35 @@
           <Name>UART</Name>
           <ReceivePackets>
             <ReceivePacket>
-              <Packet>Motor1Status</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>Motor2Status</Packet>
+              <Packet>RobotFeedback</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
               <Packet>DistanceSensors</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>Acceleration</Packet>
+              <Packet>InertialMeasurement12</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>InertialMeasurement34</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>MotorSpeeds</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>0</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>RobotControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>0</Period>
             </TransmitPacket>
           </TransmitPackets>
@@ -278,25 +534,45 @@
           <ReceivePackets>
             <ReceivePacket>
               <Packet>Motor1Status</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
               <Packet>Motor2Status</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>RobotControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>MotorSpeeds</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
               <Packet>DistanceSensors</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>100</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>Acceleration</Packet>
-              <Period>100</Period>
+              <Packet>RobotFeedback</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>20</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>InertialMeasurement12</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>20</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>InertialMeasurement34</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>20</Period>
             </TransmitPacket>
           </TransmitPackets>
         </Interface>
@@ -305,27 +581,42 @@
           <ReceivePackets>
             <ReceivePacket>
               <Packet>MotorSpeeds</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>RobotControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>DistanceSensors</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>100</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>Acceleration</Packet>
-              <Period>100</Period>
+              <Packet>RobotFeedback</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>20</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>Motor1Status</Packet>
-              <Period>-1</Period>
+              <Packet>InertialMeasurement12</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>20</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>Motor2Status</Packet>
-              <Period>-1</Period>
+              <Packet>InertialMeasurement34</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>20</Period>
             </TransmitPacket>
           </TransmitPackets>
+        </Interface>
+        <Interface>
+          <Name>UART_IMU</Name>
+          <ReceivePackets />
+          <TransmitPackets />
         </Interface>
       </Interfaces>
     </Node>
@@ -338,12 +629,14 @@
           <ReceivePackets>
             <ReceivePacket>
               <Packet>MotorSpeeds</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>Motor1Status</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>20</Period>
             </TransmitPacket>
           </TransmitPackets>
@@ -359,12 +652,14 @@
           <ReceivePackets>
             <ReceivePacket>
               <Packet>MotorSpeeds</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>Motor2Status</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>20</Period>
             </TransmitPacket>
           </TransmitPackets>
@@ -379,29 +674,30 @@
           <Name>USB</Name>
           <ReceivePackets>
             <ReceivePacket>
-              <Packet>Motor1Status</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>Motor2Status</Packet>
+              <Packet>RobotFeedback</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
               <Packet>DistanceSensors</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>Acceleration</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>MotorSpeeds</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>20</Period>
             </TransmitPacket>
             <TransmitPacket>
               <Packet>CameraControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>20</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>RobotControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>20</Period>
             </TransmitPacket>
           </TransmitPackets>
@@ -416,25 +712,25 @@
           <Name>CAN</Name>
           <ReceivePackets>
             <ReceivePacket>
-              <Packet>Motor1Status</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>Motor2Status</Packet>
+              <Packet>RobotFeedback</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
               <Packet>DistanceSensors</Packet>
-              <Period>-1</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>Acceleration</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
               <Packet>MotorSpeeds</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>RobotControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </TransmitPacket>
           </TransmitPackets>
@@ -444,28 +740,29 @@
           <ReceivePackets>
             <ReceivePacket>
               <Packet>MotorSpeeds</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
               <Packet>CameraControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>RobotControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
-              <Packet>Motor1Status</Packet>
-              <Period>-1</Period>
-            </TransmitPacket>
-            <TransmitPacket>
-              <Packet>Motor2Status</Packet>
-              <Period>-1</Period>
-            </TransmitPacket>
-            <TransmitPacket>
               <Packet>DistanceSensors</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>Acceleration</Packet>
+              <Packet>RobotFeedback</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </TransmitPacket>
           </TransmitPackets>

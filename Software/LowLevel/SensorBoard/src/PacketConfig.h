@@ -17,12 +17,15 @@
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	PacketMotor1Status,    // 0
-	PacketMotor2Status,    // 1
-	PacketMotorSpeeds,     // 2
-	PacketDistanceSensors, // 3
-	PacketAcceleration,    // 4
-	// Count of items is 5
+	PacketMotor1Status,          // 0
+	PacketMotor2Status,          // 1
+	PacketRobotControl,          // 2
+	PacketMotorSpeeds,           // 3
+	PacketDistanceSensors,       // 4
+	PacketRobotFeedback,         // 5
+	PacketInertialMeasurement12, // 6
+	PacketInertialMeasurement34, // 7
+	// Count of items is 8
 	NumberOfPackets
 }
 Packet;
@@ -32,26 +35,26 @@ Packet;
 // ----------------------------------------------------------------------------
 typedef struct
 {
-	DLParam eParam;
-	uint16_t uiStartBit;
-	uint16_t uiLengthBits;
+	DLParam param;
+	uint16_t startBit;
+	uint16_t lengthBits;
 }
 PacketParameter;
 
 typedef struct
 {
-	uint16_t uiID;
-	int16_t  iPeriod;
-	PacketParameter const * psParameterList;
-	uint16_t uiParameterCount;
-	uint16_t uiDLC;
+	uint16_t id;
+	int16_t  period;
+	PacketParameter const * parameterList;
+	uint16_t parameterCount;
+	uint16_t dlc;
 }
 PacketDescriptor;
 
 // ----------------------------------------------------------------------------
 // Export packet descriptors
 // ----------------------------------------------------------------------------
-extern PacketDescriptor psPacketDescriptorList[NumberOfPackets];
+extern PacketDescriptor PacketDescriptorList[NumberOfPackets];
 
 #endif
 

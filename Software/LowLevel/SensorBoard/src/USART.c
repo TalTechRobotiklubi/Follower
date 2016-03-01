@@ -1,6 +1,5 @@
 //#include <math.h>
 
-#include "stm32f4xx.h"
 #include "USART.h"
 #include "GPIO.h"
 #include "DataLayer.h"
@@ -54,11 +53,10 @@ ReceivingDataState;
 static void USARTx_init(USART_TypeDef *uartX);
 static GPIO_IdDef UARTx_GPIO_init(USART_TypeDef *uartX);
 static void UARTx_IRQ_init(GPIO_IdDef);
-static void UARTxBuffersInit(USART_TypeDef *uartX);
+static void buffersInit();
 static void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, ReceivingDataState* rxState);
 static void sendMessage(USART_TypeDef *uartX, InterfaceMessage* msg);
 static void sendMessageToUSART2(InterfaceMessage* msg);
-static void sendMessageToUART4(InterfaceMessage* msg);
 static void handleTransmitData(void);
 static Interface findInterface(USART_TypeDef *uartX);
 
@@ -67,23 +65,13 @@ static unsigned char priv_USART2_RxBuf[USART_RX_BUFFER_SIZE];
 static ReceivingDataState priv_USART2_RxState;
 static volatile uint8_t priv_USART2_RxOverflow;
 
-//UART4 Rx
-static unsigned char priv_UART4_RxBuf[USART_RX_BUFFER_SIZE];
-static ReceivingDataState priv_UART4_RxState;
-static volatile uint8_t priv_UART4_RxOverflow;
-
 //USART2 Tx
 static unsigned char priv_USART2_TxBuf[USART_TX_BUFFER_SIZE];
 static volatile uint8_t priv_USART2_TxHead;
 static volatile uint8_t priv_USART2_TxTail;
 
-//UART4 Tx
-static unsigned char priv_UART4_TxBuf[USART_TX_BUFFER_SIZE];
-static volatile uint8_t priv_UART4_TxHead;
-static volatile uint8_t priv_UART4_TxTail;
-
 // initialization of USART/UART
-void USARTx_init(USART_TypeDef *uartX)
+void USART_init(USART_TypeDef *uartX)
 {
 	GPIO_IdDef io;
 
@@ -93,7 +81,6 @@ void USARTx_init(USART_TypeDef *uartX)
 		return;
 	}
 	UARTx_IRQ_init(io);
-	UARTxBuffersInit(uartX);
 	USART_InitTypeDef  USART_InitStruct;
 	//Configure 8N1 UART with 115200 baud rate
 	USART_InitStruct.USART_BaudRate = 115200;
@@ -145,7 +132,6 @@ GPIO_IdDef UARTx_GPIO_init(USART_TypeDef *uartX)
 		return NUM_OF_GPIOS; // return enum value which should indicate that initialization went wrong
 	}
 
-
 	//Configure UARTx Rx as floating input
 	GPIO_InitStruct.GPIO_Pin = GPIO_table[ioRx].pin;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
@@ -174,33 +160,18 @@ void UARTx_IRQ_init(GPIO_IdDef io)
 	NVIC_InitStruct.NVIC_IRQChannelSubPriority = 1;
 	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStruct);
-
 }
 
-void UARTxBuffersInit(USART_TypeDef *uartX)
+void buffersInit()
 {
-	if (uartX == USART2)
-	{
-		priv_USART2_RxState.tail = 0;
-		priv_USART2_RxState.head = 0;
-		priv_USART2_RxState.analyseState = noData;
-		priv_USART2_TxTail = 0;
-		priv_USART2_TxHead = 0;
-		int i;
-		for(i = 0; i < USART_TX_BUFFER_SIZE; i++)
-			priv_USART2_TxBuf[i]='a';
-	}
-	else if (uartX == UART4)
-	{
-		priv_UART4_RxState.tail = 0;
-		priv_UART4_RxState.head = 0;
-		priv_UART4_RxState.analyseState = noData;
-		priv_UART4_TxTail = 0;
-		priv_UART4_TxHead = 0;
-		int i;
-		for(i = 0; i < USART_TX_BUFFER_SIZE; i++)
-			priv_UART4_TxBuf[i]='a';
-	}
+	priv_USART2_RxState.tail = 0;
+	priv_USART2_RxState.head = 0;
+	priv_USART2_RxState.analyseState = noData;
+	priv_USART2_TxTail = 0;
+	priv_USART2_TxHead = 0;
+	int i;
+	for(i = 0; i < USART_TX_BUFFER_SIZE; i++)
+		priv_USART2_TxBuf[i]='a';
 }
 
 void USART_SendChar(USART_TypeDef *uartX, unsigned char data_char)
@@ -226,48 +197,6 @@ void USART_SendString(USART_TypeDef *uartX, unsigned char *data_string)
 	{
 		USART_SendChar(uartX, (unsigned char)data_string[i]);
 		i++;
-	}
-}
-
-void UART4_IRQHandler(void)
-{
-	if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET)
-	{
-		unsigned char rxdata;
-		uint8_t tempHead;
-
-		//Read one byte from receive data register
-		rxdata = USART_ReceiveData(UART4);
-		//Calculate buffer index
-		tempHead = (priv_UART4_RxState.head + 1) & USART_RX_BUFFER_MASK;
-		priv_UART4_RxState.head = tempHead;
-
-		if(tempHead == priv_UART4_RxState.tail)
-		{
-			//ERROR: buffer overflow
-			priv_UART4_RxOverflow = 1;
-		}
-		else
-		{
-			priv_UART4_RxBuf[tempHead] = rxdata;
-			priv_UART4_RxOverflow = 0;
-		}
-	}
-
-	if(USART_GetITStatus(UART4, USART_IT_TXE) != RESET)
-	{
-		uint8_t tempTail;
-		if(priv_UART4_TxHead != priv_UART4_TxTail)
-		{
-			tempTail = ((priv_UART4_TxTail + 1) & (USART_TX_BUFFER_MASK));
-			priv_UART4_TxTail = tempTail;
-			USART_SendData(UART4, priv_UART4_TxBuf[tempTail]);
-		}
-		else
-		{
-			USART_ITConfig(UART4, USART_IT_TXE,DISABLE);
-		}
-		USART_ClearITPendingBit(UART4, USART_IT_TXE);
 	}
 }
 
@@ -459,11 +388,6 @@ void sendMessageToUSART2(InterfaceMessage* msg)
 	sendMessage(USART2, msg);
 }
 
-void sendMessageToUART4(InterfaceMessage* msg)
-{
-	sendMessage(UART4, msg);
-}
-
 Interface findInterface(USART_TypeDef *uartX)
 {
 	Interface interface = NumberOfInterfaces;
@@ -474,20 +398,18 @@ Interface findInterface(USART_TypeDef *uartX)
 
 void handleTransmitData(void)
 {
-	//InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(findInterface(UART4), sendMessageToUART4);
-	InterfaceHandler_transmitData(findInterface(USART2), sendMessageToUSART2);
+	InterfaceHandler_transmitData(InterfaceUART_Remote, sendMessageToUSART2);
 }
 
-void USART_init()
+void USART_initUSART2()
 {
+	buffersInit();
 	USARTx_init(USART2);
-	USARTx_init(UART4);
 }
 
 /*Periodic UART task*/
 void USART_TASK(void)
 {
 	handleReceivedData(USART2, priv_USART2_RxBuf, &priv_USART2_RxState);
-	handleReceivedData(UART4, priv_UART4_RxBuf, &priv_UART4_RxState);
 	handleTransmitData();
 }

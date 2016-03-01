@@ -15,10 +15,11 @@
 // ----------------------------------------------------------------------------
 PacketWithIndex psUARTRxPackets[] =
 {
-    /* Motor1Status    */ { 0xD1, 0, PacketMotor1Status },
-    /* Motor2Status    */ { 0xD2, 0, PacketMotor2Status },
-    /* DistanceSensors */ { 0xF0, 0, PacketDistanceSensors },
-    /* Acceleration    */ { 0xF1, 0, PacketAcceleration }
+  /* DistanceSensors       */ { 0xF0, 0, PacketDistanceSensors },
+  /* RobotFeedback         */ { 0xD4, 0, PacketRobotFeedback},
+  /* DistanceSensors       */ { 0xF0, 0, PacketDistanceSensors},
+  /* InertialMeasurement12 */ { 0xF2, 0, PacketInertialMeasurement12},
+  /* InertialMeasurement34 */ { 0xF3, 0, PacketInertialMeasurement34}
 };
 #define NUMBER_OF_UART_RX_PACKETS (sizeof(psUARTRxPackets)/sizeof(PacketWithIndex))
 
@@ -27,7 +28,8 @@ PacketWithIndex psUARTRxPackets[] =
 // ----------------------------------------------------------------------------
 PacketWithIndex psUARTTxPackets[] =
 {
-    /* MotorSpeeds   */ { 0xD0,  15, PacketMotorSpeeds }
+  /* MotorSpeeds   */ { 0xD0, 15, PacketMotorSpeeds },
+  /* RobotControl  */ { 0xD3, 15, PacketRobotControl}
 };
 #define NUMBER_OF_UART_TX_PACKETS (sizeof(psUARTTxPackets)/sizeof(PacketWithIndex))
 
@@ -41,7 +43,7 @@ int16_t PacketHandler::Packet_getMessagePeriod(uint16_t index)
 {
     if ((index < NumberOfPackets) && (index >= 0))
 	{
-        return psPacketDescriptorList[index].iPeriod;
+        return PacketDescriptorList[index].period;
 	}
 	else
 	{
@@ -54,7 +56,7 @@ uint16_t PacketHandler::Packet_getMessageParameterCount(uint16_t index)
 {
 	if ((index < NumberOfPackets) && (index >= 0))
 	{
-		return psPacketDescriptorList[index].uiParameterCount;
+    return PacketDescriptorList[index].parameterCount;
 	}
 	else
 	{
@@ -67,7 +69,7 @@ uint16_t PacketHandler::Packet_getMessageDLC(uint16_t index)
 {
 	if ((index < NumberOfPackets) && (index >= 0))
 	{
-		return psPacketDescriptorList[index].uiDLC;
+    return PacketDescriptorList[index].dlc;
 	}
 	else
 	{
@@ -80,7 +82,7 @@ const PacketParameter* PacketHandler::Packet_getMessageParameterList(uint16_t in
 {
 	if ((index < NumberOfPackets) && (index >= 0))
 	{
-		return psPacketDescriptorList[index].psParameterList;
+    return PacketDescriptorList[index].parameterList;
 	}
 	else
 	{

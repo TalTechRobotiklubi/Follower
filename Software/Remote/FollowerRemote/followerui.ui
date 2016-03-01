@@ -112,23 +112,23 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="lbl_accX">
+         <widget class="QLabel" name="lbl_yaw">
           <property name="text">
-           <string>AccX:</string>
+           <string>yaw:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="lbl_accY">
+         <widget class="QLabel" name="lbl_pitch">
           <property name="text">
-           <string>AccY:</string>
+           <string>pitch:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="lbl_accZ">
+         <widget class="QLabel" name="lbl_roll">
           <property name="text">
-           <string>AccZ:</string>
+           <string>roll:</string>
           </property>
          </widget>
         </item>
@@ -204,8 +204,6 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="followerui.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

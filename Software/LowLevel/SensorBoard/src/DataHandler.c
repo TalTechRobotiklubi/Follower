@@ -13,20 +13,20 @@ void DataHandler_task(void)
 	int i;
 	for (i = 0; i < NumberOfInterfaces; ++i)
 	{
-		NodeInterfaceDescriptor interfaceDesc = psInterfaceList[i];
+		NodeInterfaceDescriptor interfaceDesc = InterfaceList[i];
 		int j;
-		for (j = 0; j < interfaceDesc.uiTransmitPacketCount; j++)
+		for (j = 0; j < interfaceDesc.transmitPacketCount; j++)
 		{
-			InterfaceTransmitPacket transmitPacket = interfaceDesc.psTransmitPacketList[j];
-			PacketDescriptor* packetDesc = &psPacketDescriptorList[transmitPacket.ePacket];
+			InterfaceTransmitPacket transmitPacket = interfaceDesc.transmitPacketList[j];
+			PacketDescriptor* packetDesc = &PacketDescriptorList[transmitPacket.packet];
 
 			// only periodic packets
-			if (transmitPacket.ulPeriod > 0 && packetDesc->iPeriod >= 0)
+			if (transmitPacket.period > 0 && packetDesc->period >= 0)
 			{
 				uint16_t elapsedTime = TaskHandler_tableOfTasks[TASK_DATAHANDLER].period;
-				packetDesc->iPeriod += elapsedTime;
-				if (packetDesc->iPeriod > transmitPacket.ulPeriod)
-					packetDesc->iPeriod = elapsedTime;
+				packetDesc->period += elapsedTime;
+				if (packetDesc->period > transmitPacket.period)
+					packetDesc->period = elapsedTime;
 			}
 		}
 	}

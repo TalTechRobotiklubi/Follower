@@ -10,7 +10,7 @@
 class AlgorithmRunner {
  public:
    static void initialize();
-   static void start(unsigned int id);
+   static void start(unsigned int id, const CommInput& in_data);
    static void run(unsigned int id, const CommInput& in_data, CommOutput* out_data);
    static void stop(unsigned int id);
 

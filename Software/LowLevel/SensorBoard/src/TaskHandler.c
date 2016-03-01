@@ -4,9 +4,9 @@
 #include "Sensor.h"
 #include "USART.h"
 #include "CAN.h"
-#include "Acceleration.h"
 #include "DataHandler.h"
 #include "Timer.h"
+#include "IMU.h"
 
 /*Table of initialization tasks. All functions in tables are called once after initializing system clock.
  * With adding new init check that id is corresponding to enum value.*/
@@ -16,7 +16,7 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
 		{INIT_SENSOR,			Sensor_init  },
 		{INIT_CAN,				CAN_init     },
 		{INIT_USART,			USART_init   },
-		{INIT_ACCELERATION,		Acceleration_init				},
+		{INIT_IMU,				IMU_init	 }
 };
 #define NUMBER_OF_INITS  (sizeof(TaskHandler_tableOfInits) / sizeof(INIT_STRUCT))
 
@@ -28,6 +28,7 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_DATAHANDLER,			5,			0,			DataHandler_task					},
 		{TASK_CAN,		  	  	  	5,		    1,			CAN_TASK							},
 		{TASK_USART,		  	    5,		    3,			USART_TASK							},
+		{TASK_IMU,				   20,			2,			IMU_task							},
 		{TASK_SENSOR1_START,	  200,			0,			Sensor_TASK_startMeasurement1		},
 		{TASK_SENSOR1_READ,		  200,		   49,			Sensor_TASK_readDistance1			},
 		{TASK_SENSOR2_START,	  200,		   50,			Sensor_TASK_startMeasurement2		},
@@ -44,7 +45,6 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_SENSOR7_READ,		  200,		  149,			Sensor_TASK_readDistance7			},
 		{TASK_SENSOR8_START,	  200,		  150,			Sensor_TASK_startMeasurement8		},
 		{TASK_SENSOR8_READ,	      200,		  199,			Sensor_TASK_readDistance8			},
-		{TASK_ACCELERATION,		  200,		    2,			Acceleration_TASK					},
 		{TASK_LED,				  400,			0,			GPIO_TASK_blinkLED	    },
 
 };

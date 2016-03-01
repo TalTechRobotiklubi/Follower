@@ -40,7 +40,7 @@ bool DataLayerCAN::DL_getData(DLParam param, DLValuePointer pValue)
 		{
 			for (j = 0; j < packetHandler_.Packet_getMessageParameterCount(packet[i].index); j++)
 			{
-				if ((packetHandler_.Packet_getMessageParameterList(packet[i].index) + j)->eParam == param)
+        if ((packetHandler_.Packet_getMessageParameterList(packet[i].index) + j)->param == param)
 				{
 					if (packet[i].iperiod != PACKET_WAITING)
 					{
@@ -106,7 +106,7 @@ void DataLayerCAN::DL_setData(DLParam param, DLValuePointer pValue)
 			{
 				for (j = 0; j < packetHandler_.Packet_getMessageParameterCount(packet[i].index); j++)
 				{
-					if ((packetHandler_.Packet_getMessageParameterList(packet[i].index) + j)->eParam == param)
+          if ((packetHandler_.Packet_getMessageParameterList(packet[i].index) + j)->param == param)
 					{
 						packet[i].iperiod = PACKET_READY_TO_SEND;
 					}

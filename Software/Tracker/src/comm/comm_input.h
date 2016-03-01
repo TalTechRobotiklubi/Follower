@@ -18,6 +18,7 @@ struct CommInput {
   uint8_t distance_sensor6;
   uint8_t distance_sensor7;
   uint8_t distance_sensor8;
+  int32_t degreesToTurn;
 
   CommInput() {
     left_motor_speed = 0;
@@ -32,6 +33,7 @@ struct CommInput {
     distance_sensor6 = 0;
     distance_sensor7 = 0;
     distance_sensor8 = 0;
+    degreesToTurn = 0;
   }
 };
 

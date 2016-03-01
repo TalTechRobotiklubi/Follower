@@ -2,6 +2,7 @@
 #define __USART_H
 
 #include "stdint.h"
+#include "stm32f4xx.h"
 
 //USART buffer definitions
 #define USART_RX_BUFFER_SIZE 128
@@ -18,11 +19,11 @@
 
 
 //Initialization functions
-extern void USART_init();
-//void USART_TASK_sendDistances(void);
-extern void USART_TASK(void);
+void USART_initUSART2();
+void USART_init(USART_TypeDef *uartX);
+void USART_TASK(void);
+
 //Interrupt handler
-void UART4_IRQHandler(void);
 void USART2_IRQHandler(void);
 
 //Functions for receiving and transmitting data

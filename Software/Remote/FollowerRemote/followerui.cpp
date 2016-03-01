@@ -127,31 +127,25 @@ void FollowerUi::newUiData()
   ui.lbl_andur7->setText(QString("Andur7: %1cm").arg(sensors[6]));
   ui.lbl_andur8->setText(QString("Andur8: %1cm").arg(sensors[7]));
 
-  // speed is int16 value
-  int16_t speed1 = 0;
-  int16_t speed2 = 0;
-  dataLayer_->DL_getData(DLParamMotor1ActualSpeed, &speed1);
-  dataLayer_->DL_getData(DLParamMotor2ActualSpeed, &speed2);
-  robotgui_->m1speed  = speed1;
-  robotgui_->m2speed  = -speed2;
+  float q1 = 0;
+  float q2 = 0;
+  float q3 = 0;
+  float q4 = 0;
 
+  dataLayer_->DL_getData(DLParamImuQ1, &q1);
+  dataLayer_->DL_getData(DLParamImuQ1, &q2);
+  dataLayer_->DL_getData(DLParamImuQ1, &q3);
+  dataLayer_->DL_getData(DLParamImuQ1, &q4);
 
-  ui.lbl_leftSpeed->setText(QString("Vasak: %1m/s").arg(speed1));
-  ui.lbl_rightSpeed->setText(QString("Parem: %1m/s").arg(speed2));
+  // TODO. Do calc here to find euler degrees
+  float yaw = 0;
+  float pitch = 0;
+  float roll = 0;
+  ui.lbl_yaw->setText(QString("AccX: %1").arg(yaw));
+  ui.lbl_pitch->setText(QString("AccY: %1").arg(pitch));
+  ui.lbl_roll->setText(QString("AccZ: %1").arg(roll));
 
-  int8_t accX = 0;
-  int8_t accY = 0;
-  int8_t accZ = 0;
-
-  dataLayer_->DL_getData(DLParamAccelerationX, &accX);
-  dataLayer_->DL_getData(DLParamAccelerationY, &accY);
-  dataLayer_->DL_getData(DLParamAccelerationZ, &accZ);
-
-  ui.lbl_accX->setText(QString("AccX: %1").arg(accX));
-  ui.lbl_accY->setText(QString("AccY: %1").arg(accY));
-  ui.lbl_accZ->setText(QString("AccZ: %1").arg(accZ));
-
-  //qDebug() << accX << accY << accZ;
+  //qDebug() << yaw << pitch << roll;
 }
 
 void FollowerUi::keyPressEvent ( QKeyEvent * event )

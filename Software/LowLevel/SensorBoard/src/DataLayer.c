@@ -33,16 +33,16 @@ Boolean DL_getData(DLParam param, DLValuePointer pValue)
 	/*check if parameter is part of any async packets*/
 	for (i = 0; i < NumberOfPackets; i++)
 	{
-		PacketDescriptor *packet = &psPacketDescriptorList[i];
-		if (packet->iPeriod < 0)
+		PacketDescriptor *packet = &PacketDescriptorList[i];
+		if (packet->period < 0)
 		{
-			for (j = 0; j < packet->uiParameterCount; j++)
+			for (j = 0; j < packet->parameterCount; j++)
 			{
-				if ((packet->psParameterList + j)->eParam == param)
+				if ((packet->parameterList + j)->param == param)
 				{
-					if (packet->iPeriod != PACKET_WAITING)
+					if (packet->period != PACKET_WAITING)
 					{
-						packet->iPeriod = PACKET_WAITING;
+						packet->period = PACKET_WAITING;
                         priv_validFlags[param] = TRUE;
 					}
                     else
@@ -105,14 +105,14 @@ void DL_setData(DLParam param, DLValuePointer pValue)
 		/*check if parameter is part of any async packets*/
 		for (i = 0; i < NumberOfPackets; i++)
 		{
-			PacketDescriptor* packet = &psPacketDescriptorList[i];
-			if (packet->iPeriod < 0)
+			PacketDescriptor* packet = &PacketDescriptorList[i];
+			if (packet->period < 0)
 			{
-				for (j = 0; j < packet->uiParameterCount; j++)
+				for (j = 0; j < packet->parameterCount; j++)
 				{
-					if ((packet->psParameterList + j)->eParam == param)
+					if ((packet->parameterList + j)->param == param)
 					{
-						packet->iPeriod = PACKET_READY_TO_SEND;
+						packet->period = PACKET_READY_TO_SEND;
 						break;
 					}
 				}

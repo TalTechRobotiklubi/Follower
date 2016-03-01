@@ -18,11 +18,21 @@ struct ParsedData {
       qs[i] = 0;
   }
 };
+
+struct Euler {
+  double yaw;
+  double pitch;
+  double roll;
+
+  Euler() : yaw(0), pitch(0), roll(0) {}
+};
 } // namespace
 
 class AlgorithmMove : public IAlgorithm {
  public:
-  void start() override;
+   AlgorithmMove();
+   ~AlgorithmMove();
+  void start(const CommInput& in_data) override;
   void run(const CommInput& in_data, CommOutput* out_data) override;
   bool isRunning() override;
   void stop() override;
@@ -31,14 +41,13 @@ private:
   void parse(const char* buffer, size_t size);
   void pushDataToAlgorithm(const ParsedData& data);
 
-  void calculateEulerDegrees();
-  void runAlgorithm();
+  Euler calculateEulerDegrees();
+  void runAlgorithm(const CommInput& in_data, CommOutput* out_data);
 
   bool is_running_ = false;
   ParsedData data_;
   std::mutex mutex_;
-  double yaw_ = 0;
-  double pitch_ = 0;
-  double roll_ = 0;
+  Euler init_degrees_;
+  Euler set_point_;
 };
 

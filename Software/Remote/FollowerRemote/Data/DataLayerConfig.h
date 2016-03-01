@@ -16,32 +16,27 @@
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	DLParamMotor1ActualSpeed,   // 0
-	DLParamMotor1EncoderClicks, // 1
-	DLParamMotor1CurrentDraw,   // 2
-	DLParamMotor1DriverTemp,    // 3
-	DLParamMotor1BridgeAFault,  // 4
-	DLParamMotor1BridgeBFault,  // 5
-	DLParamMotor2ActualSpeed,   // 6
-	DLParamMotor2EncoderClicks, // 7
-	DLParamMotor2CurrentDraw,   // 8
-	DLParamMotor2DriverTemp,    // 9
-	DLParamMotor2BridgeAFault,  // 10
-	DLParamMotor2BridgeBFault,  // 11
-	DLParamDistanceSensor1,     // 12
-	DLParamDistanceSensor2,     // 13
-	DLParamDistanceSensor3,     // 14
-	DLParamDistanceSensor4,     // 15
-	DLParamDistanceSensor5,     // 16
-	DLParamDistanceSensor6,     // 17
-	DLParamDistanceSensor7,     // 18
-	DLParamDistanceSensor8,     // 19
-	DLParamAccelerationX,       // 20
-	DLParamAccelerationY,       // 21
-	DLParamAccelerationZ,       // 22
-	DLParamMotor1RequestSpeed,  // 23
-	DLParamMotor2RequestSpeed,  // 24
-	// Count of items is 25
+	DLParamRobotFeedback1,          // 0
+	DLParamRobotFeedback2,          // 1
+	DLParamRobotFeedback3,          // 2
+	DLParamRobotFeedback4,          // 3
+	DLParamDistanceSensor1,         // 4
+	DLParamDistanceSensor2,         // 5
+	DLParamDistanceSensor3,         // 6
+	DLParamDistanceSensor4,         // 7
+	DLParamDistanceSensor5,         // 8
+	DLParamDistanceSensor6,         // 9
+	DLParamDistanceSensor7,         // 10
+	DLParamDistanceSensor8,         // 11
+	DLParamImuQ1,                   // 12
+	DLParamImuQ2,                   // 13
+	DLParamImuQ3,                   // 14
+	DLParamImuQ4,                   // 15
+	DLParamMotor1RequestSpeed,      // 16
+	DLParamMotor2RequestSpeed,      // 17
+	DLParamRequestTranslationSpeed, // 18
+	DLParamRequestRotationSpeed,    // 19
+	// Count of items is 20
 	DLNumberOfParams
 }
 DLParam;

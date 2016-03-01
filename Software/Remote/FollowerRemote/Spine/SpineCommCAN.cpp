@@ -204,12 +204,12 @@ void SpineCommCAN::storeDataToDataLayer(UART_CANmessage *message, PacketWithInde
     /*go through all the parameters in the message and store them into data layer*/
     for (j = 0; j < packethandler_.Packet_getMessageParameterCount(packet->index); j++)
     {
-        byteIndex = ((packethandler_.Packet_getMessageParameterList(packet->index) + j)->uiStartBit / 8);
-        bitPosition = ((packethandler_.Packet_getMessageParameterList(packet->index) + j)->uiStartBit % 8);
-        length = (int16_t)((packethandler_.Packet_getMessageParameterList(packet->index) + j)->uiLengthBits);
+        byteIndex = ((packethandler_.Packet_getMessageParameterList(packet->index) + j)->startBit / 8);
+        bitPosition = ((packethandler_.Packet_getMessageParameterList(packet->index) + j)->startBit % 8);
+        length = (int16_t)((packethandler_.Packet_getMessageParameterList(packet->index) + j)->lengthBits);
 
         /*get parameter type from data layer*/
-        type = dataLayerCAN_.DL_getDataType((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam);
+        type = dataLayerCAN_.DL_getDataType((packethandler_.Packet_getMessageParameterList(packet->index) + j)->param);
         switch(type)
         {
             case TypeBool:
@@ -224,7 +224,7 @@ void SpineCommCAN::storeDataToDataLayer(UART_CANmessage *message, PacketWithInde
                     data = message->canMessage.data[byteIndex];
                     /*data into normal value*/
                     data = (data >> (8 - bitPosition - length)) & (0xFF >> (8 - length));
-                    dataLayerCAN_.DL_setDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+                    dataLayerCAN_.DL_setDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->param, &data);
                     dataLayerOk++;
                 }
                 break;
@@ -240,7 +240,7 @@ void SpineCommCAN::storeDataToDataLayer(UART_CANmessage *message, PacketWithInde
                     /*second byte, bit position is still 0, shift if length is not full byte*/
                     data |= (message->canMessage.data[byteIndex + 1] & 0xFF);
                     data = (uint16_t)(data >> (8 - length));
-                    dataLayerCAN_.DL_setDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+                    dataLayerCAN_.DL_setDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->param, &data);
                     dataLayerOk++;
                 }
                 break;
@@ -258,7 +258,7 @@ void SpineCommCAN::storeDataToDataLayer(UART_CANmessage *message, PacketWithInde
                     /*fourth byte, bit position is still 0, shift if length is not full byte*/
                     data |= (message->canMessage.data[byteIndex + 3] & 0xFF);
                     data = (uint32_t)(data >> (8 - length));
-                    dataLayerCAN_.DL_setDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+                    dataLayerCAN_.DL_setDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->param, &data);
                     dataLayerOk++;
                 }
                 break;
@@ -365,11 +365,11 @@ bool SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
     /*set data - take all parameters from packet*/
     for (j = 0; j < packethandler_.Packet_getMessageParameterCount(packet->index); j++)
     {
-        byteIndex = ((packethandler_.Packet_getMessageParameterList(packet->index) + j)->uiStartBit / 8);
-        bitPosition = ((packethandler_.Packet_getMessageParameterList(packet->index) + j)->uiStartBit % 8);
-        length = (int16_t)((packethandler_.Packet_getMessageParameterList(packet->index) + j)->uiLengthBits);
+        byteIndex = ((packethandler_.Packet_getMessageParameterList(packet->index) + j)->startBit / 8);
+        bitPosition = ((packethandler_.Packet_getMessageParameterList(packet->index) + j)->startBit % 8);
+        length = (int16_t)((packethandler_.Packet_getMessageParameterList(packet->index) + j)->lengthBits);
         /*get parameter type from data layer*/
-        param = (packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam;
+        param = (packethandler_.Packet_getMessageParameterList(packet->index) + j)->param;
         type = dataLayerCAN_.DL_getDataType(param);
 
         switch(type)
@@ -381,13 +381,13 @@ bool SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
             case TypeS8:
                 /*involves only one byte */
                 bitmask = getBitmaskForUARTmessage(bitPosition, length);
-                dataLayerCAN_.DL_getDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+                dataLayerCAN_.DL_getDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->param, &data);
                 message.canMessage.data[byteIndex] |= (((((uint8_t)data) & 0xFF) << (8 - length - bitPosition)) & bitmask);
                 break;
             case TypeU16:
             case TypeS16:
                 /*involves two bytes */
-                dataLayerCAN_.DL_getDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+                dataLayerCAN_.DL_getDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->param, &data);
                 /*first byte, bit position is assumed to be 0 and the byte is fully for this parameter*/
                 message.canMessage.data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
                 /*second byte, bit position is still 0*/
@@ -397,7 +397,7 @@ bool SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
             case TypeU32:
             case TypeS32:
                 /*involves four bytes */
-                dataLayerCAN_.DL_getDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->eParam, &data);
+                dataLayerCAN_.DL_getDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->param, &data);
                 /*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
                 message.canMessage.data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
                 message.canMessage.data[byteIndex + 1] |= (uint8_t)((data >> (length - 16)) & 0xFF);
