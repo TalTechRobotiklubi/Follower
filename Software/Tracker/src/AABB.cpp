@@ -29,6 +29,13 @@ bool aabb_overlap(const AABB* a, const AABB* b) {
   return true;
 }
 
+vec2 aabb_size(const AABB* a) {
+  vec2 r;
+  r.x = a->bot_right.x - a->top_left.x;
+  r.y = a->bot_right.y - a->top_left.y;
+  return r;
+}
+
 AABB aabb_from_points(const vec2* points, size_t len) {
   assert(len >= 2);
 

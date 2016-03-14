@@ -8,38 +8,26 @@
 
 struct IKinectSensor;
 struct IDepthFrameReader;
-struct IBodyFrameReader;
-struct ICoordinateMapper;
 struct IColorFrameReader;
-struct IInfraredFrameReader;
 struct fl_yuy2_convert;
 
-struct follower_ctx;
-
 struct kinect_live_source : kinect_frame_source {
-  kinect_live_source(const follower_ctx* follower);
+  kinect_live_source();
   ~kinect_live_source();
 
-  const kinect_frame* get_frame(float dt) override;
+  const kinect_frame* get_frame() override;
 
   IKinectSensor* kinect = nullptr;
   IDepthFrameReader* depth_reader = nullptr;
   IColorFrameReader* color_reader = nullptr;
-  IBodyFrameReader* body_reader = nullptr;
-  IInfraredFrameReader* infrared_reader = nullptr;
-  ICoordinateMapper* coord_mapper = nullptr;
 
   fl_yuy2_convert* yuy2_converter = nullptr;
-  std::vector<kinect_body> body_buffer;
   std::vector<uint16_t> depth_buffer;
-  std::vector<uint16_t> infrared_buffer;
 
   uint8_t* kinect_rgba_buf = nullptr;
   size_t kinect_rgba_buf_len = 0;
 
   kinect_frame current_frame;
-
-  const follower_ctx* follower = nullptr;
 };
 
 #endif

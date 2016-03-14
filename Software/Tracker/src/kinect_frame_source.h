@@ -4,7 +4,8 @@
 struct kinect_frame;
 
 struct kinect_frame_source {
-  virtual const kinect_frame* get_frame(float dt) = 0;
+  virtual const kinect_frame* get_frame() = 0;
+  virtual void advance() {}
   virtual ~kinect_frame_source() {}
 };
 
