@@ -1,12 +1,11 @@
+#if 0
 #include "PARAMS.h"
 #include "QEI.h"
 #include "MODULATION.h"
 #include "ANALOG.h"
-#include "PID.h"
 #include "CAN.h"
-#include "RAMP.h"
 
-#define ABS(A)	((A)<(0) ? (-A) : (A))			//!< Calculateas absolute value of a value
+//#define ABS(A)	((A)<(0) ? (-A) : (A))			//!< Calculateas absolute value of a value
 float		g_fTestReference;
 uint8_t		g_u8UniqueID;
 uint8_t		g_u8ControllerID;
@@ -114,9 +113,7 @@ float		g_fPidFiltOutput;          //Output from PID_LP_FILT module
 T_MODULATION        tModulation;
 T_QEI				tQei;
 T_ANALOG			tAnalog;
-T_PID				tPid;
 T_CAN				tCan;
-T_RAMP				tRamp;
 //----------------------------------------------------------------------------------------------------------------------------
 //  Paramter table
 //----------------------------------------------------------------------------------------------------------------------------
@@ -235,56 +232,6 @@ void vParametersInit(void)
 //----------------------------------------------------------------------------------------------------------------------------
 //
 //----------------------------------------------------------------------------------------------------------------------------
-void vParameterRead(uint32_t u32Address,uint32_t* pu32Value,uint8_t u8Type)
-{
-	uint32_t*	pu32Pointer;					//Pointer to memory address
-	pu32Pointer = (uint32_t*)u32Address;		//Assign value to pointer (e.q memory address to be read)
-	if(u8Type == U8)
-	{
-		*pu32Value = (uint8_t)*pu32Pointer;		//Read value from memory address specified by u32Address
-	}
-	else
-	{
-		*pu32Value = (uint32_t)*pu32Pointer;
-	}
-}
-//----------------------------------------------------------------------------------------------------------------------------
-//
-//----------------------------------------------------------------------------------------------------------------------------
-void vParameterFlashWrite(uint32_t u32Address,uint32_t u32Value,uint8_t u8Type)
-{
-  if(u8Type == U8)
-  {
-	write(u32Address,(uint8_t)u32Value);
-	int i=0;
-	for(i=0; i<35;i++)
-	{
-	  if((uint32_t)pu32ParameterTable[i][2] == u32Address)
-	  {
-		vParameterWrite((uint32_t)pu32ParameterTable[i][0],(uint8_t)u32Value,U8);
-	  }
-	}
-  }
- else if(u8Type == U32 || u8Type == F)
-  {
-        uint32_t val_bot = u32Value & 0x0000FFFF;
-        uint32_t val_top = u32Value & 0xFFFF0000;
-        val_top = val_top >> 16;
-	write(u32Address,(uint16_t)val_top);
-	write(u32Address+2,(uint16_t)val_bot);
-	int i=0;
-	for(i=0; i<35;i++)
-	{
-	  if((uint32_t)pu32ParameterTable[i][2] == u32Address)
-	  {
-		vParameterWrite((uint32_t)pu32ParameterTable[i][0],u32Value,U32);
-	  }
-	}
-  }
-}
-//----------------------------------------------------------------------------------------------------------------------------
-//
-//----------------------------------------------------------------------------------------------------------------------------
 void vParameterWrite(uint32_t u32Address,uint32_t u32Value,uint8_t u8Type)
 {
   	uint32_t*	pu32Pointer;					//Pointer to memory address
@@ -330,12 +277,12 @@ void vParametersConnectionsInit(void)
 	//--------------------------------------------------------------------------------------------------------------------
 	//  RAMP MODULE CONNECTIONS
 	//--------------------------------------------------------------------------------------------------------------------
-	tRamp.pfRampIn = &g_fCanSpeedReference;
-	tRamp.pfRampStepUp = &g_fRampStepUp;
-	tRamp.pfRampStepDown = &g_fRampStepDown;
-	tRamp.pfRampSlopeUp = &g_fRampSlopeUp;
-	tRamp.pfRampSlopeDown = &g_fRampSlopeDown;
-	tRamp.pu32RampTimelevel = &g_u32RampTimelevel;
+//	tRamp.pfRampIn = &g_fCanSpeedReference;
+//	tRamp.pfRampStepUp = &g_fRampStepUp;
+//	tRamp.pfRampStepDown = &g_fRampStepDown;
+//	tRamp.pfRampSlopeUp = &g_fRampSlopeUp;
+//	tRamp.pfRampSlopeDown = &g_fRampSlopeDown;
+//	tRamp.pu32RampTimelevel = &g_u32RampTimelevel;
 	
 	//--------------------------------------------------------------------------------------------------------------------
 	//  MODULATION MODULE CONNECTIONS
@@ -352,15 +299,15 @@ void vParametersConnectionsInit(void)
     // 
 	//PID connections
 	//
-	tPid.pfSetpoint      = &g_fSetpoint;
-	tPid.pfSpeedAct      = &g_fEncoderSpeedOut;			//Actual velocity in RPM
-	tPid.pfKf 			= &g_fKf;					//Reference feed forward constant
-	tPid.pfKp 			= &g_fKp;					//Proportional gain
-	tPid.pfKi 			= &g_fKi;					//Integral gain
-	tPid.pfKd 			= &g_fKd;					//Derivative gain
-	tPid.pfMinErr 		= &g_fMinimumError;			//Minimum tolerable error
-	tPid.pu32Timelevel      = &g_u32PidTimelevel;			//Function execution interval in milliseconds
-	tPid.pfOutLim 		= &g_fOutputLimit;			//Output and integral term limit
+//	tPid.pfSetpoint      = &g_fSetpoint;
+//	tPid.pfSpeedAct      = &g_fEncoderSpeedOut;			//Actual velocity in RPM
+//	tPid.pfKf 			= &g_fKf;					//Reference feed forward constant
+//	tPid.pfKp 			= &g_fKp;					//Proportional gain
+//	tPid.pfKi 			= &g_fKi;					//Integral gain
+//	tPid.pfKd 			= &g_fKd;					//Derivative gain
+//	tPid.pfMinErr 		= &g_fMinimumError;			//Minimum tolerable error
+//	tPid.pu32Timelevel      = &g_u32PidTimelevel;			//Function execution interval in milliseconds
+//	tPid.pfOutLim 		= &g_fOutputLimit;			//Output and integral term limit
 	
 
 	
@@ -414,14 +361,15 @@ void ANALOG_TASK(void)
 //
 void PID_TASK(void)
 {
-  vPid(&tPid);
+  //vPid(&tPid);
  
-    g_fPwmDutyCycle = ABS(tPid.fPidOut);
+  //g_fPwmDutyCycle = ABS(tPid.fPidOut);
+  //g_fPwmDutyCycle = ABS(tPid.pfSetpoint);
 
-  if(tPid.fPidOut > 0)
-    g_u8MotorControlDirection = 0;
-  else
-     g_u8MotorControlDirection = 1;
+//  if(tPid.fPidOut > 0)
+//    g_u8MotorControlDirection = 0;
+//  else
+//     g_u8MotorControlDirection = 1;
 }
 
 //
@@ -436,8 +384,9 @@ void CAN_TASK(void)
 //----------------------------------------------------------------------------------------------------------------------------
 //
 //----------------------------------------------------------------------------------------------------------------------------
-void RAMP_TASK(void)
-{
-  vRamp(&tRamp);
-  g_fSetpoint = tRamp.fRampOut;
-}
+//void RAMP_TASK(void)
+//{
+//  vRamp(&tRamp);
+//  g_fSetpoint = tRamp.fRampOut;
+//}
+#endif

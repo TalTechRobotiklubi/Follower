@@ -100,13 +100,11 @@ void GPIO_TASK_blinkLED(void)
 	if (state == 0)
 	{
 		GPIO_outputOn(LED_GREEN);
-		//GPIO_outputOn(UART_Tx);
 		state = 1;
 	}
 	else
 	{
 		GPIO_outputOff(LED_GREEN);
-		//GPIO_outputOff(UART_Tx);
 		state = 0;
 	}
 }

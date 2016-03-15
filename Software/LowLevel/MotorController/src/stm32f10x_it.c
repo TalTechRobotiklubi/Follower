@@ -23,7 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
-#include "TASK_HANDLER.h"
+#include "SystemTicks.h"
 
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{
@@ -135,11 +135,7 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-	taskHandler_timerTicks++;
-	if (taskHandler_timerTicks >= TIMER_EXCEED_VALUE)
-	{
-		taskHandler_timerTicks = 0;
-	}
+	systemTicks++;
 }
 
 /******************************************************************************/

@@ -3,7 +3,7 @@
 //----------------------------------------------------------------------------------------------------------------------------
 #include "QEI.h"
 #include "stm32f10x.h"
-#include "PARAMS.h"
+#include "DataLayer.h"
 
 //----------------------------------------------------------------------------------------------------------------------------
 //	LOCAL DEFINITIONS AND CONSTANTS
@@ -35,7 +35,6 @@ uint16_t u16CHA_Rising_Edge_count 	= 0;
 uint32_t u32CurrentTimer 			= 0;
 float fDutyCycle					= 0;
 float fCurrentVelocity				= 0;
-float testVel						= 0;
 int16_t i16CHACount					= 0;
 int16_t i16CHBCount					= 0;
 uint16_t u16ErrorTimer				= 0;
@@ -56,7 +55,7 @@ void EXTI9_5_IRQHandler(void);
 /*****************************************************************************************************************************
 * See header file for detailed function description                                                                          *
 *****************************************************************************************************************************/
-void vQeiHardwareInit(void)
+void QEI_init(void)
 {
 	//--------------------------------------------------------------------------------------------------------------------
 	// Local data structures neccessary for initalizing peripherals
@@ -308,117 +307,68 @@ void vQeiProcessIRQ(uint32_t u32TIM1,uint32_t u32TIM3)
 /*****************************************************************************************************************************
 * See header file for detailed function description                                                                          *
 *****************************************************************************************************************************/
-void vQei(T_QEI* tQei)
+void QEI_task()
 {
 	static uint16_t u16Time = 0;
-	
-	if(fDutyCycle == 0)
+	uint16_t clicks = 0;
+	float actualSpeed = 0;
+
+	DL_getDataWithoutAffectingStatus(DLParamMotor1EncoderClicks, &clicks);
+	clicks += u16Ticks;
+
+	if(u16ErrorTimer > 100)
 	{
-		fDutyCycle = *tQei->fEncoderDuty;
-	}
-	///-------------------------------------------------------------------------------------------------------------------------
-	// If duty cyle of encoder signal is 0, encoder ID run hasn't been performed and must be executed
-	//--------------------------------------------------------------------------------------------------------------------------
-	if(*tQei->fEncoderDuty <= 0)
-	{
-		tQei->u8QeiStatusWord = 0;
-		u8IDRUN = 0;
-	}
-	else
-	{
-		tQei->u8QeiStatusWord = 1;
-	}
-	//--------------------------------------------------------------------------------------------------------------------------
-	// Encoder ID run not done, do it
-	//--------------------------------------------------------------------------------------------------------------------------
-	if(!(tQei->u8QeiStatusWord & (1<<ID_RUN_DONE)))
-	{
-		g_u8MotorControlDirection = 1;
-		g_fPwmDutyCycle = 10;
-		u8IDRUN = 1;
-		if(u16Time >= 5000)
+		uint16_t u16Compart = ABS(i16CHBCount - i16CHACount);
+		if(u16Compart > 50)
 		{
-			fDutyCycle = fDutyCycle / u16CHA_Rising_Edge_count;
-	 		//-----------------------------------------------------------------------------------------------------------------------
-	 		// Write parameters to flash
-	 		//-----------------------------------------------------------------------------------------------------------------------
-	 		vParameterFlashWrite(132,(uint32_t)(fDutyCycle*65536),F);
-	 		fDutyCycle = 0;
-	 		u16CHA_Rising_Edge_count = 0;
-	 		//-----------------------------------------------------------------------------------------------------------------------
-	 		// Stop motor
-	 		//-----------------------------------------------------------------------------------------------------------------------
-	 		g_fPwmDutyCycle = 0;
-	 		u8IDRUN = 0;
-	 		u16Time = 0;
-	 		tQei->u8QeiStatusWord =1;
-		}
-		u16Time++;
-	}
-	//--------------------------------------------------------------------------------------------------------------------------
-	// Encoder ID run has been performed so calculation of speed can be done
-	//--------------------------------------------------------------------------------------------------------------------------
-	else
-	{
-		if(u16ErrorTimer > 100)
-		{
-			uint16_t u16Compart = ABS(i16CHBCount - i16CHACount);
-			if(u16Compart > 50)
-			{
-				u16CumulativeErrors++;
-				//GPIOA->BSRR = GPIO_Pin_15;
-			}
-			else
-			{
-				u16CumulativeErrors = 0;
-			}
-			if(i16CHACount == 0 && g_fUartSpeedReference != 0)
-			{
-				u16CumulativeErrors++;
-			}
-				
-			i16CHACount = 0;
-			i16CHBCount = 0;
-			u16ErrorTimer = 0;
-		}
-		if(u16CumulativeErrors > 3)
-		{
-			GPIOA->BSRR = GPIO_Pin_15;
+			u16CumulativeErrors++;
+			//GPIOA->BSRR = GPIO_Pin_15;
 		}
 		else
 		{
-			GPIOA->BRR = GPIO_Pin_15;
+			u16CumulativeErrors = 0;
 		}
-		u16ErrorTimer++;
-		if(fCurrentVelocity != 0 && u16Count >= 3)
+		if(i16CHACount == 0)
 		{
-			testVel = 90000000/(fCurrentVelocity/u16Count);
-			fCurrentVelocity = 0;
-			u16Count = 0;
-			u16Time = 0;
+			u16CumulativeErrors++;
 		}
-		if(u16Time >= 10 )
-		{
-	 		testVel = 0;
-	  		fCurrentVelocity = 0;
-	 		u16Count = 0;
-	  		u16Time = 0;
 			
-		}
-		u16Time++;
-		
+		i16CHACount = 0;
+		i16CHBCount = 0;
+		u16ErrorTimer = 0;
 	}
-	
-	//
-	// Setting of outputs
-	//
-	if(u8MotorDir == 0)
+	if(u16CumulativeErrors > 3)
 	{
-		tQei->fMotorSpeedAct = -testVel;
+		GPIOA->BSRR = GPIO_Pin_15;
 	}
 	else
 	{
-		tQei->fMotorSpeedAct = testVel;
+		GPIOA->BRR = GPIO_Pin_15;
 	}
-	tQei->u8MotorDir = u8MotorDir;
+	u16ErrorTimer++;
+	if(fCurrentVelocity != 0 && u16Count >= 3)
+	{
+		actualSpeed = 90000000/(fCurrentVelocity/u16Count);
+		fCurrentVelocity = 0;
+		u16Count = 0;
+		u16Time = 0;
+	}
+	if(u16Time >= 10 )
+	{
+		actualSpeed = 0;
+		fCurrentVelocity = 0;
+		u16Count = 0;
+		u16Time = 0;
+		
+	}
+	u16Time++;
+	
+	if (u8MotorDir)
+	{
+		//speed = 0xFFFF - tempSpeed2 + 1;
+		actualSpeed = 0xFFF - actualSpeed + 1;
+		clicks = 0xFFFF - clicks + 1;
+	}
+	DL_setDataWithoutAffectingStatus(DLParamMotor1EncoderClicks, &clicks);
+	DL_setDataWithoutAffectingStatus(DLParamMotor1ActualSpeed, &actualSpeed);
 }

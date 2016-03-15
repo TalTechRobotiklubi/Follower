@@ -26,6 +26,6 @@ void vModulationDisable();
 //----------------------------------------------------------------------------------------------------------------------------
 // Cyclic function for modulation. To be executed every 2 milliseconds
 //----------------------------------------------------------------------------------------------------------------------------
-void vModulation(T_MODULATION *tModulation);
+void Modulation_task(T_MODULATION *tModulation);
 
 #endif  //_MODULATION_H_

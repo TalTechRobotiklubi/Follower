@@ -71,7 +71,7 @@ void vModulationHardwareInit()
 //----------------------------------------------------------------------------------------------------------------------------
 // Cyclic function for modulation. To be executed every 2 milliseconds.
 //----------------------------------------------------------------------------------------------------------------------------
-void vModulation(T_MODULATION *tModulation)
+void Modulation_task(T_MODULATION *tModulation)
 {
   //--------------------------------------------------------------------------------------------------------------------------
   //If modulation is disabled and duty cycle is greater than 0, enable modulation.

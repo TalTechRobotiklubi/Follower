@@ -2,12 +2,11 @@
 #ifndef PARAMS_H_
 #define PARAMS_H_
 
+#if 0
 #include "stm32f10x.h"
-#include "EEPROM.h"
 #include "QEI.h"
 #include "MODULATION.h"
 #include "ANALOG.h"
-#include "PID.h"
 //Includes of all blocks
 /*
 
@@ -39,26 +38,6 @@ extern uint8_t		g_u8PreviousFault2;
 extern uint8_t		g_u8PreviousFault3;
 extern uint8_t		g_u8PreviousFault4;
 extern uint8_t		g_u8PreviousFault5;
-//PID
-extern float		g_fKf;
-extern float		g_fKp;
-extern float		g_fKi;
-extern float		g_fKd;
-extern float		g_fMinimumError;
-extern uint32_t		g_u32PidTimelevel;
-extern float		g_fOutputLimit;
-extern uint8_t		g_u8PidStatusWord;
-extern float		g_fPidFiltTimeConstant;
-extern uint32_t		g_u32PidFiltTimelevel;
-extern float		g_fPidOutput;
-//Ramp
-extern float		g_fRampStepUp;
-extern float		g_fRampStepDown;
-extern float		g_fRampSlopeUp;
-extern float		g_fRampSlopeDown;
-extern uint32_t		g_u32RampTimelevel;
-extern uint8_t		g_u8RampStatusWord;
-extern float		g_fRampOut;
 //Limits
 extern float		g_fTemperatureHighLimit;
 extern float		g_fCurrentHighLimit;
@@ -82,8 +61,6 @@ extern uint8_t         		g_u8MotorControlDirection;           //Input to MODULAT
 extern uint8_t				g_u8UartStatusWord;
 void vParametersConnectionsInit(void);
 void vParametersInit(void);
-void vParameterRead(uint32_t u32Address,uint32_t* pu32Value,uint8_t u8Type);
-void vParameterWrite(uint32_t u32Address,uint32_t u32Value,uint8_t u8Type);
 void vParameterFlashWrite(uint32_t u32Address,uint32_t u32Value,uint8_t u8Type);
 
 extern void UART_TASK(void);
@@ -94,4 +71,5 @@ extern void ANALOG_TASK(void);
 extern void PID_TASK(void);
 extern void CAN_TASK(void);
 extern void RAMP_TASK(void);
+#endif
 #endif

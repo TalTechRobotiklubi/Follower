@@ -1,34 +1,46 @@
 #ifndef _TASKHANDLER_H_
 #define _TASKHANDLER_H_
 
-#define TIMER_EXCEED_VALUE     400000   //smallest value, which every task's period can be divided
+#include <stdint.h>
+
+enum INITS
+{
+	INIT_GPIO,
+	INIT_CAN
+};
 
 enum TASKS
 {
 	TASK_CAN,
-	TASK_RAMP,
 	TASK_QEI,
 	TASK_ANALOG,
 	TASK_LED,
-	TASK_PID,
 	TASK_MODULATION     
 };
 
-struct TASK_STRUCT
+typedef struct
+{
+	enum INITS id;
+	void (*taskPointer)();
+}
+INIT_STRUCT;
+
+typedef struct
 {
 	enum TASKS id;
 	uint32_t period;
 	uint32_t offset;
 	void (*taskPointer)();
-};
+}
+TASK_STRUCT;
 
 /*global variables*/
-extern const struct TASK_STRUCT TaskHandler_tableOfTasks[];
-volatile extern uint32_t taskHandler_timerTicks;
+extern const INIT_STRUCT TaskHandler_tableOfInits[];
+extern const TASK_STRUCT TaskHandler_tableOfTasks[];
 
 /*global functions*/
-extern void TaskHandler_init(void);
-extern void TaskHandler_run(void);
-void SysTick_Handler(void);
+void TaskHandler_init(void);
+void TaskHandler_run(void);
+
 
 #endif /* _TASKHANDLER_H_ */

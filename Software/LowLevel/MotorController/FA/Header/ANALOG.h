@@ -15,6 +15,6 @@ typedef struct
 }T_ANALOG;
 
 void vAnalogHardwareInit(void);
-void vAnalog(T_ANALOG*	ptInput);
+void Analog_task();
 uint16_t u16ReadAdcChannel(uint8_t u8Channel);
 #endif //_ANALOG_H_

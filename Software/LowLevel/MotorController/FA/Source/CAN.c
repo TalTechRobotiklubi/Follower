@@ -1,6 +1,5 @@
 #include "CAN.h"
-#include "PARAMS.h"
-#include "EEPROM.h"
+#include "DataLayer.h"
 
 #define ABS(A)	((A)<(0) ? (-A) : (A))			//!< Calculateas absolute value of a value
 #define RX_MESSAGE_DLC  		4
@@ -10,20 +9,19 @@
 #define MEM_ACCESS_ID			0xD4
 #define MEM_MESSAGE_DLC  		8
 
-uint16_t tempTicks = 0;
-uint16_t sendSpeed;
-int16_t tempSpeed;
-uint8_t motCurr = 0;
+static uint8_t controllerID = 0xD1;
+static uint8_t motCurr = 0;
 static CanRxMsg priv_RxMessage;
 static CanTxMsg priv_TxMessage;
 static int16_t priv_requestedSpeed = 0;
 static int16_t priv_timeoutCounter = 0;
-/**
-  * @brief  Initializes a Rx Message.
-  * @param  CanRxMsg *priv_RxMessage.
-  * @retval None
-  */
-void InitializeRxMessage(CanRxMsg *priv_RxMessage)
+
+static void initializeDataLayer();
+static void initializeRxMessage(CanRxMsg *priv_RxMessage);
+static void handleReceivedData();
+static void handleTransmitData();
+
+void initializeRxMessage(CanRxMsg *priv_RxMessage)
 {
   uint8_t i = 0;
 
@@ -38,7 +36,7 @@ void InitializeRxMessage(CanRxMsg *priv_RxMessage)
   }
 }
 
-void vCanHardwareInit(void)
+void CAN_init(void)
 {
 	GPIO_InitTypeDef       GPIO_InitStructure;
 	CAN_InitTypeDef        CAN_InitStructure;
@@ -125,7 +123,7 @@ void vCanHardwareInit(void)
 	CAN_FilterInit(&CAN_FilterInitStructure);
 
 	/*Status transmit message*/
-	priv_TxMessage.StdId = g_u8ControllerID;
+	priv_TxMessage.StdId = controllerID;
 	//priv_TxMessage.StdId = 0xD1;
 	priv_TxMessage.RTR = CAN_RTR_DATA;
 	priv_TxMessage.IDE = CAN_ID_STD;
@@ -145,7 +143,7 @@ void vCanHardwareInit(void)
 	   priv_TxMessageQEI.Data[i] = 0;
     }*/
 	
-	InitializeRxMessage(&priv_RxMessage);
+	initializeRxMessage(&priv_RxMessage);
 
 	//NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
 
@@ -158,7 +156,6 @@ void vCanHardwareInit(void)
 	CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
 }
 
-
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
   CAN_Receive(CAN1, CAN_FIFO0, &priv_RxMessage);
@@ -167,18 +164,17 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 	  (priv_RxMessage.StdId == RX_MESSAGE_ID) &&
       (priv_RxMessage.DLC == RX_MESSAGE_DLC))
   {
-	  if(g_u8ControllerID == 0xD1)
+	  if(controllerID == 0xD1)
 	  {
 		  priv_requestedSpeed = (int16_t)(((uint16_t)priv_RxMessage.Data[0] << 8) | (uint16_t)priv_RxMessage.Data[1]);
 		  priv_timeoutCounter = 0;
 	  }
-	  else if(g_u8ControllerID == 0xD2)
+	  else if(controllerID == 0xD2)
 	  {
 		  priv_requestedSpeed = (int16_t)(((uint16_t)priv_RxMessage.Data[2] << 8) | (uint16_t)priv_RxMessage.Data[3]);
 		  priv_timeoutCounter = 0;
 	  }
   }
-
 
   if ((priv_RxMessage.IDE == CAN_ID_STD) &&
 	  (priv_RxMessage.StdId == MEM_ACCESS_ID) &&
@@ -195,59 +191,82 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 	  {
 		  u32Value |= priv_RxMessage.Data[7 - count] << (count * 8);
 	  }
-
-	  vParameterWrite(u32Addr,u32Value,U32);
-	  //write(u32Addr, u32Value);
   }
 }
 
-void vCan(T_CAN* tCan)
+void CAN_task()
 {
-	float sendSpeed = ABS(*tCan->pfMotorSpeed);
-	int16_t tempSpeed2 = (int16_t)sendSpeed;
-    uint8_t motTemp = 0;
-    
-    // increase timeout counter for requested speed. If no new message received during 10 cycles
-    // for requested speed then stop motors
-    priv_timeoutCounter++;
+	handleReceivedData();
+	handleTransmitData();
+}
 
-    if (priv_timeoutCounter >= 10)
-    {
-    	priv_timeoutCounter = 10;  // to prevent overflow
-    	tCan->fCanSpeedReference = 0;
-    }
-    else
-    {
-    	tCan->fCanSpeedReference = (float)priv_requestedSpeed;
-    }
-    
-    // update Tx message, send actual speed
-    if(*tCan->pu8MotorDirection == 0)
-    {
-      priv_TxMessage.Data[0] = (int8_t)(tempSpeed2 >> 8);
+void handleReceivedData()
+{
+	int16_t requestSpeed = priv_requestedSpeed;
+
+	// increase timeout counter for requested speed. If no new message received during 10 cycles
+	// for requested speed then stop motors
+	priv_timeoutCounter++;
+
+	if (priv_timeoutCounter >= 10)
+	{
+		priv_timeoutCounter = 10;  // to prevent overflow
+		requestSpeed = 0;
+	}
+	DL_setDataWithoutAffectingStatus(DLParamMotor1RequestSpeed, &requestSpeed);
+}
+
+void handleTransmitData()
+{
+//	float sendSpeed = ABS(*tCan->pfMotorSpeed);
+//	int16_t tempSpeed2 = (int16_t)sendSpeed;
+//    uint8_t motTemp = 0;
+	int16_t speed = 0;
+	int16_t encoder = 0;
+	uint8_t current = 0;
+	uint8_t temp = 0;
+
+	DL_getDataWithoutAffectingStatus(DLParamMotor1ActualSpeed, &speed);
+	DL_getDataWithoutAffectingStatus(DLParamMotor1EncoderClicks, &encoder);
+    DL_getDataWithoutAffectingStatus(DLParamMotor1CurrentDraw, &current);
+	DL_getDataWithoutAffectingStatus(DLParamMotor1DriverTemp, &temp);
+
+	priv_TxMessage.Data[0] = (int8_t)(speed >> 8);
+    priv_TxMessage.Data[1] = (int8_t)(speed & 0xFF);
+    priv_TxMessage.Data[2] = (uint8_t)(encoder >> 8);
+    priv_TxMessage.Data[3] = (uint8_t)(encoder & 0xFF);
+    priv_TxMessage.Data[4] = current;
+    priv_TxMessage.Data[5] = temp;
+
+	// update Tx message, send actual speed
+  /*  if(*tCan->pu8MotorDirection == 0)
+	{
+	  priv_TxMessage.Data[0] = (int8_t)(tempSpeed2 >> 8);
 	  priv_TxMessage.Data[1] = (int8_t)(tempSpeed2 & 0xFF);
-      
-      priv_TxMessage.Data[2] = (uint8_t)(u16Ticks >> 8);
-      priv_TxMessage.Data[3] = (uint8_t)(u16Ticks & 0xFF);
-    }
-    else
-    {
-      tempSpeed = 0xFFFF - tempSpeed2 + 1;
-      tempTicks = 0xFFFF - u16Ticks + 1;
-      priv_TxMessage.Data[0] = (int8_t)(tempSpeed >> 8);
-	  priv_TxMessage.Data[1] = (int8_t)(tempSpeed & 0xFF);
-      
-      priv_TxMessage.Data[2] = (uint8_t)(tempTicks >> 8);
-      priv_TxMessage.Data[3] = (uint8_t)(tempTicks & 0xFF);
-    }
-	
-    motTemp = (uint8_t)(*tCan->pfMotorTemp);
-    motCurr = (uint8_t)(*tCan->pfMotorCurrent);
-	
-    priv_TxMessage.Data[4] = motCurr;
-    priv_TxMessage.Data[5] = motTemp;
+
+	  priv_TxMessage.Data[2] = (uint8_t)(u16Ticks >> 8);
+	  priv_TxMessage.Data[3] = (uint8_t)(u16Ticks & 0xFF);
+	}
+	else
+	{
+	  speed = 0xFFFF - tempSpeed2 + 1;
+	  tempTicks = 0xFFFF - u16Ticks + 1;
+	  priv_TxMessage.Data[0] = (int8_t)(speed >> 8);
+	  priv_TxMessage.Data[1] = (int8_t)(speed & 0xFF);
+
+	  priv_TxMessage.Data[2] = (uint8_t)(tempTicks >> 8);
+	  priv_TxMessage.Data[3] = (uint8_t)(tempTicks & 0xFF);
+	}*/
+
+
+//	motTemp = (uint8_t)(*tCan->pfMotorTemp);
+//	motCurr = (uint8_t)(*tCan->pfMotorCurrent);
+//
+//	priv_TxMessage.Data[4] = motCurr;
+//	priv_TxMessage.Data[5] = motTemp;
 
 	CAN_Transmit(CAN1, &priv_TxMessage);
 
-	u16Ticks = 0;
+	encoder = 0;
+	DL_setDataWithoutAffectingStatus(DLParamMotor1EncoderClicks, &encoder);
 }

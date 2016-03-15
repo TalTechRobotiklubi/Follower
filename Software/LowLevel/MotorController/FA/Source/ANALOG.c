@@ -1,4 +1,5 @@
 #include "ANALOG.h"
+#include "DataLayer.h"
 
 uint16_t u16Current;
 uint16_t u16Temp;
@@ -51,12 +52,12 @@ void vAnalogHardwareInit(void)
 //
 //
 //
-void vAnalog(T_ANALOG*	ptInput)
+void Analog_task()
 {
 	float fTempInVoltage = 0;
 	float fCurrentInVoltage = 0;
-	float fTemp = 0;
-    float fCurrent = 0;
+	uint8_t temp = 0;
+	uint8_t current = 0;
 	//uint16_t tempTemp;
 	u16Current = u16ReadAdcChannel(2);
 	u16Temp = u16ReadAdcChannel(16);
@@ -67,14 +68,14 @@ void vAnalog(T_ANALOG*	ptInput)
 	//
 	// Calculate actual temperature according to equation given in manual
 	//
-	fTemp = ((1.43 - fTempInVoltage)/4.3) + 25;
-	ptInput->fTemperatureOut = fTemp;
+	temp = ((1.43 - fTempInVoltage)/4.3) + 25;
+	DL_setDataWithoutAffectingStatus(DLParamMotor1DriverTemp, &temp);
     
     //
     // Calculate motor current in 
     //
-    fCurrent = (fCurrentInVoltage / 0.087951)*10;
-    ptInput->fCurrentOut = fCurrent;
+    current = (fCurrentInVoltage / 0.087951)*10;
+    DL_setDataWithoutAffectingStatus(DLParamMotor1CurrentDraw, &current);
 }	
 
 //
