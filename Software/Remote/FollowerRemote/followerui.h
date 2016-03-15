@@ -29,13 +29,12 @@ protected:
 signals:
   void startCommunication(QString nPort);
   void stopCommunication(void);
-  void newCommands(void);
 
 public slots:
   void connectSpine();
   //  it is called to give feedback about connection success
   void startCommStatus(bool status);
-  void stopCommStatus(bool status);
+  void stopCommStatus();
   void newUiData();
   void UpdatePortList();
 

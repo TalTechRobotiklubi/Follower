@@ -1,24 +1,21 @@
 #pragma once
 
-//#include "SpineCmd_Fwd.h"
-//#include "SpineData_Fwd.h"
+//#include "Serial.h"
 
-#include "Serial.h"
+#include <QString>
 
 class DataLayerBase;
 
-class SpineComm : public CSerial
+class SpineComm
 {
 public:
-    SpineComm() {};
-    virtual ~SpineComm() {}
+  SpineComm() {}
+  virtual ~SpineComm() {}
 
-    virtual int             GetPeriodInMs() { return 10; }
-	virtual void	        Communicate() = 0;
-
-	virtual bool	        HasNewData() const = 0;
-	virtual void	        ClearNewData() = 0;
-	virtual bool	        SendControllerCommands() = 0;
-    virtual DataLayerBase*  getDataLayer() = 0;
-    void                    DummyFunction(void)  {}
+  virtual bool open(const QString& name) = 0;
+  virtual void close() = 0;
+  virtual int getPeriodInMs() { return 10; }
+  virtual bool communicate() = 0;
+  virtual void sendControllerCommands() = 0;
+  virtual DataLayerBase* getDataLayer() = 0;
 };

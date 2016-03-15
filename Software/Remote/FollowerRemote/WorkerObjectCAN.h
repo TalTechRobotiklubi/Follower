@@ -1,15 +1,13 @@
 #pragma once
 
 #include "WorkerObjectBase.h"
-
-class DataLayerCAN;
-class SpineCommCAN;
+#include "SpineCommCAN.h"
 
 class WorkerObjectCAN : public WorkerObjectBase
 {
     Q_OBJECT
 public:
-    WorkerObjectCAN(SpineCommCAN* spineComm);
+    WorkerObjectCAN();
     ~WorkerObjectCAN(void);
 
     virtual void onStart();
@@ -17,6 +15,6 @@ public:
     virtual DataLayerBase *getDataLayer();
 
 private:
-    SpineCommCAN*   spineCommCAN_;
+    SpineCommCAN spineComm_;
 };
 

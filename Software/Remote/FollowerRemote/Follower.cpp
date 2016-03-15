@@ -8,22 +8,19 @@
 Follower::Follower(void)
 {
     workerThread_ = new CANWorkerThread();
-    spineComm_ = new SpineCommCAN();
-    workerObject_ = new WorkerObjectCAN(spineComm_);
+    workerObject_ = new WorkerObjectCAN();
     workerObject_->moveToThread(workerThread_);
     kinematics_ = new Kinematics(workerObject_->getDataLayer());
     
   /*  QObject::connect(workerThread_, SIGNAL(started()), workerObject_, SLOT(process()));
     QObject::connect(workerThread_, SIGNAL(finished()), workerObject_, SLOT(end()));
-    QObject::connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-    QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));*/
+    QObject::connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));*/
+    QObject::connect(workerThread_, SIGNAL(finished()), workerObject_, SLOT(deleteLater()));
 }
-
 
 Follower::~Follower(void)
 {
-    delete kinematics_;
-    delete workerObject_;
-    delete workerThread_;
-    delete spineComm_;
+  delete kinematics_;
+  workerThread_->wait();
+  delete workerThread_;
 }

@@ -26,7 +26,6 @@ SOURCES += \
     Data/PacketConfig.cpp \
     Data/PacketHandler.cpp \
     Data/Typedef.cpp \
-    Spine/Serial.cpp \
     Spine/SpineCommCAN.cpp \
     Algorithms/algorithmbuilder.cpp \
     Algorithms/algorithmwander.cpp \
@@ -51,7 +50,6 @@ HEADERS  +=  \
     Data/PacketHandler.h \
     Data/Typedef.h \
     Spine/CSpineComm.h \
-    Spine/Serial.h \
     Spine/SpineCommCAN.h \
     Algorithms/ialgorithm.h \
     Algorithms/algorithmbuilder.h \

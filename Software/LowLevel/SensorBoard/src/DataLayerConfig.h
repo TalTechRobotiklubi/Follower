@@ -48,7 +48,9 @@ typedef enum
 	DLParamImuQ2,                   // 29
 	DLParamImuQ3,                   // 30
 	DLParamImuQ4,                   // 31
-	// Count of items is 32
+	DLParamPidAddress,              // 32
+	DLParamPidValue,                // 33
+	// Count of items is 34
 	DLNumberOfParams
 }
 DLParam;

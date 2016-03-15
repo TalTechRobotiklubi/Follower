@@ -24,9 +24,8 @@ FollowerUi::FollowerUi(Follower *robot)
   connect(this, SIGNAL(startCommunication(QString)), workerObject_, SLOT(startCommunication(QString)));
   connect(workerObject_, SIGNAL(startStatus(bool)), this, SLOT(startCommStatus(bool)));
   connect(workerObject_, SIGNAL(newDataReceived()), this, SLOT(newUiData()));
-  connect(this, SIGNAL(newCommands()), workerObject_, SLOT(newCommandsToSend()));
   connect(this, SIGNAL(stopCommunication()), workerObject_, SLOT(stopCommunication()));
-  connect(workerObject_, SIGNAL(stopStatus(bool)), this, SLOT(stopCommStatus(bool)));
+  connect(workerObject_, SIGNAL(stopStatus()), this, SLOT(stopCommStatus()));
   connect(ui.btnConnect, SIGNAL(clicked()), this, SLOT(connectSpine()));
   connect(ui.BtnSeartchPorts, SIGNAL(clicked()), this, SLOT(UpdatePortList()));
 
@@ -90,7 +89,7 @@ void FollowerUi::startCommStatus(bool status)
 
 }
 
-void FollowerUi::stopCommStatus(bool )
+void FollowerUi::stopCommStatus()
 {
   // stop timer in kinematics
   kinematics_->stopTimer();

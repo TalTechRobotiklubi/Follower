@@ -50,7 +50,6 @@ typedef struct
 ReceivingDataState;
 
 /*function declarations*/
-static void USARTx_init(USART_TypeDef *uartX);
 static GPIO_IdDef UARTx_GPIO_init(USART_TypeDef *uartX);
 static void UARTx_IRQ_init(GPIO_IdDef);
 static void buffersInit();
@@ -93,7 +92,8 @@ void USART_init(USART_TypeDef *uartX)
 	USART_Init(uartX, &USART_InitStruct);
 	//Enable UARTx receive interrupts
 	USART_ITConfig(uartX, USART_IT_RXNE, ENABLE);
-	USART_ITConfig(uartX, USART_IT_TXE, ENABLE);
+	if (uartX == USART2)
+		USART_ITConfig(uartX, USART_IT_TXE, ENABLE);
 	//Enable UARTx
 	USART_Cmd(uartX, ENABLE);
 }
@@ -404,7 +404,7 @@ void handleTransmitData(void)
 void USART_initUSART2()
 {
 	buffersInit();
-	USARTx_init(USART2);
+	USART_init(USART2);
 }
 
 /*Periodic UART task*/

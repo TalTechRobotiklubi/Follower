@@ -25,7 +25,8 @@ typedef enum
 	PacketRobotFeedback,         // 5
 	PacketInertialMeasurement12, // 6
 	PacketInertialMeasurement34, // 7
-	// Count of items is 8
+	PacketPidSetup,              // 8
+	// Count of items is 9
 	NumberOfPackets
 }
 Packet;

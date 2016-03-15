@@ -13,9 +13,9 @@
 // Values
 // ----------------------------------------------------------------------------
 Bool  pDLValueBool[4];
-U8    pDLValueU8[12];
+U8    pDLValueU8[13];
 S16   pDLValueS16[12];
-Float pDLValueFloat[4];
+Float pDLValueFloat[5];
 
 // ----------------------------------------------------------------------------
 // Parameters descriptors
@@ -53,6 +53,8 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* ImuQ1                   */ { TypeFloat, &pDLValueFloat[0] },
 	/* ImuQ2                   */ { TypeFloat, &pDLValueFloat[1] },
 	/* ImuQ3                   */ { TypeFloat, &pDLValueFloat[2] },
-	/* ImuQ4                   */ { TypeFloat, &pDLValueFloat[3] }
+	/* ImuQ4                   */ { TypeFloat, &pDLValueFloat[3] },
+	/* PidAddress              */ { TypeU8,    &pDLValueU8[12]   },
+	/* PidValue                */ { TypeFloat, &pDLValueFloat[4] }
 };
 

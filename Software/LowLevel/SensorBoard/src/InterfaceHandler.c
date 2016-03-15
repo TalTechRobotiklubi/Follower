@@ -143,6 +143,7 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 				break;
 			case TypeU32:
 			case TypeS32:
+			case TypeFloat:
 				/*sanity check*/
 				if ((length <= 32) && (length > 24))
 				{
@@ -221,6 +222,7 @@ void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage
 				break;
 			case TypeU32:
 			case TypeS32:
+			case TypeFloat:
 				/*involves four bytes */
 				DL_getDataWithoutAffectingStatus((packetDesc->parameterList + j)->param, &data);
 				/*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/

@@ -23,11 +23,10 @@ public slots:
     // signals to show if start/stop was successful or not
     void startCommunication(QString nPort);
     void stopCommunication(void);
-    void newCommandsToSend();
 
 signals:
     void startStatus(bool connStatus);
-    void stopStatus(bool connStatus);
+    void stopStatus();
     void newDataReceived(void);
 
 protected:

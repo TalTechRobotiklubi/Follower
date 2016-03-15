@@ -29,7 +29,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
-#include "TaskHandler.h"
+#include "SystemTicks.h"
 
 /** @addtogroup Template_Project
   * @{
@@ -141,11 +141,7 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-	taskHandler_systemTicks++;
-	if (taskHandler_systemTicks >= TIMER_EXCEED_VALUE)
-	{
-		taskHandler_systemTicks = 0;
-	}
+	systemTicks++;
 }
 
 /******************************************************************************/

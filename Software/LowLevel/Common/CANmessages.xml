@@ -297,6 +297,22 @@
       <Description>
       </Description>
     </Parameter>
+    <Parameter>
+      <Name>PidAddress</Name>
+      <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>PidValue</Name>
+      <Type>Float</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
   </Parameters>
   <Packets>
     <Packet>
@@ -480,6 +496,19 @@
         </PacketParameter>
       </PacketParameters>
     </Packet>
+    <Packet>
+      <ID>213</ID>
+      <Name>PidSetup</Name>
+      <NominalPeriod>0</NominalPeriod>
+      <PacketParameters>
+        <PacketParameter>
+          <Parameter>PidAddress</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>PidValue</Parameter>
+        </PacketParameter>
+      </PacketParameters>
+    </Packet>
   </Packets>
   <Nodes>
     <Node>
@@ -567,12 +596,12 @@
             <TransmitPacket>
               <Packet>InertialMeasurement12</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>20</Period>
+              <Period>100</Period>
             </TransmitPacket>
             <TransmitPacket>
               <Packet>InertialMeasurement34</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>20</Period>
+              <Period>100</Period>
             </TransmitPacket>
           </TransmitPackets>
         </Interface>
@@ -586,6 +615,11 @@
             </ReceivePacket>
             <ReceivePacket>
               <Packet>RobotControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>PidSetup</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
@@ -604,12 +638,12 @@
             <TransmitPacket>
               <Packet>InertialMeasurement12</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>20</Period>
+              <Period>100</Period>
             </TransmitPacket>
             <TransmitPacket>
               <Packet>InertialMeasurement34</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>20</Period>
+              <Period>100</Period>
             </TransmitPacket>
           </TransmitPackets>
         </Interface>
