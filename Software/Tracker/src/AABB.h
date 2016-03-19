@@ -13,6 +13,7 @@ struct AABB {
 void aabb_expand(AABB* bbox, vec2 point);
 vec2 aabb_center(const AABB* bbox);
 bool aabb_overlap(const AABB* a, const AABB* b);
+vec2 aabb_size(const AABB* a);
 
 AABB aabb_from_points(const vec2* points, size_t len);
 

@@ -7,12 +7,16 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
   ${bx_INCLUDE_DIR}
   "${CMAKE_SOURCE_DIR}/src"
-  ${OpenCV_INCLUDE_DIRS}
+  "stb"
+  "imgui"
 )
+
+add_library(sqlite3 "sqlite3/sqlite3.c")
 
 set(IMGUI_SOURCES
   imgui/ocornut-imgui/imgui.cpp
   imgui/ocornut-imgui/imgui_draw.cpp
+  imgui/ocornut-imgui/imgui_wm.cpp
   imgui/imgui.cpp
   imgui/ocornut_imgui.cpp
 )
@@ -23,8 +27,26 @@ set(NVG_SOURCES
 )
 
 set(STB_SOURCES
-  stb/stb_image.h
+  stb/stb_image.c
   stb/stb_truetype.h
+)
+
+add_library(follower_common
+  AABB.cpp
+  fl_math.cpp
+  fnv1a.cpp
+  plane.cpp
+  random/pcg_basic.c
+  vec2.cpp
+  vec3.cpp
+)
+
+add_library(follower_hod
+  hod/candidate_db.cpp
+  hod/hod.cpp
+  hod/hod_classifier.cpp
+  hod/image.cpp
+  hod/segmentation.cpp
 )
 
 add_library(bgfx_nanovg
@@ -33,26 +55,15 @@ add_library(bgfx_nanovg
 )
 
 set(FOLLOWER_SOURCES
-  AABB.cpp
   AsyncSerial.cpp
   crc.cpp
   msgpack.cpp
-  pos_texcoord_vertex.cpp
   follower_ctx.cpp
-  vec2.cpp
-  hog_detect.cpp
 
-  fl_block_alloc.cpp
-  fl_kinect_stream_source.cpp
-  fl_math.cpp
-  fl_render.cpp
-  fl_stream_reader.cpp
-  fl_stream_writer.cpp
-  fl_video_source.cpp
+  fl_sqlite_source.cpp
+  fl_sqlite_writer.cpp
   fl_yuy2_convert.cpp
 
-  interp/cubic_hermite.cpp
-  
   algorithm/algorithm_move.cpp
   algorithm/algorithm_runner.cpp
 
@@ -65,74 +76,36 @@ set(FOLLOWER_SOURCES
   comm/serial_comm.cpp
   comm/typedef.cpp
 
+  hod/hod_debug.cpp
+
+  ui/cam_window.cpp
   ui/main_window.cpp
-  ui/ui_layout.cpp
-)
-
-set(FOLLOWER_INCLUDES
-  AABB.h
-  AsyncSerial.h
-
-  fl_constants.h
-
-  crc.h
-
-  fl_block_alloc.h
-  fl_kinect_stream_source.h
-  fl_math.h
-  fl_render.h
-  fl_stream.h
-  fl_stream_reader.h
-  fl_stream_writer.h
-  fl_yuy2_convert.h
-
-  follower_ctx.h
-  kinect_frame.h
-  kinect_frame_source.h
-  kinect_null_frame_source.h
-  msgpack.h
-  shaders.h
-
-  vec2.h
-  hog_detect.h
-  
-  algorithm/algorithm_move.h
-  algorithm/algorithm_runner.h
-  algorithm/ialgorithm.h
-
-  comm/comm_input.h
-  comm/comm_output.h
-  comm/datahandler.h
-  comm/datalayer.h
-  comm/datalayerconfig.h
-  comm/interfaceconfig.h
-  comm/interfacehandler.h
-  comm/icomm.h
-  comm/packetconfig.h
-  comm/serial_comm.h
-  comm/typedef.h
-
-  ui/main_window.h
-  ui/ui_layout.h
 )
 
 if (KINECT_ENABLED)
   list(APPEND FOLLOWER_SOURCES kinect_live_source.cpp)
-  list(APPEND FOLLOWER_INCLUDES kinect_live_source.h)
 endif()
 
 add_library(imgui
   ${IMGUI_SOURCES}
 )
 
+
 add_executable(
   follower
   main.cpp
-  ${FOLLOWER_INCLUDES}
   ${FOLLOWER_SOURCES}
 )
 
-message(STATUS ${Boost_LIBRARIES})
+add_executable(
+  train_classifier
+  hod/hod_train.cpp
+)
+
+add_executable(
+  test_classifier
+  hod/hod_test.cpp
+)
 
 target_link_libraries(
   follower
@@ -143,6 +116,29 @@ target_link_libraries(
   bgfx
   glfw
   ${GLFW_LIBRARIES}
-  ${OpenCV_LIBS}
   yuv
+  follower_hod
+  follower_common
+  sqlite3
+  floatfann
+  ${CMAKE_DL_LIBS}
+)
+
+set(UTIL_COMMON_LIBS
+  follower_hod
+  follower_common
+  sqlite3
+  floatfann
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${CMAKE_DL_LIBS}
+)
+
+target_link_libraries(
+  train_classifier
+  ${UTIL_COMMON_LIBS}
+)
+
+target_link_libraries(
+  test_classifier
+  ${UTIL_COMMON_LIBS}
 )

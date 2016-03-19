@@ -1,6 +1,6 @@
 /*
- * Copyright 2011-2015 Branimir Karadzic. All rights reserved.
- * License: http://www.opensource.org/licenses/BSD-2-Clause
+ * Copyright 2011-2016 Branimir Karadzic. All rights reserved.
+ * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
  */
 
 // This code is based on:
@@ -27,7 +27,8 @@
 #define IMGUI_H_HEADER_GUARD
 
 #include <bgfx/bgfx.h>
-#include "ocornut-imgui/imgui.h"
+#include <ocornut-imgui/imgui.h>
+#include <ocornut-imgui/imgui_wm.h>
 
 #define IMGUI_MBUT_LEFT   0x01
 #define IMGUI_MBUT_RIGHT  0x02
@@ -172,7 +173,7 @@ void imguiSetCurrentScissor(); // Call before drawing custom widgets over imgui 
 bool imguiButton(const char* _text, bool _enabled = true, ImguiAlign::Enum _align = ImguiAlign::LeftIndented, uint32_t _rgb0 = IMGUI_BUTTON_RGB0, int32_t _r = IMGUI_BUTTON_R);
 bool imguiItem(const char* _text, bool _enabled = true);
 bool imguiCheck(const char* _text, bool _checked, bool _enabled = true);
-void imguiBool(const char* _text, bool& _flag, bool _enabled = true);
+bool imguiBool(const char* _text, bool& _flag, bool _enabled = true);
 bool imguiCollapse(const char* _text, const char* _subtext, bool _checked, bool _enabled = true);
 void imguiLabel(const char* _format, ...);
 void imguiLabel(uint32_t _rgba, const char* _format, ...);
@@ -207,20 +208,65 @@ bool imguiMouseOverArea();
 
 namespace ImGui
 {
+#define IMGUI_FLAGS_NONE        UINT16_C(0x0000)
+#define IMGUI_FLAGS_ALPHA_BLEND UINT16_C(0x0001)
+
 	// Helper function for passing bgfx::TextureHandle to ImGui::Image.
-	inline void Image(bgfx::TextureHandle _handle, const ImVec2& _size, const ImVec2& _uv0 = ImVec2(0, 0), const ImVec2& _uv1 = ImVec2(1, 1), const ImVec4& _tint_col = ImVec4(1, 1, 1, 1), const ImVec4& _border_col = ImVec4(0, 0, 0, 0) )
+	inline void Image(bgfx::TextureHandle _handle
+		, uint16_t _flags
+		, const ImVec2& _size
+		, const ImVec2& _uv0       = ImVec2(0.0f, 0.0f)
+		, const ImVec2& _uv1       = ImVec2(1.0f, 1.0f)
+		, const ImVec4& _tintCol   = ImVec4(1.0f, 1.0f, 1.0f, 1.0f)
+		, const ImVec4& _borderCol = ImVec4(0.0f, 0.0f, 0.0f, 0.0f)
+		)
 	{
-		union { bgfx::TextureHandle handle; ImTextureID ptr; } texture;
-		texture.handle = _handle;
-		Image(texture.ptr, _size, _uv0, _uv1, _tint_col, _border_col);
+		union { struct { uint16_t flags; bgfx::TextureHandle handle; } s; ImTextureID ptr; } texture;
+		texture.s.flags  = _flags;
+		texture.s.handle = _handle;
+		Image(texture.ptr, _size, _uv0, _uv1, _tintCol, _borderCol);
+	}
+
+	// Helper function for passing bgfx::TextureHandle to ImGui::Image.
+	inline void Image(bgfx::TextureHandle _handle
+		, const ImVec2& _size
+		, const ImVec2& _uv0       = ImVec2(0.0f, 0.0f)
+		, const ImVec2& _uv1       = ImVec2(1.0f, 1.0f)
+		, const ImVec4& _tintCol   = ImVec4(1.0f, 1.0f, 1.0f, 1.0f)
+		, const ImVec4& _borderCol = ImVec4(0.0f, 0.0f, 0.0f, 0.0f)
+		)
+	{
+		Image(_handle, IMGUI_FLAGS_ALPHA_BLEND, _size, _uv0, _uv1, _tintCol, _borderCol);
 	}
 
 	// Helper function for passing bgfx::TextureHandle to ImGui::ImageButton.
-	inline bool ImageButton(bgfx::TextureHandle _handle, const ImVec2& _size, const ImVec2& _uv0 = ImVec2(0,0),  const ImVec2& _uv1 = ImVec2(1,1), int _frame_padding = -1, const ImVec4& _bg_col = ImVec4(0,0,0,0), const ImVec4& _tint_col = ImVec4(1,1,1,1))
+	inline bool ImageButton(bgfx::TextureHandle _handle
+		, uint16_t _flags
+		, const ImVec2& _size
+		, const ImVec2& _uv0     = ImVec2(0.0f, 0.0f)
+		, const ImVec2& _uv1     = ImVec2(1.0f, 1.0f)
+		, int _framePadding      = -1
+		, const ImVec4& _bgCol   = ImVec4(0.0f, 0.0f, 0.0f, 0.0f)
+		, const ImVec4& _tintCol = ImVec4(1.0f, 1.0f, 1.0f, 1.0f)
+		)
 	{
-		union { bgfx::TextureHandle handle; ImTextureID ptr; } texture;
-		texture.handle = _handle;
-		return ImageButton(texture.ptr, _size, _uv0, _uv1, _frame_padding, _bg_col, _tint_col);
+		union { struct { uint16_t flags; bgfx::TextureHandle handle; } s; ImTextureID ptr; } texture;
+		texture.s.flags  = _flags;
+		texture.s.handle = _handle;
+		return ImageButton(texture.ptr, _size, _uv0, _uv1, _framePadding, _bgCol, _tintCol);
+	}
+
+	// Helper function for passing bgfx::TextureHandle to ImGui::ImageButton.
+	inline bool ImageButton(bgfx::TextureHandle _handle
+		, const ImVec2& _size
+		, const ImVec2& _uv0     = ImVec2(0.0f, 0.0f)
+		, const ImVec2& _uv1     = ImVec2(1.0f, 1.0f)
+		, int _framePadding      = -1
+		, const ImVec4& _bgCol   = ImVec4(0.0f, 0.0f, 0.0f, 0.0f)
+		, const ImVec4& _tintCol = ImVec4(1.0f, 1.0f, 1.0f, 1.0f)
+		)
+	{
+		return ImageButton(_handle, IMGUI_FLAGS_ALPHA_BLEND, _size, _uv0, _uv1, _framePadding, _bgCol, _tintCol);
 	}
 
 } // namespace ImGui

@@ -11,7 +11,8 @@
 static CallbackAsyncSerial serial_;
 
 namespace {
-static enum State {
+
+enum State {
   FindEnd,
   Reinit,
   ParseFields
@@ -71,7 +72,7 @@ AlgorithmMove::AlgorithmMove() {
     serial_.open("COM3", 115200u);
     is_running_ = true;
   } catch (boost::system::system_error e) {
-    std::cout << "IMU serial port open failed!";
+    printf("IMU serial port open failed!\n");
   }
 }
 

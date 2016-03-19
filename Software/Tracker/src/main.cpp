@@ -3,83 +3,28 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
-#include <chrono>
-#include <thread>
 
-//#include <bgfx/bgfxplatform.h>
-//#include <bgfx/bgfx.h>
 #include <bx/timer.h>
 #include <bx/commandline.h>
 
 #include "msgpack.h"
 #include "follower_ctx.h"
 #include "kinect_frame_source.h"
-#include "fl_kinect_stream_source.h"
-#include "fl_video_source.h"
+#include "fl_sqlite_source.h"
 #include "kinect_live_source.h"
 #include "kinect_null_frame_source.h"
 #include "imgui/imgui.h"
 #include "imgui/droidsans.ttf.h"
-#include "pos_texcoord_vertex.h"
 #include "fl_math.h"
-#include "fl_render.h"
 #include "nanovg/nanovg.h"
 #include "ui/main_window.h"
 #include "fl_constants.h"
-#include "fl_stream_writer.h"
 #include "algorithm/algorithm_runner.h"
+#include "ui/cam_window.h"
 #include "comm/datahandler.h"
-
-typedef std::chrono::milliseconds msec;
-
-void waitTillLoopTimeElapses()
-{
-  static auto loop_time = std::chrono::system_clock::now();
-
-  while (std::chrono::duration_cast<msec>(std::chrono::system_clock::now() - loop_time).count() < 20)
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-  loop_time = std::chrono::system_clock::now();
-}
-
-void update_depth_texture(uint8_t* texture_data, const uint16_t* depth,
-                          size_t len) {
-  uint8_t* pixelData = (uint8_t*)texture_data;
-  for (uint32_t i = 0; i < len; i++) {
-    uint16_t reading = depth[i];
-    uint8_t normalized =
-        fl_depth_to_byte(reading, MIN_RELIABLE_DIST, MAX_RELIABLE_DIST);
-
-    uint32_t idx = 4 * i;
-
-    if (reading >= MIN_RELIABLE_DIST && reading <= MAX_RELIABLE_DIST) {
-      // depth grey
-      pixelData[idx] = normalized;
-      pixelData[idx + 1] = normalized;
-      pixelData[idx + 2] = normalized;
-    } else {
-      // blue
-      pixelData[idx] = 0;
-      pixelData[idx + 1] = 0;
-      pixelData[idx + 2] = 255;
-    }
-    pixelData[idx + 3] = 255;
-  }
-}
-
-void update_ir_texture(uint8_t* texture_data, const kinect_frame* frame) {
-  uint8_t* pixelData = (uint8_t*)texture_data;
-  for (uint32_t i = 0; i < frame->infrared_length; i++) {
-    const float reading = float(frame->infrared_data[i]);
-    const uint8_t gamma_corrected =
-        uint16_t(powf(reading / 65535.f, 1.f / 2.2f) * 65535.f) >> 8;
-    const uint32_t idx = 4 * i;
-
-    pixelData[idx] = gamma_corrected;
-    pixelData[idx + 1] = gamma_corrected;
-    pixelData[idx + 2] = gamma_corrected;
-    pixelData[idx + 3] = 255;
-  }
-}
+#include "hod/candidate_db.h"
+#include "hod/hod_classifier.h"
+#include "fl_sqlite_writer.h"
 
 int main(int argc, char* argv[]) {
   Fl::window_info win_info;
@@ -87,24 +32,30 @@ int main(int argc, char* argv[]) {
 
   bx::CommandLine cmd_line(argc, argv);
 
-  fl_stream_writer* stream_writer = nullptr;
+  fl_sqlite_writer* writer = NULL;
   const char* record_file = cmd_line.findOption('r');
   if (record_file) {
-    stream_writer = fl_stream_writer_create(record_file);
+    writer = fl_sqlite_writer_create(record_file);
   }
 
   follower_ctx follower;
+  win_info.user_data = &follower;
 
-  if (const char* playback_file = cmd_line.findOption('p')) {
-    printf("frame source: fl_stream\n");
-    follower.frame_source.reset(new fl_kinect_stream_source(playback_file));
-  } else if (const char* video_file = cmd_line.findOption('v')) {
-    printf("frame source: video\n");
-    follower.frame_source.reset(new fl_video_source(video_file));
+  candidate_db* candidates_database = NULL;
+  if (const char* train_db = cmd_line.findOption('t')) {
+    candidates_database = (candidate_db*)calloc(1, sizeof(candidate_db));
+    candidate_db_init(candidates_database, train_db);
+  }
+
+  if (const char* database = cmd_line.findOption('d')) {
+    printf("frame source: sqlite\n");
+    fl_sqlite_source* source = new fl_sqlite_source(database);
+    follower.frame_source.reset(source);
+    if (candidates_database) source->manual_advance = true;
   } else {
-#ifdef FL_KINECT_ENBABLED
+#ifdef FL_KINECT_ENABLED
     printf("frame source: kinect\n");
-    follower.frame_source.reset(new kinect_live_source(&follower));
+    follower.frame_source.reset(new kinect_live_source());
 #else
     printf("frame source: null\n");
     follower.frame_source.reset(new kinect_null_frame_source());
@@ -112,64 +63,44 @@ int main(int argc, char* argv[]) {
   }
 
   const char* serial_port = cmd_line.findOption('s');
-  if (serial_port) 
-    follower.serial.start(serial_port, 115200);
+  if (serial_port) follower.serial.start(serial_port, 115200);
 
-  float record_speedup = 1.f;
-  cmd_line.hasArg(record_speedup, 'x', "speedup");
 
-  const char* cascade_file = cmd_line.findOption('c');
-  if (cascade_file) {
-    auto hog = hog_create();
-    hog_load_cascade(hog.get(), cascade_file);
-    follower.hog = std::move(hog);
+  hod_debug hod_debugger;
+  hod_debug_init(&hod_debugger, &follower.hod, candidates_database);
+  follower.hod_debugger = &hod_debugger;
+
+  hod_classifier classifier;
+  if (const char* classifier_file = cmd_line.findOption('c')) {
+    hod_classifier_init(&classifier, classifier_file);
+    follower.hod.classifier = &classifier;
+  } else {
+    follower.hod.classifier = NULL;
   }
-
-  pos_texcoord_vertex::init();
-
-  follower.depth_texture = bgfx::createTexture2D(
-      fl::KINECT_DEPTH_W, fl::KINECT_DEPTH_H, 1, bgfx::TextureFormat::RGBA8);
-
-  follower.color_texture = bgfx::createTexture2D(
-      fl::KINECT_DEPTH_W, fl::KINECT_DEPTH_H, 1, bgfx::TextureFormat::BGRA8);
-
-  follower.infrared_texture = bgfx::createTexture2D(
-      fl::KINECT_IR_W, fl::KINECT_IR_H, 1, bgfx::TextureFormat::RGBA8);
 
   imguiCreate();
 
-  NVGcontext* nvg = nvgCreate(1, 0);
+  const uint8_t UI_VIEW_ID = 192;
+  NVGcontext* nvg = nvgCreate(1, UI_VIEW_ID);
   nvgCreateFontMem(nvg, "default", (unsigned char*)s_droidSansTtf, INT32_MAX,
                    0);
   nvgFontSize(nvg, 12);
   nvgFontFace(nvg, "default");
-  bgfx::setViewSeq(0, true);
-
-  Fl::fl_render_context* renderer = Fl::fl_renderer_create(nvg);
-
-  // rgba
-  const size_t texture_pitch = fl::KINECT_DEPTH_W * 4;
-  const size_t texture_bytes = texture_pitch * fl::KINECT_DEPTH_H;
-  uint8_t* depth_texture_data = (uint8_t*)calloc(texture_bytes, 1);
-  bgfx::updateTexture2D(
-      follower.depth_texture, 0, 0, 0, fl::KINECT_DEPTH_W, fl::KINECT_DEPTH_H,
-      bgfx::makeRef(depth_texture_data, texture_bytes), texture_pitch);
-  uint8_t* ir_texture_data = (uint8_t*)calloc(texture_bytes, 1);
 
   int64_t current_time = bx::getHPCounter();
   int64_t prev_time = current_time;
 
-
-  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0, 1.0f, 0);
+  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xE4F1FEFF, 1.0f,
+                     0);
 
   double total_frame_time = 0.0;
   double smooth_frame_time = 0;
 
-  int32_t turn_degrees = 0;
-
   AlgorithmRunner::initialize();
 
-  bool ir_processing_enabled = true;
+  cam_window cam_window;
+  cam_window_init(&cam_window);
+
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
 
@@ -183,68 +114,31 @@ int main(int argc, char* argv[]) {
     smooth_frame_time = 0.95 * smooth_frame_time + 0.05 * dt;
     total_frame_time += dt_seconds;
 
-    const kinect_frame* frame =
-        follower.frame_source->get_frame(float(dt_seconds) * record_speedup);
+    const kinect_frame* frame = follower.frame_source->get_frame();
 
-    if (stream_writer && frame) {
-      fl_stream_add_kframe(stream_writer, frame, float(total_frame_time));
-      continue;
+    if (writer && frame) {
+      fl_sqlite_writer_add_frame(writer, frame);
     }
 
     if (frame) {
       if (frame->depth_data) {
-        update_depth_texture(depth_texture_data, frame->depth_data,
-                             frame->depth_length);
-        const bgfx::Memory* m =
-            bgfx::makeRef(depth_texture_data, texture_bytes);
-        bgfx::updateTexture2D(follower.depth_texture, 0, 0, 0,
-                              fl::KINECT_DEPTH_W, fl::KINECT_DEPTH_H, m,
-                              texture_pitch);
+        int64_t grid_sample_start = bx::getHPCounter();
+        if (hod_debugger.update_enabled) {
+          hod_grid_sample(&follower.hod, frame->depth_data);
+        }
+        int64_t grid_sample_end = bx::getHPCounter();
+        hod_debugger.processing_time =
+            double(grid_sample_end - grid_sample_start) * to_ms;
+        hod_debug_update(&hod_debugger);
 
         follower.depth_map =
             calculate_range_map(frame->depth_data, fl::KINECT_DEPTH_W,
                                 fl::KINECT_DEPTH_H, follower.depth_cutoff);
+
+        follower_update_candidates(&follower, float(dt_seconds));
       }
 
-      if (frame->rgba_data) {
-        const bgfx::Memory* color_mem =
-            bgfx::makeRef(frame->rgba_data, uint32_t(frame->rgba_length));
-        bgfx::updateTexture2D(follower.color_texture, 0, 0, 0,
-                              frame->rgba_width, frame->rgba_height, color_mem,
-                              frame->rgba_width * 4);
-      }
-
-      if (ir_processing_enabled && frame->infrared_data) {
-        update_ir_texture(ir_texture_data, frame);
-        const bgfx::Memory* ir_mem =
-            bgfx::makeRef(ir_texture_data, texture_bytes);
-        bgfx::updateTexture2D(follower.infrared_texture, 0, 0, 0,
-                              fl::KINECT_IR_W, fl::KINECT_IR_H, ir_mem,
-                              fl::KINECT_IR_W * 4);
-      }
-
-      if (follower.hog) {
-        hog_result results =
-            hog_do_detect(follower.hog.get(), frame->rgba_data,
-                          frame->rgba_width, frame->rgba_height);
-        follower.hog_boxes.clear();
-        const float scale_x = float(win_info.layout.kinect_image_width) /
-                              float(frame->rgba_width);
-        const float scale_y = float(win_info.layout.kinect_image_height) /
-                              float(frame->rgba_height);
-        for (size_t i = 0; i < results.len; i++) {
-          AABB aabb = results.boxes[i];
-          aabb.top_left.x *= scale_x;
-          aabb.top_left.y *= scale_y;
-
-          aabb.bot_right.x *= scale_x;
-          aabb.bot_right.y *= scale_y;
-          follower.hog_boxes.push_back(aabb);
-        }
-
-        follower_update_possible_position(&follower, follower.hog_boxes.data(),
-                                          follower.hog_boxes.size());
-      }
+      cam_window_update(&cam_window, frame);
     }
 
     follower.serial.receive(&follower.in_data);
@@ -252,57 +146,72 @@ int main(int argc, char* argv[]) {
     DataHandler_TASK(20);
     follower.serial.send(follower.out_data);
 
-    follower_update(&follower, float(dt_seconds) * record_speedup);
+    follower_update(&follower, float(dt_seconds));
 
+    bgfx::setViewRect(0, 0, 0, win_info.win_width, win_info.win_height);
     bgfx::touch(0);
 
-    Fl::render(renderer, &win_info.layout, &follower);
-
-    static int32_t right_scroll_area = 0;
+    nvgBeginFrame(nvg, win_info.win_width, win_info.win_height, 1.f);
     imguiBeginFrame(win_info.mouse.x, win_info.mouse.y, win_info.mouse.button,
-                    0, win_info.layout.win_width, win_info.layout.win_height);
-    imguiLabel("frame time: %.1f ms", smooth_frame_time);
-    imguiBeginScrollArea("Settings", 0, 20, int(win_info.layout.toolbar_width),
-                         win_info.layout.win_height, &right_scroll_area);
-    imguiSlider("playback rate", record_speedup, 0.0f, 10.0f, 0.1f);
-    imguiSlider("max body ttl", follower.body_time_to_live, 0.0f, 5.0f, 0.1f);
-    imguiSlider("img scale quality", follower.downscale_quality, 0.0f, 3.0f,
-                1.0f);
-    if (follower.hog) {
-      imguiSlider("HOG scaling factor", follower.hog->detect_scale_factor, 1.01f,
-        2.f, 0.01f);
-    }
-    imguiBool("IR processing", ir_processing_enabled);
-    imguiLabel("camera %.1f %.1f", follower.out_data.camera_degrees.x,
-      follower.out_data.camera_degrees.y);
-    if (imguiButton("start algorithm"))
-    {
+                    win_info.mouse.scroll, win_info.win_width,
+                    win_info.win_height, char(0), UI_VIEW_ID);
+    nvgViewId(nvg, UI_VIEW_ID);
+
+    bgfx::setViewName(UI_VIEW_ID, "UI");
+    bgfx::setViewSeq(UI_VIEW_ID, true);
+
+    ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
+
+    bool w_open = true;
+    ImGuiWindowFlags flags =
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
+    ImGui::Begin("follower", &w_open, ImVec2(200.f, win_info.win_width), -1.f,
+                 flags);
+    ImGui::Text("frame time: %.1f ms", smooth_frame_time);
+    ImGui::Text("camera %.1f %.1f", follower.out_data.camera_degrees.x,
+                follower.out_data.camera_degrees.y);
+
+    ImGui::Checkbox("HOD debug", &hod_debugger.window_open);
+    ImGui::Checkbox("cameras", &cam_window.open);
+
+    if (ImGui::Button("start algorithm")) {
       AlgorithmRunner::start(0, follower.in_data);
       follower.out_data.left_speed = 0;
       follower.out_data.right_speed = 0;
     }
-    if (imguiButton("stop algorithm"))
-    {
+
+    if (ImGui::Button("stop algorithm")) {
       AlgorithmRunner::stop(0);
       follower.out_data.left_speed = 0;
       follower.out_data.right_speed = 0;
     }
-    imguiSlider("turn", follower.in_data.degreesToTurn, -180, 180);
 
-    imguiEndScrollArea();
+    ImGui::SliderInt("turn", &follower.in_data.degreesToTurn, -180, 180);
+
+    cam_window_draw(&cam_window, nvg, &follower);
+    hod_debug_draw(&hod_debugger, nvg);
+
+    ImGui::End();
+
     imguiEndFrame();
+    nvgEndFrame(nvg);
 
     bgfx::frame();
-
-    waitTillLoopTimeElapses();
   }
 
-  if (stream_writer) {
-    fl_stream_writer_destroy(stream_writer);
+  if (writer) {
+    fl_sqlite_writer_destroy(writer);
   }
 
+  cam_window_destroy(&cam_window);
+
+  nvgDelete(nvg);
+  imguiDestroy();
   bgfx::shutdown();
   glfwTerminate();
+
+  candidate_db_close(candidates_database);
 
   return 0;
 }

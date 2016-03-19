@@ -12,51 +12,10 @@ void follower_update_camera_pos(follower_ctx* follower, const AABB* target) {
   follower->out_data.camera_degrees.y = fl_map_range(target_y, 0.f, 1.0f, 45.f, -45.f);
 }
 
-std::vector<merged_aabb> aabb_combine_overlapping(const AABB* aabb,
-                                                  size_t len) {
-  std::vector<merged_aabb> parent_nodes;
-  std::vector<size_t> overlap_indices;
-
-  for (size_t i = 0; i < len; i++) {
-    const AABB* cur_aabb = &aabb[i];
-
-    overlap_indices.clear();
-    for (size_t j = 0; j < parent_nodes.size(); j++) {
-      merged_aabb* parent_node = &parent_nodes[j];
-      if (aabb_overlap(cur_aabb, &parent_node->aabb)) {
-        overlap_indices.push_back(j);
-      }
-    }
-
-    merged_aabb merge_node;
-    merge_node.aabb = *cur_aabb;
-    merge_node.num_aabbs = 1;
-
-    if (overlap_indices.size() > 0) {
-      for (size_t overlap_idx : overlap_indices) {
-        merged_aabb* n = &parent_nodes[overlap_idx];
-        aabb_expand(&merge_node.aabb, n->aabb.top_left);
-        aabb_expand(&merge_node.aabb, n->aabb.bot_right);
-        merge_node.num_aabbs += n->num_aabbs;
-      }
-
-      std::sort(overlap_indices.begin(), overlap_indices.end());
-
-      for (int j = overlap_indices.size() - 1; j >= 0; j--) {
-        parent_nodes.erase(parent_nodes.begin() + j);
-      }
-    }
-
-    parent_nodes.push_back(merge_node);
-  }
-
-  return parent_nodes;
-}
-
 void follower_update(follower_ctx* follower, float dt) {
   if (follower->has_target) {
-    follower->possible_target.time_to_live -= dt;
-    if (follower->possible_target.time_to_live <= 0.f) {
+    follower->target.time_to_live -= dt;
+    if (follower->target.time_to_live <= 0.f) {
       follower->has_target = false;
     }
   }
@@ -104,89 +63,66 @@ depth_window calculate_range_map(const uint16_t* depth_data, uint32_t w,
   return intervals;
 }
 
-void follower_update_possible_position(follower_ctx* follower,
-                                       const AABB* detections, size_t len) {
-  follower->combined_hogs = aabb_combine_overlapping(detections, len);
+follower_ctx::follower_ctx() {
+  hod_ctx_init(&hod, 512, 424, 8, 8);
+}
 
-  if (follower->combined_hogs.empty()) return;
+follower_ctx::~follower_ctx() {}
 
-  AABB possible_target_pos;
-  int num_nodes = 0;
-  for (size_t i = 0; i < follower->combined_hogs.size(); i++) {
-    const merged_aabb* node = &follower->combined_hogs[i];
-    if (node->num_aabbs > num_nodes) {
-      possible_target_pos = node->aabb;
-      num_nodes = node->num_aabbs;
+void body_target::update(const AABB* aabb, float dt) {
+  (void)dt;
+
+  if (num_positions < max_positions) {
+    positions[num_positions++] = *aabb; 
+
+    avg_position = *aabb;
+  } else {
+    for (int i = 0; i < max_positions - 1; i++) {
+      positions[i] = positions[i + 1];
+      positions[max_positions - 1] = *aabb;
     }
+
+    AABB avg = { vec2{0.f, 0.f}, vec2{0.f, 0.f} };
+    
+    for (int i = 0; i < max_positions; i++) {
+      const AABB* a = &positions[i];
+      avg.top_left.x += a->top_left.x;
+      avg.top_left.y += a->top_left.y;
+      avg.bot_right.x += a->bot_right.x;
+      avg.bot_right.y += a->bot_right.y;
+    }
+
+    const float mp = float(max_positions);
+    avg.top_left.x /= mp;
+    avg.top_left.y /= mp;
+    avg.bot_right.x /= mp;
+    avg.bot_right.y /= mp;
+
+    avg_position = avg;
   }
-
-  follower->has_target = true;
-  follower->possible_target.location = possible_target_pos;
-  follower->possible_target.time_to_live = follower->body_time_to_live;
-  follower->possible_target.update_kalman(&possible_target_pos);
-
-  follower_update_camera_pos(follower, &follower->possible_target.location);
 }
 
-body_target::body_target()
-  : kf(6, 4, 0)
-  , z_t(4, 1, CV_32F)
-  , x_t(6, 1, CV_32F)
-  , w_k(6, 1, CV_32F) {
+void follower_update_candidates(follower_ctx* follower, float dt) {
+  for (int i = 0; i < follower->hod.candidates_len; i++) {
+    const hod_candidate* candidate = &follower->hod.candidates[i];
+    if (candidate->weight <= 0.97f) continue;
 
-  w_k << 0.05f, 0.05f, 0.05f, 0.05f, 0.1f, 0.1f;
+    float x = float(candidate->depth_position.x);
+    float y = float(candidate->depth_position.y);
 
-  z_t.setTo(cv::Scalar(0));
+    AABB position;
+    position.top_left.x = x;
+    position.top_left.y = y;
+    position.bot_right.x = x + float(candidate->depth_position.width);
+    position.bot_right.y = y + float(candidate->depth_position.height);
 
-  x_t << 256.f, 212.f, 256.f, 212.f, 0.f, 0.f;
+    follower->target.update(&position, dt);
+    follower_update_camera_pos(follower, &position);
 
-  cv::Mat_<float> transition_matrix(6, 6);
-  transition_matrix <<
-    1.f, 0.f, 0.f, 0.f, 1.f, 0.f,
-    0.f, 1.f, 0.f, 0.f, 0.f, 1.f,
-    0.f, 0.f, 1.f, 0.f, 1.f, 0.f,
-    0.f, 0.f, 0.f, 1.f, 0.f, 1.f,
-    0.f, 0.f, 0.f, 0.f, 1.f, 0.f,
-    0.f, 0.f, 0.f, 0.f, 0.f, 1.f;
+    if (!follower->has_target) {
+      follower->has_target = true;
+    }
 
-  kf.transitionMatrix = transition_matrix;
-
-  cv::Mat_<float> measurement_matrix(4, 6);
-  measurement_matrix <<
-    1.f, 0.f, 0.f, 0.f, 0.f, 0.f,
-    0.f, 1.f, 0.f, 0.f, 0.f, 0.f,
-    0.f, 0.f, 1.f, 0.f, 0.f, 0.f,
-    0.f, 0.f, 0.f, 1.f, 0.f, 0.f;
-
-  kf.measurementMatrix = measurement_matrix;
-
-  cv::Mat_<float> process_noise_cov(6, 6);
-  process_noise_cov <<
-    0.25f, 0.f, 0.f, 0.f, 0.5f, 0.f,
-    0.f, 0.25f, 0.f, 0.f, 0.f, 0.5f,
-    0.f, 0.f, 0.25f, 0.f, 0.5f, 0.f,
-    0.f, 0.f, 0.f, 0.25f, 0.f, 0.5f,
-    0.5f, 0.f, 0.5f, 0.f, 1.f, 0.f,
-    0.f, 0.5f, 0.f, 0.5, 0.f, 1.f;
-
-  kf.processNoiseCov = process_noise_cov * 0.001f;
-
-  setIdentity(kf.measurementNoiseCov, cv::Scalar::all(500.f));
-  setIdentity(kf.errorCovPost, cv::Scalar::all(1e+5));
-  x_t.copyTo(kf.statePost);
-}
-
-void body_target::update_kalman(const AABB* aabb) {
-  const vec2 tl = aabb->top_left;
-  const vec2 br = aabb->bot_right;
-
-  cv::Mat predicted = kf.predict();
-  kf_prediction.top_left.x = predicted.at<float>(0);  
-  kf_prediction.top_left.y = predicted.at<float>(1);  
-  kf_prediction.bot_right.x = predicted.at<float>(2);  
-  kf_prediction.bot_right.y = predicted.at<float>(3);  
-
-  z_t << tl.x, tl.y, br.x, br.y;
-
-  kf.correct(z_t);
+    follower->target.time_to_live = 1.f;
+  }
 }

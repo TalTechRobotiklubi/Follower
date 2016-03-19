@@ -6,8 +6,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include "ui_layout.h"
-
 namespace Fl {
 
 struct mouse_state {
@@ -18,8 +16,12 @@ struct mouse_state {
 };
 
 struct window_info {
+  void* user_data;
   mouse_state mouse;
-  ui_layout layout;
+  float win_width;
+  float win_height;
+  float depth_width;
+  float depth_height;
 };
 
 GLFWwindow* create_main_window(window_info* info);

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2015 Daniel Collin. All rights reserved.
- * License: http://www.opensource.org/licenses/BSD-2-Clause
+ * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
  */
 
 #ifndef OCORNUT_IMGUI_H_HEADER_GUARD
 #define OCORNUT_IMGUI_H_HEADER_GUARD
 
-#include "ocornut-imgui/imgui.h"
+#include <ocornut-imgui/imgui.h>
 
 namespace bx { struct AllocatorI; }
 
