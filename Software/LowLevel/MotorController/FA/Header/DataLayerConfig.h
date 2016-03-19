@@ -24,7 +24,13 @@ typedef enum
 	DLParamMotor1DriverTemp,    // 5
 	DLParamMotor1BridgeAFault,  // 6
 	DLParamMotor1BridgeBFault,  // 7
-	// Count of items is 8
+	DLParamMotor2ActualSpeed,   // 8
+	DLParamMotor2EncoderClicks, // 9
+	DLParamMotor2CurrentDraw,   // 10
+	DLParamMotor2DriverTemp,    // 11
+	DLParamMotor2BridgeAFault,  // 12
+	DLParamMotor2BridgeBFault,  // 13
+	// Count of items is 14
 	DLNumberOfParams
 }
 DLParam;

@@ -4,6 +4,7 @@
 #include "QEI.h"
 #include "stm32f10x.h"
 #include "DataLayer.h"
+#include "MessageId.h"
 
 //----------------------------------------------------------------------------------------------------------------------------
 //	LOCAL DEFINITIONS AND CONSTANTS
@@ -40,11 +41,12 @@ int16_t i16CHBCount					= 0;
 uint16_t u16ErrorTimer				= 0;
 uint16_t u16CumulativeErrors		= 0;
 
-uint16_t u16Ticks					= 0;	//Ticks to be sent to PC
+static uint16_t priv_ticks					= 0;	//Ticks to be sent to PC
 //----------------------------------------------------------------------------------------------------------------------------
 // LOCAL FUNCTION PROTOTYPES
 //----------------------------------------------------------------------------------------------------------------------------
-void vQeiProcessIRQ(uint32_t u32TIM1,uint32_t u32TIM3);
+static void vQeiProcessIRQ(uint32_t u32TIM1,uint32_t u32TIM3);
+static void initData();
 void EXTI4_IRQHandler(void);
 void EXTI9_5_IRQHandler(void);
 
@@ -146,6 +148,18 @@ void QEI_init(void)
 	//--------------------------------------------------------------------------------------------------------------------
 	TIM_Cmd(TIM3, ENABLE);
 	TIM_Cmd(TIM1, ENABLE);
+
+	initData();
+}
+
+void initData()
+{
+	int16_t clicks = 0;
+	int16_t actualSpeed = 0;
+	DL_setDataWithoutAffectingStatus(DLParamMotor1EncoderClicks, &clicks);
+	DL_setDataWithoutAffectingStatus(DLParamMotor2EncoderClicks, &clicks);
+	DL_setDataWithoutAffectingStatus(DLParamMotor1ActualSpeed, &actualSpeed);
+	DL_setDataWithoutAffectingStatus(DLParamMotor2ActualSpeed, &actualSpeed);
 }
 
 /*****************************************************************************************************************************
@@ -154,7 +168,7 @@ void QEI_init(void)
 void EXTI4_IRQHandler(void)
 {
 	EXTI_ClearITPendingBit(EXTI_Line4);
-	u16Ticks++;
+	priv_ticks++;
 	i16CHACount++;
 	//Remember old values of encoder inputs
 	u8QeiPinStatus = u8QeiPinStatus << 2;
@@ -238,7 +252,7 @@ void vQeiProcessIRQ(uint32_t u32TIM1,uint32_t u32TIM3)
 	//------------------------------------------------------------------------------------------------------------------------
 	// Encoder ID run. Detect the phase offset and duty cycle of encoder input signal
 	//------------------------------------------------------------------------------------------------------------------------
-	if(u8IDRUN == 1)
+/*	if(u8IDRUN == 1)
 	{
 		//--------------------------------------------------------------------------------------------------------------------
 		// If rising edge on channel A has occurred, record timer value and calculate phase offset
@@ -269,7 +283,7 @@ void vQeiProcessIRQ(uint32_t u32TIM1,uint32_t u32TIM3)
 	//------------------------------------------------------------------------------------------------------------------------
 	// If encoder ID run complete
 	//------------------------------------------------------------------------------------------------------------------------
-	else
+	else*/
 	{
 		u32TimerValue = u32TIM1;
 		u32TimerValue = u32TimerValue << 16;
@@ -311,64 +325,109 @@ void QEI_task()
 {
 	static uint16_t u16Time = 0;
 	uint16_t clicks = 0;
-	float actualSpeed = 0;
+	uint16_t actualSpeed = 0;
+	int16_t requestSpeed = 0;
 
-	DL_getDataWithoutAffectingStatus(DLParamMotor1EncoderClicks, &clicks);
-	clicks += u16Ticks;
-
-	if(u16ErrorTimer > 100)
+	if (CurrentId == Motor1Message)
 	{
-		uint16_t u16Compart = ABS(i16CHBCount - i16CHACount);
-		if(u16Compart > 50)
+		DL_getDataWithoutAffectingStatus(DLParamMotor1EncoderClicks, &clicks);
+	}
+	else if (CurrentId == Motor2Message)
+	{
+		DL_getDataWithoutAffectingStatus(DLParamMotor2EncoderClicks, &clicks);
+		DL_getDataWithoutAffectingStatus(DLParamMotor2RequestSpeed, &requestSpeed);
+	}
+
+	__disable_irq();
+	clicks += priv_ticks;
+	priv_ticks = 0;
+
+/*	if (fDutyCycle == 0 && requestSpeed != 0)
+	{
+		//g_u8MotorControlDirection = 1;
+		//g_iq16PwmDutyCycle = _IQ16(10);
+		u8IDRUN = 1;
+
+		if(u16Time >= 5000)
 		{
-			u16CumulativeErrors++;
-			//GPIOA->BSRR = GPIO_Pin_15;
+			fDutyCycle = fDutyCycle / u16CHA_Rising_Edge_count;
+			//-----------------------------------------------------------------------------------------------------------------------
+			// Write parameters to flash
+			//-----------------------------------------------------------------------------------------------------------------------
+			//vParameterFlashWrite(132,(uint32_t)(fDutyCycle*65536),IQ16);
+			fDutyCycle = 0;
+			u16CHA_Rising_Edge_count = 0;
+			//-----------------------------------------------------------------------------------------------------------------------
+			// Stop motor
+			//-----------------------------------------------------------------------------------------------------------------------
+			//g_iq16PwmDutyCycle = _IQ16(0);
+			u8IDRUN = 0;
+			u16Time = 0;
+			//tQei->u8QeiStatusWord =1;
+		}
+
+		u16Time++;
+	}
+	else*/
+	{
+		if(u16ErrorTimer > 100)
+		{
+			uint16_t u16Compart = ABS(i16CHBCount - i16CHACount);
+			if(u16Compart > 50)
+			{
+				u16CumulativeErrors++;
+				//GPIOA->BSRR = GPIO_Pin_15;
+			}
+			else
+			{
+				u16CumulativeErrors = 0;
+			}
+			if(i16CHACount == 0)
+			{
+				u16CumulativeErrors++;
+			}
+
+			i16CHACount = 0;
+			i16CHBCount = 0;
+			u16ErrorTimer = 0;
+		}
+		if(u16CumulativeErrors > 3)
+		{
+			GPIOA->BSRR = GPIO_Pin_15;
 		}
 		else
 		{
-			u16CumulativeErrors = 0;
+			GPIOA->BRR = GPIO_Pin_15;
 		}
-		if(i16CHACount == 0)
+		u16ErrorTimer++;
+		if(fCurrentVelocity != 0 && u16Count >= 3)
 		{
-			u16CumulativeErrors++;
+			actualSpeed = 90000000/(fCurrentVelocity/u16Count);
+			fCurrentVelocity = 0;
+			u16Count = 0;
+			u16Time = 0;
 		}
+		if(u16Time >= 10 )
+		{
+			actualSpeed = 0;
+			fCurrentVelocity = 0;
+			u16Count = 0;
+			u16Time = 0;
 			
-		i16CHACount = 0;
-		i16CHBCount = 0;
-		u16ErrorTimer = 0;
-	}
-	if(u16CumulativeErrors > 3)
-	{
-		GPIOA->BSRR = GPIO_Pin_15;
-	}
-	else
-	{
-		GPIOA->BRR = GPIO_Pin_15;
-	}
-	u16ErrorTimer++;
-	if(fCurrentVelocity != 0 && u16Count >= 3)
-	{
-		actualSpeed = 90000000/(fCurrentVelocity/u16Count);
-		fCurrentVelocity = 0;
-		u16Count = 0;
-		u16Time = 0;
-	}
-	if(u16Time >= 10 )
-	{
-		actualSpeed = 0;
-		fCurrentVelocity = 0;
-		u16Count = 0;
-		u16Time = 0;
-		
+		}
 	}
 	u16Time++;
 	
 	if (u8MotorDir)
 	{
 		//speed = 0xFFFF - tempSpeed2 + 1;
-		actualSpeed = 0xFFF - actualSpeed + 1;
+		actualSpeed = 0xFFFF - actualSpeed + 1;
 		clicks = 0xFFFF - clicks + 1;
 	}
+	__enable_irq();
+
 	DL_setDataWithoutAffectingStatus(DLParamMotor1EncoderClicks, &clicks);
+	DL_setDataWithoutAffectingStatus(DLParamMotor2EncoderClicks, &clicks);
 	DL_setDataWithoutAffectingStatus(DLParamMotor1ActualSpeed, &actualSpeed);
+	DL_setDataWithoutAffectingStatus(DLParamMotor2ActualSpeed, &actualSpeed);
 }

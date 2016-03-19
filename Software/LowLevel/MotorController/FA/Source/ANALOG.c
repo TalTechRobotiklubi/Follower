@@ -49,9 +49,6 @@ void vAnalogHardwareInit(void)
   while(ADC_GetCalibrationStatus(ADC1));
 }
 
-//
-//
-//
 void Analog_task()
 {
 	float fTempInVoltage = 0;
@@ -70,17 +67,15 @@ void Analog_task()
 	//
 	temp = ((1.43 - fTempInVoltage)/4.3) + 25;
 	DL_setDataWithoutAffectingStatus(DLParamMotor1DriverTemp, &temp);
-    
+	DL_setDataWithoutAffectingStatus(DLParamMotor2DriverTemp, &temp);
     //
     // Calculate motor current in 
     //
     current = (fCurrentInVoltage / 0.087951)*10;
     DL_setDataWithoutAffectingStatus(DLParamMotor1CurrentDraw, &current);
+    DL_setDataWithoutAffectingStatus(DLParamMotor2CurrentDraw, &current);
 }	
 
-//
-//
-//
 uint16_t u16ReadAdcChannel(uint8_t u8Channel)
 {
   ADC_RegularChannelConfig(ADC1, u8Channel, 1, ADC_SampleTime_239Cycles5);

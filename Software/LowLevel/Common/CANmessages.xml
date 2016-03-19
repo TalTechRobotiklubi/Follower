@@ -656,7 +656,7 @@
     </Node>
     <Node>
       <ID>0</ID>
-      <Name>MotorController1</Name>
+      <Name>MotorController</Name>
       <Interfaces>
         <Interface>
           <Name>CAN</Name>
@@ -673,24 +673,6 @@
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>20</Period>
             </TransmitPacket>
-          </TransmitPackets>
-        </Interface>
-      </Interfaces>
-    </Node>
-    <Node>
-      <ID>0</ID>
-      <Name>MotorController2</Name>
-      <Interfaces>
-        <Interface>
-          <Name>CAN</Name>
-          <ReceivePackets>
-            <ReceivePacket>
-              <Packet>MotorSpeeds</Packet>
-              <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>-1</Period>
-            </ReceivePacket>
-          </ReceivePackets>
-          <TransmitPackets>
             <TransmitPacket>
               <Packet>Motor2Status</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>

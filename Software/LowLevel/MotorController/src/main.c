@@ -1,5 +1,4 @@
 #include "stm32f10x.h"
-#include "PARAMS.h"
 #include "TASK_HANDLER.h"
 #include "QEI.h"
 #include "MODULATION.h"
