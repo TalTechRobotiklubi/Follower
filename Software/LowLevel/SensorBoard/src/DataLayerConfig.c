@@ -14,8 +14,8 @@
 // ----------------------------------------------------------------------------
 Bool  pDLValueBool[4];
 U8    pDLValueU8[13];
-S16   pDLValueS16[12];
-Float pDLValueFloat[5];
+S16   pDLValueS16[19];
+Float pDLValueFloat[1];
 
 // ----------------------------------------------------------------------------
 // Parameters descriptors
@@ -50,11 +50,14 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* RobotFeedback2          */ { TypeS16,   &pDLValueS16[9]   },
 	/* RobotFeedback3          */ { TypeS16,   &pDLValueS16[10]  },
 	/* RobotFeedback4          */ { TypeS16,   &pDLValueS16[11]  },
-	/* ImuQ1                   */ { TypeFloat, &pDLValueFloat[0] },
-	/* ImuQ2                   */ { TypeFloat, &pDLValueFloat[1] },
-	/* ImuQ3                   */ { TypeFloat, &pDLValueFloat[2] },
-	/* ImuQ4                   */ { TypeFloat, &pDLValueFloat[3] },
+	/* Qw                      */ { TypeS16,   &pDLValueS16[12]  },
+	/* Qx                      */ { TypeS16,   &pDLValueS16[13]  },
+	/* Qy                      */ { TypeS16,   &pDLValueS16[14]  },
+	/* Qz                      */ { TypeS16,   &pDLValueS16[15]  },
 	/* PidAddress              */ { TypeU8,    &pDLValueU8[12]   },
-	/* PidValue                */ { TypeFloat, &pDLValueFloat[4] }
+	/* PidValue                */ { TypeFloat, &pDLValueFloat[0] },
+	/* GyroX                   */ { TypeS16,   &pDLValueS16[16]  },
+	/* GyroY                   */ { TypeS16,   &pDLValueS16[17]  },
+	/* GyroZ                   */ { TypeS16,   &pDLValueS16[18]  }
 };
 

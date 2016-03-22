@@ -7,7 +7,6 @@
 #include "CAN.h"
 #include "DataHandler.h"
 #include "Timer.h"
-#include "IMU.h"
 
 /*Table of initialization tasks. All functions in tables are called once after initializing system clock.
  * With adding new init check that id is corresponding to enum value.*/
@@ -16,8 +15,7 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
 		{INIT_GPIO,				GPIO_init    },
 		{INIT_SENSOR,			Sensor_init  },
 		{INIT_CAN,				CAN_init     },
-		{INIT_USART,			USART_initUSART2   },
-		{INIT_IMU,				IMU_init	 }
+		{INIT_USART,			USART_init   }
 };
 #define NUMBER_OF_INITS  (sizeof(TaskHandler_tableOfInits) / sizeof(INIT_STRUCT))
 
@@ -26,9 +24,8 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
 const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		/*id              	  period (ms)   offset (ms)   taskPointer */
 		{TASK_DATAHANDLER,			5,			0,			DataHandler_task					},
-		{TASK_CAN,		  	  	  	5,		    1,			CAN_TASK							},
-		{TASK_USART,		  	    5,		    3,			USART_TASK							},
-		{TASK_IMU,				   20,			2,			IMU_task							},
+		{TASK_CAN,		  	  	  	5,		    1,			CAN_task							},
+		{TASK_USART,		  	    5,		    3,			USART_task							},
 		{TASK_SENSOR1_START,	  200,			0,			Sensor_TASK_startMeasurement1		},
 		{TASK_SENSOR1_READ,		  200,		   49,			Sensor_TASK_readDistance1			},
 		{TASK_SENSOR2_START,	  200,		   50,			Sensor_TASK_startMeasurement2		},

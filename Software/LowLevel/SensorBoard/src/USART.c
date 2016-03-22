@@ -50,9 +50,10 @@ typedef struct
 ReceivingDataState;
 
 /*function declarations*/
+static void USARTx_init(USART_TypeDef *uartX);
 static GPIO_IdDef UARTx_GPIO_init(USART_TypeDef *uartX);
 static void UARTx_IRQ_init(GPIO_IdDef);
-static void buffersInit();
+static void UARTxBuffersInit(USART_TypeDef *uartX);
 static void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, ReceivingDataState* rxState);
 static void sendMessage(USART_TypeDef *uartX, InterfaceMessage* msg);
 static void sendMessageToUSART2(InterfaceMessage* msg);
@@ -64,13 +65,18 @@ static unsigned char priv_USART2_RxBuf[USART_RX_BUFFER_SIZE];
 static ReceivingDataState priv_USART2_RxState;
 static volatile uint8_t priv_USART2_RxOverflow;
 
+//UART4 Rx
+static unsigned char priv_UART4_RxBuf[USART_RX_BUFFER_SIZE];
+static ReceivingDataState priv_UART4_RxState;
+static volatile uint8_t priv_UART4_RxOverflow;
+
 //USART2 Tx
 static unsigned char priv_USART2_TxBuf[USART_TX_BUFFER_SIZE];
 static volatile uint8_t priv_USART2_TxHead;
 static volatile uint8_t priv_USART2_TxTail;
 
 // initialization of USART/UART
-void USART_init(USART_TypeDef *uartX)
+void USARTx_init(USART_TypeDef *uartX)
 {
 	GPIO_IdDef io;
 
@@ -80,6 +86,7 @@ void USART_init(USART_TypeDef *uartX)
 		return;
 	}
 	UARTx_IRQ_init(io);
+	UARTxBuffersInit(uartX);
 	USART_InitTypeDef  USART_InitStruct;
 	//Configure 8N1 UART with 115200 baud rate
 	USART_InitStruct.USART_BaudRate = 115200;
@@ -162,16 +169,25 @@ void UARTx_IRQ_init(GPIO_IdDef io)
 	NVIC_Init(&NVIC_InitStruct);
 }
 
-void buffersInit()
+void UARTxBuffersInit(USART_TypeDef *uartX)
 {
-	priv_USART2_RxState.tail = 0;
-	priv_USART2_RxState.head = 0;
-	priv_USART2_RxState.analyseState = noData;
-	priv_USART2_TxTail = 0;
-	priv_USART2_TxHead = 0;
-	int i;
-	for(i = 0; i < USART_TX_BUFFER_SIZE; i++)
-		priv_USART2_TxBuf[i]='a';
+	if (uartX == USART2)
+	{
+		priv_USART2_RxState.tail = 0;
+		priv_USART2_RxState.head = 0;
+		priv_USART2_RxState.analyseState = noData;
+		priv_USART2_TxTail = 0;
+		priv_USART2_TxHead = 0;
+		int i;
+		for(i = 0; i < USART_TX_BUFFER_SIZE; i++)
+			priv_USART2_TxBuf[i]='a';
+	}
+	else if (uartX == UART4)
+	{
+		priv_UART4_RxState.tail = 0;
+		priv_UART4_RxState.head = 0;
+		priv_UART4_RxState.analyseState = noData;
+	}
 }
 
 void USART_SendChar(USART_TypeDef *uartX, unsigned char data_char)
@@ -198,6 +214,33 @@ void USART_SendString(USART_TypeDef *uartX, unsigned char *data_string)
 		USART_SendChar(uartX, (unsigned char)data_string[i]);
 		i++;
 	}
+}
+
+void UART4_IRQHandler(void)
+{
+	if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET)
+	{
+		unsigned char rxdata;
+		uint8_t tempHead;
+
+		//Read one byte from receive data register
+		rxdata = USART_ReceiveData(UART4);
+		//Calculate buffer index
+		tempHead = (priv_UART4_RxState.head + 1) & USART_RX_BUFFER_MASK;
+		priv_UART4_RxState.head = tempHead;
+
+		if(tempHead == priv_UART4_RxState.tail)
+		{
+			//ERROR: buffer overflow
+			priv_UART4_RxOverflow = 1;
+		}
+		else
+		{
+			priv_UART4_RxBuf[tempHead] = rxdata;
+			priv_UART4_RxOverflow = 0;
+		}
+	}
+
 }
 
 void USART2_IRQHandler(void)
@@ -326,12 +369,12 @@ void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, ReceivingD
 				break;
 			case crcFirstbyte:
 				// store crc first byte
-				rxState->messageCrc.u8.byteHigh = rxBuffer[tempTail];
+				rxState->messageCrc.u8.byteLow = rxBuffer[tempTail];
 				rxState->analyseState = crcCheck;
 				break;
 			case crcCheck:
 				// store 2nd byte
-				rxState->messageCrc.u8.byteLow = rxBuffer[tempTail];
+				rxState->messageCrc.u8.byteHigh = rxBuffer[tempTail];
 				// check CRC
 				if (rxState->calcCrc == rxState->messageCrc.u16)
 				{
@@ -379,8 +422,8 @@ void sendMessage(USART_TypeDef *uartX, InterfaceMessage* msg)
 		USART_SendChar(uartX, msg->data[j]);
 		crc.u16 += msg->data[j];
 	}
-	USART_SendChar(uartX, crc.u8.byteHigh);
 	USART_SendChar(uartX, crc.u8.byteLow);
+	USART_SendChar(uartX, crc.u8.byteHigh);
 }
 
 void sendMessageToUSART2(InterfaceMessage* msg)
@@ -391,25 +434,28 @@ void sendMessageToUSART2(InterfaceMessage* msg)
 Interface findInterface(USART_TypeDef *uartX)
 {
 	Interface interface = NumberOfInterfaces;
-	if (uartX == USART2)
+	if (uartX == UART4)
+		interface = InterfaceUART_IMU;
+	else if (uartX == USART2)
 		interface = InterfaceUART_Remote;
 	return interface;
 }
 
 void handleTransmitData(void)
 {
-	InterfaceHandler_transmitData(InterfaceUART_Remote, sendMessageToUSART2);
+	InterfaceHandler_transmitData(findInterface(USART2), sendMessageToUSART2);
 }
 
-void USART_initUSART2()
+void USART_init()
 {
-	buffersInit();
-	USART_init(USART2);
+	USARTx_init(USART2);
+	USARTx_init(UART4);
 }
 
 /*Periodic UART task*/
-void USART_TASK(void)
+void USART_task(void)
 {
 	handleReceivedData(USART2, priv_USART2_RxBuf, &priv_USART2_RxState);
+	handleReceivedData(UART4, priv_UART4_RxBuf, &priv_UART4_RxState);
 	handleTransmitData();
 }

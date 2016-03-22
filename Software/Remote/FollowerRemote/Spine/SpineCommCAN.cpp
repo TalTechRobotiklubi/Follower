@@ -170,12 +170,12 @@ bool SpineCommCAN::communicate()
         break;
       case crcFirstbyte:
         // store crc first byte
-        messageCrc.u8.byteHigh = (unsigned char)readBuf[i];
+        messageCrc.u8.byteLow = (unsigned char)readBuf[i];
         analyseState = crcCheck;
         break;
       case crcCheck:
         // store 2nd byte
-        messageCrc.u8.byteLow = (unsigned char)readBuf[i];
+        messageCrc.u8.byteHigh = (unsigned char)readBuf[i];
         // check CRC
         if (message.crc == messageCrc.u16)
         {
@@ -438,8 +438,8 @@ void SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
   }
   message.crc = crc.u16;
   // j is increased here
-  buffer.push_back(crc.u8.byteHigh);
   buffer.push_back(crc.u8.byteLow);
+  buffer.push_back(crc.u8.byteHigh);
   //qDebug() << buffer[0] << buffer[1] << buffer[2] << buffer[3] << buffer[4] << buffer[5] << buffer[6] << buffer[7];
   //return SendData((const char*)buffer, message.canMessage.dlc + 5);
   serialPort_->write(buffer);

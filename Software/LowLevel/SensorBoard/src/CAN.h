@@ -11,7 +11,7 @@
 #include "stdint.h"
 
 extern void    CAN_init();
-extern void    CAN_TASK(void);
+extern void    CAN_task(void);
 /*interrupt handler*/
 //void CAN1_RX0_IRQn(void);
 

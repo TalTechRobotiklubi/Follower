@@ -19,12 +19,12 @@
 
 
 //Initialization functions
-void USART_initUSART2();
-void USART_init(USART_TypeDef *uartX);
-void USART_TASK(void);
+void USART_init();
+void USART_task(void);
 
 //Interrupt handler
 void USART2_IRQHandler(void);
+void UART4_IRQHandler(void);
 
 //Functions for receiving and transmitting data
 uint8_t USART_DataInRxBuffer(void);

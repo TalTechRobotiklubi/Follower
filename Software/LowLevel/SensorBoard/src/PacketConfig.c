@@ -80,21 +80,14 @@ const PacketParameter packetRobotFeedbackParameterList[4] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "InertialMeasurement12" parameters table
+// Packet "Quaternions" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter packetInertialMeasurement12ParameterList[2] = 
+const PacketParameter packetQuaternionsParameterList[4] = 
 {
-	{ DLParamImuQ1,  0, 32 },
-	{ DLParamImuQ2, 32, 32 }
-};
-
-// ----------------------------------------------------------------------------
-// Packet "InertialMeasurement34" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter packetInertialMeasurement34ParameterList[2] = 
-{
-	{ DLParamImuQ3,  0, 32 },
-	{ DLParamImuQ4, 32, 32 }
+	{ DLParamQw,  0, 16 },
+	{ DLParamQx, 16, 16 },
+	{ DLParamQy, 32, 16 },
+	{ DLParamQz, 48, 16 }
 };
 
 // ----------------------------------------------------------------------------
@@ -104,6 +97,16 @@ const PacketParameter packetPidSetupParameterList[2] =
 {
 	{ DLParamPidAddress, 0,  8 },
 	{ DLParamPidValue,   8, 32 }
+};
+
+// ----------------------------------------------------------------------------
+// Packet "Gyro" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter packetGyroParameterList[3] = 
+{
+	{ DLParamGyroX,  0, 16 },
+	{ DLParamGyroY, 16, 16 },
+	{ DLParamGyroZ, 32, 16 }
 };
 
 // ----------------------------------------------------------------------------
@@ -117,8 +120,8 @@ PacketDescriptor PacketDescriptorList[NumberOfPackets] =
 	/* MotorSpeeds           */ { 0xD0, -1, packetMotorSpeedsParameterList,           2, 4 },
 	/* DistanceSensors       */ { 0xF0,  0, packetDistanceSensorsParameterList,       8, 8 },
 	/* RobotFeedback         */ { 0xD4,  0, packetRobotFeedbackParameterList,         4, 8 },
-	/* InertialMeasurement12 */ { 0xF2,  0, packetInertialMeasurement12ParameterList, 2, 8 },
-	/* InertialMeasurement34 */ { 0xF3,  0, packetInertialMeasurement34ParameterList, 2, 8 },
-	/* PidSetup              */ { 0xD5, -1, packetPidSetupParameterList,              2, 5 }
+	/* Quaternions           */ { 0xF2,  0, packetQuaternionsParameterList,           4, 8 },
+	/* PidSetup              */ { 0xD5, -1, packetPidSetupParameterList,              2, 5 },
+	/* Gyro                  */ { 0xF1,  0, packetGyroParameterList,                  3, 6 }
 };
 

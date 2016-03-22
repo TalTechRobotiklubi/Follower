@@ -19,13 +19,12 @@ const InterfaceReceivePacket nodeInterfaceCANReceivePacketList[3] =
 	{ PacketRobotControl, -1 }
 };
 
-const InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[5] = 
+const InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[4] = 
 {
-	{ PacketMotorSpeeds,            -1 },
-	{ PacketDistanceSensors,       100 },
-	{ PacketRobotFeedback,          20 },
-	{ PacketInertialMeasurement12, 100 },
-	{ PacketInertialMeasurement34, 100 }
+	{ PacketMotorSpeeds,      -1 },
+	{ PacketDistanceSensors, 100 },
+	{ PacketRobotFeedback,    20 },
+	{ PacketQuaternions,     100 }
 };
 
 const InterfaceReceivePacket nodeInterfaceUART_RemoteReceivePacketList[3] = 
@@ -35,18 +34,23 @@ const InterfaceReceivePacket nodeInterfaceUART_RemoteReceivePacketList[3] =
 	{ PacketPidSetup,     -1 }
 };
 
-const InterfaceTransmitPacket nodeInterfaceUART_RemoteTransmitPacketList[4] = 
+const InterfaceTransmitPacket nodeInterfaceUART_RemoteTransmitPacketList[3] = 
 {
-	{ PacketDistanceSensors,       100 },
-	{ PacketRobotFeedback,          20 },
-	{ PacketInertialMeasurement12, 100 },
-	{ PacketInertialMeasurement34, 100 }
+	{ PacketDistanceSensors, 100 },
+	{ PacketRobotFeedback,    20 },
+	{ PacketQuaternions,     100 }
+};
+
+const InterfaceReceivePacket nodeInterfaceUART_IMUReceivePacketList[2] = 
+{
+	{ PacketGyro,        -1 },
+	{ PacketQuaternions, -1 }
 };
 
 const NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
 {
-	/* CAN         */ { nodeInterfaceCANReceivePacketList,         3, nodeInterfaceCANTransmitPacketList,         5 },
-	/* UART_Remote */ { nodeInterfaceUART_RemoteReceivePacketList, 3, nodeInterfaceUART_RemoteTransmitPacketList, 4 },
-	/* UART_IMU    */ { 0,                                         0, 0,                                          0 }
+	/* CAN         */ { nodeInterfaceCANReceivePacketList,         3, nodeInterfaceCANTransmitPacketList,         4 },
+	/* UART_Remote */ { nodeInterfaceUART_RemoteReceivePacketList, 3, nodeInterfaceUART_RemoteTransmitPacketList, 3 },
+	/* UART_IMU    */ { nodeInterfaceUART_IMUReceivePacketList,    2, 0,                                          0 }
 };
 

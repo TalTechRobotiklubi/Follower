@@ -178,24 +178,24 @@
       </Description>
     </Parameter>
     <Parameter>
-      <Name>AccelerationX</Name>
-      <Type>S8</Type>
+      <Name>GyroX</Name>
+      <Type>S16</Type>
       <Unit>
       </Unit>
       <Description>
       </Description>
     </Parameter>
     <Parameter>
-      <Name>AccelerationY</Name>
-      <Type>S8</Type>
+      <Name>GyroY</Name>
+      <Type>S16</Type>
       <Unit>
       </Unit>
       <Description>
       </Description>
     </Parameter>
     <Parameter>
-      <Name>AccelerationZ</Name>
-      <Type>S8</Type>
+      <Name>GyroZ</Name>
+      <Type>S16</Type>
       <Unit>
       </Unit>
       <Description>
@@ -218,32 +218,32 @@
       </Description>
     </Parameter>
     <Parameter>
-      <Name>ImuQ1</Name>
-      <Type>Float</Type>
+      <Name>Qw</Name>
+      <Type>S16</Type>
       <Unit>
       </Unit>
       <Description>
       </Description>
     </Parameter>
     <Parameter>
-      <Name>ImuQ2</Name>
-      <Type>Float</Type>
+      <Name>Qx</Name>
+      <Type>S16</Type>
       <Unit>
       </Unit>
       <Description>
       </Description>
     </Parameter>
     <Parameter>
-      <Name>ImuQ3</Name>
-      <Type>Float</Type>
+      <Name>Qy</Name>
+      <Type>S16</Type>
       <Unit>
       </Unit>
       <Description>
       </Description>
     </Parameter>
     <Parameter>
-      <Name>ImuQ4</Name>
-      <Type>Float</Type>
+      <Name>Qz</Name>
+      <Type>S16</Type>
       <Unit>
       </Unit>
       <Description>
@@ -411,17 +411,17 @@
     </Packet>
     <Packet>
       <ID>241</ID>
-      <Name>Acceleration</Name>
+      <Name>Gyro</Name>
       <NominalPeriod>0</NominalPeriod>
       <PacketParameters>
         <PacketParameter>
-          <Parameter>AccelerationX</Parameter>
+          <Parameter>GyroX</Parameter>
         </PacketParameter>
         <PacketParameter>
-          <Parameter>AccelerationY</Parameter>
+          <Parameter>GyroY</Parameter>
         </PacketParameter>
         <PacketParameter>
-          <Parameter>AccelerationZ</Parameter>
+          <Parameter>GyroZ</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
@@ -440,14 +440,20 @@
     </Packet>
     <Packet>
       <ID>242</ID>
-      <Name>InertialMeasurement12</Name>
+      <Name>Quaternions</Name>
       <NominalPeriod>0</NominalPeriod>
       <PacketParameters>
         <PacketParameter>
-          <Parameter>ImuQ1</Parameter>
+          <Parameter>Qw</Parameter>
         </PacketParameter>
         <PacketParameter>
-          <Parameter>ImuQ2</Parameter>
+          <Parameter>Qx</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>Qy</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>Qz</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
@@ -457,10 +463,10 @@
       <NominalPeriod>0</NominalPeriod>
       <PacketParameters>
         <PacketParameter>
-          <Parameter>ImuQ3</Parameter>
+          <Parameter>Qy</Parameter>
         </PacketParameter>
         <PacketParameter>
-          <Parameter>ImuQ4</Parameter>
+          <Parameter>Qz</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
@@ -529,12 +535,7 @@
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>InertialMeasurement12</Packet>
-              <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>-1</Period>
-            </ReceivePacket>
-            <ReceivePacket>
-              <Packet>InertialMeasurement34</Packet>
+              <Packet>Quaternions</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
@@ -594,12 +595,7 @@
               <Period>20</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>InertialMeasurement12</Packet>
-              <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>100</Period>
-            </TransmitPacket>
-            <TransmitPacket>
-              <Packet>InertialMeasurement34</Packet>
+              <Packet>Quaternions</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>100</Period>
             </TransmitPacket>
@@ -636,12 +632,7 @@
               <Period>20</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>InertialMeasurement12</Packet>
-              <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>100</Period>
-            </TransmitPacket>
-            <TransmitPacket>
-              <Packet>InertialMeasurement34</Packet>
+              <Packet>Quaternions</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>100</Period>
             </TransmitPacket>
@@ -649,7 +640,18 @@
         </Interface>
         <Interface>
           <Name>UART_IMU</Name>
-          <ReceivePackets />
+          <ReceivePackets>
+            <ReceivePacket>
+              <Packet>Gyro</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>Quaternions</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+          </ReceivePackets>
           <TransmitPackets />
         </Interface>
       </Interfaces>
