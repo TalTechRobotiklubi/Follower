@@ -26,11 +26,4 @@ void USART_task(void);
 void USART2_IRQHandler(void);
 void UART4_IRQHandler(void);
 
-//Functions for receiving and transmitting data
-uint8_t USART_DataInRxBuffer(void);
-void 	USART_SendChar(USART_TypeDef *uartX, unsigned char data_char);
-void 	USART_SendString(USART_TypeDef *uartX, unsigned char *data_string);
-void 	USART_ReceiveInt(void);
-
-
 #endif //__USART_H

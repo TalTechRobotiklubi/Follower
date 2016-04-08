@@ -263,6 +263,7 @@ void SpineCommCAN::storeDataToDataLayer(UART_CANmessage *message, PacketWithInde
         break;
       case TypeU32:
       case TypeS32:
+      case TypeFloat:
         /*sanity check*/
         if ((length <= 32) && (length > 24))
         {
@@ -410,6 +411,7 @@ void SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
         break;
       case TypeU32:
       case TypeS32:
+      case TypeFloat:
         /*involves four bytes */
         dataLayerCAN_.DL_getDataByComm((packethandler_.Packet_getMessageParameterList(packet->index) + j)->param, &data);
         /*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
@@ -440,9 +442,14 @@ void SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
   // j is increased here
   buffer.push_back(crc.u8.byteLow);
   buffer.push_back(crc.u8.byteHigh);
-  //qDebug() << buffer[0] << buffer[1] << buffer[2] << buffer[3] << buffer[4] << buffer[5] << buffer[6] << buffer[7];
-  //return SendData((const char*)buffer, message.canMessage.dlc + 5);
-  serialPort_->write(buffer);
+
+  if (message.canMessage.id == 0xD5)
+  {
+    qDebug() << message.canMessage.dlc << message.canMessage.data[0] << message.canMessage.data[1]
+        << message.canMessage.data[2] << message.canMessage.data[3]
+        << message.canMessage.data[4] << message.canMessage.data[5];
+    serialPort_->write(buffer);
+  }
 }
 
 /*Finds which mask to use for data setting in message when bit position and data length is known

@@ -54,6 +54,8 @@ static void USARTx_init(USART_TypeDef *uartX);
 static GPIO_IdDef UARTx_GPIO_init(USART_TypeDef *uartX);
 static void UARTx_IRQ_init(GPIO_IdDef);
 static void UARTxBuffersInit(USART_TypeDef *uartX);
+static void sendChar(USART_TypeDef *uartX, unsigned char data_char);
+static void sendString(USART_TypeDef *uartX, unsigned char *data_string);
 static void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, ReceivingDataState* rxState);
 static void sendMessage(USART_TypeDef *uartX, InterfaceMessage* msg);
 static void sendMessageToUSART2(InterfaceMessage* msg);
@@ -190,7 +192,7 @@ void UARTxBuffersInit(USART_TypeDef *uartX)
 	}
 }
 
-void USART_SendChar(USART_TypeDef *uartX, unsigned char data_char)
+void sendChar(USART_TypeDef *uartX, unsigned char data_char)
 {
 	uint8_t tempHead;
 
@@ -206,12 +208,12 @@ void USART_SendChar(USART_TypeDef *uartX, unsigned char data_char)
 	}
 }
 
-void USART_SendString(USART_TypeDef *uartX, unsigned char *data_string)
+void sendString(USART_TypeDef *uartX, unsigned char *data_string)
 {
 	unsigned int i=0;
 	while(data_string[i])
 	{
-		USART_SendChar(uartX, (unsigned char)data_string[i]);
+		sendChar(uartX, (unsigned char)data_string[i]);
 		i++;
 	}
 }
@@ -411,19 +413,19 @@ void sendMessage(USART_TypeDef *uartX, InterfaceMessage* msg)
 	splitU16 crc;
 	uint16_t j;
 
-	USART_SendChar(uartX, 0xAA);
+	sendChar(uartX, 0xAA);
 	crc.u16 = 0xAA;
-	USART_SendChar(uartX, msg->id);
+	sendChar(uartX, msg->id);
 	crc.u16 += msg->id;
-	USART_SendChar(uartX, msg->length);
+	sendChar(uartX, msg->length);
 	crc.u16 += msg->length;
 	for (j = 0; j < msg->length; j++)
 	{
-		USART_SendChar(uartX, msg->data[j]);
+		sendChar(uartX, msg->data[j]);
 		crc.u16 += msg->data[j];
 	}
-	USART_SendChar(uartX, crc.u8.byteLow);
-	USART_SendChar(uartX, crc.u8.byteHigh);
+	sendChar(uartX, crc.u8.byteLow);
+	sendChar(uartX, crc.u8.byteHigh);
 }
 
 void sendMessageToUSART2(InterfaceMessage* msg)

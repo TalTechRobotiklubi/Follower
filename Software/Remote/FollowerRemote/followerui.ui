@@ -169,20 +169,6 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="lbl_leftSpeed">
-          <property name="text">
-           <string>Vasak:     0</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="lbl_rightSpeed">
-          <property name="text">
-           <string>Parem:    0</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <spacer name="verticalSpacer_2">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -194,6 +180,13 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton">
+          <property name="text">
+           <string>Configure</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>

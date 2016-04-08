@@ -28,15 +28,18 @@ typedef enum
 	DLParamDistanceSensor6,         // 9
 	DLParamDistanceSensor7,         // 10
 	DLParamDistanceSensor8,         // 11
-	DLParamImuQ1,                   // 12
-	DLParamImuQ2,                   // 13
-	DLParamImuQ3,                   // 14
-	DLParamImuQ4,                   // 15
+	DLParamQw,                      // 12
+	DLParamQx,                      // 13
+	DLParamQy,                      // 14
+	DLParamQz,                      // 15
 	DLParamMotor1RequestSpeed,      // 16
 	DLParamMotor2RequestSpeed,      // 17
 	DLParamRequestTranslationSpeed, // 18
 	DLParamRequestRotationSpeed,    // 19
-	// Count of items is 20
+	DLParamPidParameter,            // 20
+	DLParamPidValue,                // 21
+	DLParamPidUpdating,             // 22
+	// Count of items is 23
 	DLNumberOfParams
 }
 DLParam;

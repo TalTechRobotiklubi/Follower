@@ -3,19 +3,21 @@
 
 #include <stdint.h>
 
-enum INITS
+enum Inits
 {
 	INIT_GPIO,
 	INIT_SENSOR,
 	INIT_CAN,
-	INIT_USART
+	INIT_USART,
+	INIT_DRIVE
 };
 
-enum TASKS
+enum Tasks
 {
 	TASK_DATAHANDLER,
 	TASK_CAN,
 	TASK_USART,
+	TASK_DRIVE,
 	TASK_SENSOR1_START,
 	TASK_SENSOR1_READ,
 	TASK_SENSOR2_START,
@@ -37,14 +39,14 @@ enum TASKS
 
 typedef struct
 {
-	enum INITS id;
+	enum Inits id;
 	void (*taskPointer)();
 }
 INIT_STRUCT;
 
 typedef struct
 {
-	enum TASKS id;
+	enum Tasks id;
 	uint32_t period;
 	uint32_t offset;
 	void (*taskPointer)();

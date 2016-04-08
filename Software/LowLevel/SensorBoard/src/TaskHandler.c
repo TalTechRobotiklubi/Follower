@@ -1,21 +1,24 @@
-#include "stm32f4xx.h"
 #include "TaskHandler.h"
+
+#include "stm32f4xx.h"
+
 #include "SystemTicks.h"
 #include "GPIO.h"
 #include "Sensor.h"
 #include "USART.h"
 #include "CAN.h"
 #include "DataHandler.h"
-#include "Timer.h"
+#include "Drive.h"
 
 /*Table of initialization tasks. All functions in tables are called once after initializing system clock.
  * With adding new init check that id is corresponding to enum value.*/
 const INIT_STRUCT TaskHandler_tableOfInits[] = {
 		/*id              	   taskPointer */
-		{INIT_GPIO,				GPIO_init    },
-		{INIT_SENSOR,			Sensor_init  },
-		{INIT_CAN,				CAN_init     },
-		{INIT_USART,			USART_init   }
+		{INIT_GPIO,				GPIO_init   },
+		{INIT_SENSOR,			Sensor_init },
+		{INIT_CAN,				CAN_init    },
+		{INIT_USART,			USART_init  },
+		{INIT_DRIVE,			Drive_init	}
 };
 #define NUMBER_OF_INITS  (sizeof(TaskHandler_tableOfInits) / sizeof(INIT_STRUCT))
 
@@ -25,7 +28,8 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		/*id              	  period (ms)   offset (ms)   taskPointer */
 		{TASK_DATAHANDLER,			5,			0,			DataHandler_task					},
 		{TASK_CAN,		  	  	  	5,		    1,			CAN_task							},
-		{TASK_USART,		  	    5,		    3,			USART_task							},
+		{TASK_USART,		  	    5,		    2,			USART_task							},
+		{TASK_DRIVE,			   10,			3,			Drive_task							},
 		{TASK_SENSOR1_START,	  200,			0,			Sensor_TASK_startMeasurement1		},
 		{TASK_SENSOR1_READ,		  200,		   49,			Sensor_TASK_readDistance1			},
 		{TASK_SENSOR2_START,	  200,		   50,			Sensor_TASK_startMeasurement2		},
@@ -42,8 +46,7 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_SENSOR7_READ,		  200,		  149,			Sensor_TASK_readDistance7			},
 		{TASK_SENSOR8_START,	  200,		  150,			Sensor_TASK_startMeasurement8		},
 		{TASK_SENSOR8_READ,	      200,		  199,			Sensor_TASK_readDistance8			},
-		{TASK_LED,				  400,			0,			GPIO_TASK_blinkLED	    },
-
+		{TASK_LED,				  400,			0,			GPIO_TASK_blinkLED	    			},
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))
 
@@ -66,6 +69,8 @@ void TaskHandler_init(void)
 	{
 		(TaskHandler_tableOfInits[i].taskPointer)();
 	}
+	// reset system ticks as this method (TaskHandler_init) increased it
+	systemTicks = 0;
 }
 
 
@@ -88,27 +93,21 @@ void TaskHandler_run(void)
 	uint32_t timer;
 	uint8_t i;
 
-	// reset system ticks as init increased it
-	systemTicks = 0;
+	// wait timer ticks every 1 ms
+	timer = systemTicks;
 
-	//run infinitely and wait timer ticks every 1 ms
-	while (1)
+	// check task execution only if 1 ms has elapsed
+	if (timer != prev_timer)
 	{
-		timer = systemTicks;
-
-		// check task execution only if 1 ms has elapsed
-		if (timer != prev_timer)
+		// go through all tasks and check if it is needed to execute them
+		for(i = 0; i < NUMBER_OF_TASKS; i++)
 		{
-			// go through all tasks and check if it is needed to execute them
-			for(i = 0; i < NUMBER_OF_TASKS; i++)
+			if (checkIfTimeForTask(TaskHandler_tableOfTasks[i], timer))
 			{
-				if (checkIfTimeForTask(TaskHandler_tableOfTasks[i], timer))
-				{
-					(TaskHandler_tableOfTasks[i].taskPointer)();
-				}
+				(TaskHandler_tableOfTasks[i].taskPointer)();
 			}
-			// do not come back here during this ms
-			prev_timer = timer;
 		}
+		// do not come back here during this ms
+		prev_timer = timer;
 	}
 }

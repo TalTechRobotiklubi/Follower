@@ -1,5 +1,4 @@
 #include "GPIO.h"
-#include "stm32f4xx.h"
 
 /*Four user LEDs: green (PD12), orange (PD13), red (PD14) and blue (PD15)
 */

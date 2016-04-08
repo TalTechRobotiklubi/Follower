@@ -16,10 +16,9 @@
 PacketWithIndex psUARTRxPackets[] =
 {
   /* DistanceSensors       */ { 0xF0, 0, PacketDistanceSensors },
-  /* RobotFeedback         */ { 0xD4, 0, PacketRobotFeedback},
-  /* DistanceSensors       */ { 0xF0, 0, PacketDistanceSensors},
-  /* InertialMeasurement12 */ { 0xF2, 0, PacketInertialMeasurement12},
-  /* InertialMeasurement34 */ { 0xF3, 0, PacketInertialMeasurement34}
+  /* RobotFeedback         */ { 0xD4, 0, PacketRobotFeedback },
+  /* DistanceSensors       */ { 0xF0, 0, PacketDistanceSensors },
+  /* InertialMeasurement12 */ { 0xF2, 0, PacketQuaternions }
 };
 #define NUMBER_OF_UART_RX_PACKETS (sizeof(psUARTRxPackets)/sizeof(PacketWithIndex))
 
@@ -29,7 +28,8 @@ PacketWithIndex psUARTRxPackets[] =
 PacketWithIndex psUARTTxPackets[] =
 {
   /* MotorSpeeds   */ { 0xD0, 15, PacketMotorSpeeds },
-  /* RobotControl  */ { 0xD3, 15, PacketRobotControl}
+  /* RobotControl  */ { 0xD3, 15, PacketRobotControl },
+  /* PidSetup      */ { 0xD5, -1, PacketPidSetup }
 };
 #define NUMBER_OF_UART_TX_PACKETS (sizeof(psUARTTxPackets)/sizeof(PacketWithIndex))
 

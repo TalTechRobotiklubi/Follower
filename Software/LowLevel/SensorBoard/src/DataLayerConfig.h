@@ -48,12 +48,13 @@ typedef enum
 	DLParamQx,                      // 29
 	DLParamQy,                      // 30
 	DLParamQz,                      // 31
-	DLParamPidAddress,              // 32
+	DLParamPidParameter,            // 32
 	DLParamPidValue,                // 33
-	DLParamGyroX,                   // 34
-	DLParamGyroY,                   // 35
-	DLParamGyroZ,                   // 36
-	// Count of items is 37
+	DLParamPidUpdating,             // 34
+	DLParamGyroX,                   // 35
+	DLParamGyroY,                   // 36
+	DLParamGyroZ,                   // 37
+	// Count of items is 38
 	DLNumberOfParams
 }
 DLParam;

@@ -12,7 +12,7 @@
 // ----------------------------------------------------------------------------
 // Values
 // ----------------------------------------------------------------------------
-Bool  pDLValueBool[4];
+Bool  pDLValueBool[5];
 U8    pDLValueU8[13];
 S16   pDLValueS16[19];
 Float pDLValueFloat[1];
@@ -54,8 +54,9 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* Qx                      */ { TypeS16,   &pDLValueS16[13]  },
 	/* Qy                      */ { TypeS16,   &pDLValueS16[14]  },
 	/* Qz                      */ { TypeS16,   &pDLValueS16[15]  },
-	/* PidAddress              */ { TypeU8,    &pDLValueU8[12]   },
+	/* PidParameter            */ { TypeU8,    &pDLValueU8[12]   },
 	/* PidValue                */ { TypeFloat, &pDLValueFloat[0] },
+	/* PidUpdating             */ { TypeBool,  &pDLValueBool[4]  },
 	/* GyroX                   */ { TypeS16,   &pDLValueS16[16]  },
 	/* GyroY                   */ { TypeS16,   &pDLValueS16[17]  },
 	/* GyroZ                   */ { TypeS16,   &pDLValueS16[18]  }

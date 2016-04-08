@@ -298,7 +298,7 @@
       </Description>
     </Parameter>
     <Parameter>
-      <Name>PidAddress</Name>
+      <Name>PidParameter</Name>
       <Type>U8</Type>
       <Unit>
       </Unit>
@@ -308,6 +308,14 @@
     <Parameter>
       <Name>PidValue</Name>
       <Type>Float</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>PidUpdating</Name>
+      <Type>Bool</Type>
       <Unit>
       </Unit>
       <Description>
@@ -508,10 +516,13 @@
       <NominalPeriod>0</NominalPeriod>
       <PacketParameters>
         <PacketParameter>
-          <Parameter>PidAddress</Parameter>
+          <Parameter>PidParameter</Parameter>
         </PacketParameter>
         <PacketParameter>
           <Parameter>PidValue</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>PidUpdating</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
@@ -550,6 +561,11 @@
               <Packet>RobotControl</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>0</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>PidSetup</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
             </TransmitPacket>
           </TransmitPackets>
         </Interface>

@@ -38,14 +38,17 @@ public slots:
   void newUiData();
   void UpdatePortList();
 
+private slots:
+  void on_pushButton_clicked();
+
 private:
-  Ui::FollowerUiClass     ui;
-  WorkerThreadBase*		workerThread_;
-  DataLayerBase*          dataLayer_;
-  WorkerObjectBase*       workerObject_;
-  Kinematics*             kinematics_;
-  TRobot*                 robotgui_;
-  QGraphicsScene*         scene_;
+  Ui::FollowerUiClass ui;
+  WorkerThreadBase* workerThread_;
+  DataLayerBase* dataLayer_;
+  WorkerObjectBase* workerObject_;
+  Kinematics* kinematics_;
+  TRobot* robotgui_;
+  QGraphicsScene* scene_;
 
 
 

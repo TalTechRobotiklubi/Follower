@@ -38,21 +38,14 @@ const PacketParameter packetDistanceSensorsParameterList[8] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "InertialMeasurement12" parameters table
+// Packet "Quaternions" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter packetInertialMeasurement12ParameterList[2] = 
+const PacketParameter packetQuaternionsParameterList[4] = 
 {
-	{ DLParamImuQ1,  0, 32 },
-	{ DLParamImuQ2, 32, 32 }
-};
-
-// ----------------------------------------------------------------------------
-// Packet "InertialMeasurement34" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter packetInertialMeasurement34ParameterList[2] = 
-{
-	{ DLParamImuQ3,  0, 32 },
-	{ DLParamImuQ4, 32, 32 }
+	{ DLParamQw,  0, 16 },
+	{ DLParamQx, 16, 16 },
+	{ DLParamQy, 32, 16 },
+	{ DLParamQz, 48, 16 }
 };
 
 // ----------------------------------------------------------------------------
@@ -74,16 +67,26 @@ const PacketParameter packetRobotControlParameterList[2] =
 };
 
 // ----------------------------------------------------------------------------
+// Packet "PidSetup" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter packetPidSetupParameterList[3] = 
+{
+	{ DLParamPidParameter,  0,  8 },
+	{ DLParamPidValue,      8, 32 },
+	{ DLParamPidUpdating,  40,  1 }
+};
+
+// ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
 PacketDescriptor PacketDescriptorList[NumberOfPackets] = 
 {
-	/* RobotFeedback         */ { 0xD4, 0, packetRobotFeedbackParameterList,         4, 8 },
-	/* DistanceSensors       */ { 0xF0, 0, packetDistanceSensorsParameterList,       8, 8 },
-	/* InertialMeasurement12 */ { 0xF2, 0, packetInertialMeasurement12ParameterList, 2, 8 },
-	/* InertialMeasurement34 */ { 0xF3, 0, packetInertialMeasurement34ParameterList, 2, 8 },
-	/* MotorSpeeds           */ { 0xD0, 0, packetMotorSpeedsParameterList,           2, 4 },
-	/* RobotControl          */ { 0xD3, 0, packetRobotControlParameterList,          2, 4 }
+  /* RobotFeedback   */ { 0xD4,  0, packetRobotFeedbackParameterList,   4, 8 },
+  /* DistanceSensors */ { 0xF0,  0, packetDistanceSensorsParameterList, 8, 8 },
+  /* Quaternions     */ { 0xF2,  0, packetQuaternionsParameterList,     4, 8 },
+  /* MotorSpeeds     */ { 0xD0,  0, packetMotorSpeedsParameterList,     2, 4 },
+  /* RobotControl    */ { 0xD3,  0, packetRobotControlParameterList,    2, 4 },
+  /* PidSetup        */ { 0xD5,  -1, packetPidSetupParameterList,        3, 6 }
 };
 #define NUMBER_OF_PACKETS (sizeof(psPacketDescriptorList)/sizeof(Packet))
 

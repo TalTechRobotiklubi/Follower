@@ -1,5 +1,4 @@
 #include "Timer.h"
-#include "TaskHandler.h"
 
 void Timer_setOneShotCounter(Timer_IdDef timer, uint32_t timeus, Boolean enableInterrupt)
 {

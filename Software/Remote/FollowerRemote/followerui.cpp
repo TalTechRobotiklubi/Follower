@@ -1,15 +1,16 @@
-#include <QKeyEvent>
 #include "followerui.h"
+
+#include <QKeyEvent>
+#include <QtSerialPort/QSerialPortInfo>
+#include <QList>
+#include <qdebug.h>
+
 #include "WorkerThreadBase.h"
 #include "WorkerObjectBase.h"
 #include "DataLayerBase.h"
 #include "Kinematics.h"
 #include "TRobot.h"
-#include <qdebug.h>
-
-#include <QtSerialPort/QSerialPortInfo>
-#include <QList>
-
+#include "configure.h"
 
 FollowerUi::FollowerUi(Follower *robot)
   : QMainWindow()
@@ -126,15 +127,15 @@ void FollowerUi::newUiData()
   ui.lbl_andur7->setText(QString("Andur7: %1cm").arg(sensors[6]));
   ui.lbl_andur8->setText(QString("Andur8: %1cm").arg(sensors[7]));
 
-  float q1 = 0;
-  float q2 = 0;
-  float q3 = 0;
-  float q4 = 0;
+  int16_t qw = 0;
+  int16_t qx = 0;
+  int16_t qy = 0;
+  int16_t qz = 0;
 
-  dataLayer_->DL_getData(DLParamImuQ1, &q1);
-  dataLayer_->DL_getData(DLParamImuQ1, &q2);
-  dataLayer_->DL_getData(DLParamImuQ1, &q3);
-  dataLayer_->DL_getData(DLParamImuQ1, &q4);
+  dataLayer_->DL_getData(DLParamQw, &qw);
+  dataLayer_->DL_getData(DLParamQx, &qx);
+  dataLayer_->DL_getData(DLParamQy, &qy);
+  dataLayer_->DL_getData(DLParamQz, &qz);
 
   // TODO. Do calc here to find euler degrees
   float yaw = 0;
@@ -255,3 +256,20 @@ void FollowerUi::UpdatePortList()
   }
 }
 
+void FollowerUi::on_pushButton_clicked()
+{
+  Configure conf;
+  connect(&conf, &Configure::sendParameter,
+          [=](uint8_t param, float value){
+    uint8_t update = 1;
+    this->dataLayer_->DL_setData(DLParamPidParameter, &param);
+    this->dataLayer_->DL_setData(DLParamPidValue, &value);
+    this->dataLayer_->DL_setData(DLParamPidUpdating, &update);
+  });
+  connect(&conf, &Configure::parameterSendFinished,
+          [=]() {
+    uint8_t update = 0;
+    this->dataLayer_->DL_setData(DLParamPidUpdating, &update);
+  });
+  conf.exec();
+}

@@ -1,13 +1,7 @@
 /* Includes */
 #include "stm32f4xx.h"
 #include "stm32f4_discovery.h"
-#include "GPIO.h"
 #include "TaskHandler.h"
-#include "TypeDef.h"
-#include "Timer.h"
-#include "Sensor.h"
-#include "USART.h"
-#include "CAN.h"
 
 
 int main(void)
@@ -15,7 +9,8 @@ int main(void)
 	//Initialize task handler timer
 	TaskHandler_init();
 	// run infinitely
-	TaskHandler_run();
+	while(1)
+		TaskHandler_run();
 	return 0;
 }
 

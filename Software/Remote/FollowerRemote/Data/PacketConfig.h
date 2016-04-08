@@ -17,12 +17,12 @@
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	PacketRobotFeedback,         // 0
-	PacketDistanceSensors,       // 1
-	PacketInertialMeasurement12, // 2
-	PacketInertialMeasurement34, // 3
-	PacketMotorSpeeds,           // 4
-	PacketRobotControl,          // 5
+	PacketRobotFeedback,   // 0
+	PacketDistanceSensors, // 1
+	PacketQuaternions,     // 2
+	PacketMotorSpeeds,     // 3
+	PacketRobotControl,    // 4
+	PacketPidSetup,        // 5
 	// Count of items is 6
 	NumberOfPackets
 }

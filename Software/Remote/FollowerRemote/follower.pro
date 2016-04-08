@@ -30,7 +30,8 @@ SOURCES += \
     Algorithms/algorithmbuilder.cpp \
     Algorithms/algorithmwander.cpp \
     Algorithms/algorithmtrack.cpp \
-    Algorithms/algorithmturn.cpp
+    Algorithms/algorithmturn.cpp \
+    configure.cpp
 
 HEADERS  +=  \
     CANWorkerThread.h \
@@ -55,7 +56,8 @@ HEADERS  +=  \
     Algorithms/algorithmbuilder.h \
     Algorithms/algorithmwander.h \
     Algorithms/algorithmtrack.h \
-    Algorithms/algorithmturn.h
+    Algorithms/algorithmturn.h \
+    configure.h
 
 INCLUDEPATH += \
 	 ./Data \
@@ -63,4 +65,5 @@ INCLUDEPATH += \
      ./Algorithms
 
 FORMS    += \
-    followerui.ui
+    followerui.ui \
+    configure.ui
