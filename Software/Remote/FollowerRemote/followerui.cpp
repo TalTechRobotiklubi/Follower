@@ -261,14 +261,14 @@ void FollowerUi::on_pushButton_clicked()
   Configure conf;
   connect(&conf, &Configure::sendParameter,
           [=](uint8_t param, float value){
-    uint8_t update = 1;
+    uint8_t update = 0;
     this->dataLayer_->DL_setData(DLParamPidParameter, &param);
     this->dataLayer_->DL_setData(DLParamPidValue, &value);
     this->dataLayer_->DL_setData(DLParamPidUpdating, &update);
   });
   connect(&conf, &Configure::parameterSendFinished,
           [=]() {
-    uint8_t update = 0;
+    uint8_t update = 1;
     this->dataLayer_->DL_setData(DLParamPidUpdating, &update);
   });
   conf.exec();

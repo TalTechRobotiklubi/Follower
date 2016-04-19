@@ -18,7 +18,8 @@ PacketWithIndex psUARTRxPackets[] =
   /* DistanceSensors       */ { 0xF0, 0, PacketDistanceSensors },
   /* RobotFeedback         */ { 0xD4, 0, PacketRobotFeedback },
   /* DistanceSensors       */ { 0xF0, 0, PacketDistanceSensors },
-  /* InertialMeasurement12 */ { 0xF2, 0, PacketQuaternions }
+  /* InertialMeasurement12 */ { 0xF2, 0, PacketQuaternions },
+  /* CameraControl         */ { 0xE0, 0, PacketCameraControl }
 };
 #define NUMBER_OF_UART_RX_PACKETS (sizeof(psUARTRxPackets)/sizeof(PacketWithIndex))
 

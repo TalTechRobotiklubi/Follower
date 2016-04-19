@@ -9,7 +9,8 @@ enum Inits
 	INIT_SENSOR,
 	INIT_CAN,
 	INIT_USART,
-	INIT_DRIVE
+	INIT_DRIVE,
+	INIT_DATALAYER
 };
 
 enum Tasks
@@ -58,8 +59,8 @@ extern const INIT_STRUCT TaskHandler_tableOfInits[];
 extern const TASK_STRUCT TaskHandler_tableOfTasks[];
 
 /*global functions*/
-extern void TaskHandler_init(void);
-extern void TaskHandler_run(void);
-
+void TaskHandler_init(void);
+void TaskHandler_run(void);
+void TaskHandlet_setPreviousTicks(uint32_t ticks);
 
 #endif /* _TASKHANDLER_H_ */

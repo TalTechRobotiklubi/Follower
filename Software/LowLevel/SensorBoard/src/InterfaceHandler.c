@@ -28,7 +28,7 @@ void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(Int
 		}
 		else // aperiodic packets
 		{
-			if (packetDesc->period == PACKET_READY_TO_SEND)
+			if (packetDesc->period == PACKET_NEW)
 			{
 				initalizeInterfaceMessage(&message, packetDesc);
 				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
@@ -52,7 +52,7 @@ void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interfac
 
 		if (transmitPacket.period < 0) // aperiodic packets
 		{
-			if (packetDesc->period == PACKET_READY_TO_SEND)
+			if (packetDesc->period == PACKET_NEW)
 			{
 				initalizeInterfaceMessage(&message, packetDesc);
 				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
@@ -64,7 +64,6 @@ void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interfac
 /* NB! May be called from interrupt!!! Function not re-entrant, so disable interrupt(s) when calling it from main*/
 Bool InterfaceHandler_checkIfReceivedMessageExists(Interface interface, InterfaceMessage* msg)
 {
-	Bool result = FALSE;
 	uint8_t i;
 
 	NodeInterfaceDescriptor interfaceDesc = InterfaceList[interface];
@@ -75,15 +74,13 @@ Bool InterfaceHandler_checkIfReceivedMessageExists(Interface interface, Interfac
 
 		if (packetDesc->id == msg->id && packetDesc->dlc == msg->length)
 		{
-			result = TRUE;
 			msg->packet = receivePacket.packet;
 			msg->period = receivePacket.period;
-			break;
+			return TRUE;
 		}
 	}
-	return result;
+	return FALSE;
 }
-
 
 /* expects that InterfaceHandler_checkIfReceivedMessageExists is called first*/
 void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
@@ -172,7 +169,7 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 		}
 		else
 		{
-			packetDesc->period = PACKET_READY_TO_SEND;
+			packetDesc->period = PACKET_NEW;
 		}
 	}
 }

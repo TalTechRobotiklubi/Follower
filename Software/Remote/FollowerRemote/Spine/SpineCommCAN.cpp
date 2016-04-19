@@ -443,13 +443,13 @@ void SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
   buffer.push_back(crc.u8.byteLow);
   buffer.push_back(crc.u8.byteHigh);
 
-  if (message.canMessage.id == 0xD5)
-  {
-    qDebug() << message.canMessage.dlc << message.canMessage.data[0] << message.canMessage.data[1]
-        << message.canMessage.data[2] << message.canMessage.data[3]
-        << message.canMessage.data[4] << message.canMessage.data[5];
+//  if (message.canMessage.id == 0xD5)
+//  {
+//    qDebug() << message.canMessage.dlc << message.canMessage.data[0] << message.canMessage.data[1]
+//        << message.canMessage.data[2] << message.canMessage.data[3]
+//        << message.canMessage.data[4] << message.canMessage.data[5];
     serialPort_->write(buffer);
-  }
+//  }
 }
 
 /*Finds which mask to use for data setting in message when bit position and data length is known

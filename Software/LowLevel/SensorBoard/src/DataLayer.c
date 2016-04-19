@@ -9,13 +9,19 @@
 // ----------------------------------------------------------------------------
 // Variables
 // ----------------------------------------------------------------------------
-Bool priv_validFlags[DLNumberOfParams];
 
 // ----------------------------------------------------------------------------
 // Function prototypes
 // ----------------------------------------------------------------------------
 void setDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
+
+void DL_init()
+{
+	int i = 0;
+	for (; i < DLNumberOfParams; ++i)
+		priv_validFlags[i] = FALSE;
+}
 
 // ----------------------------------------------------------------------------
 // Use this function in logic layer to get data from DL. Handle also status for asynchronous data,
@@ -27,6 +33,7 @@ void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 Boolean DL_getData(DLParam param, DLValuePointer pValue)
 {
 	uint8_t i, j;
+	Bool retVal = FALSE;
 
 	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
@@ -40,14 +47,10 @@ Boolean DL_getData(DLParam param, DLValuePointer pValue)
 			{
 				if ((packet->parameterList + j)->param == param)
 				{
-					if (packet->period != PACKET_WAITING)
-					{
-						packet->period = PACKET_WAITING;
-                        priv_validFlags[param] = TRUE;
-					}
-                    else
-                        priv_validFlags[param] = FALSE;
-                    break;
+					retVal = priv_validFlags[param];
+					if (priv_validFlags[param] == TRUE)
+						priv_validFlags[param] = FALSE;
+					return retVal;
 				}
 			}
 		}
@@ -112,8 +115,8 @@ void DL_setData(DLParam param, DLValuePointer pValue)
 				{
 					if ((packet->parameterList + j)->param == param)
 					{
-						packet->period = PACKET_READY_TO_SEND;
-						break;
+						packet->period = PACKET_NEW;
+						return;
 					}
 				}
 			}

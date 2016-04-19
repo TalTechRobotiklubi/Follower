@@ -9,6 +9,7 @@
 #include "CAN.h"
 #include "DataHandler.h"
 #include "Drive.h"
+#include "DataLayer.h"
 
 /*Table of initialization tasks. All functions in tables are called once after initializing system clock.
  * With adding new init check that id is corresponding to enum value.*/
@@ -18,7 +19,8 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
 		{INIT_SENSOR,			Sensor_init },
 		{INIT_CAN,				CAN_init    },
 		{INIT_USART,			USART_init  },
-		{INIT_DRIVE,			Drive_init	}
+		{INIT_DRIVE,			Drive_init	},
+		{INIT_DATALAYER,		DL_init		},
 };
 #define NUMBER_OF_INITS  (sizeof(TaskHandler_tableOfInits) / sizeof(INIT_STRUCT))
 
@@ -50,9 +52,11 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))
 
-/*private function declarations*/
-uint8_t checkIfTimeForTask(TASK_STRUCT task, uint32_t time);
+/*private variable declarations*/
+static uint32_t prevTicks = 100;  // set something different than 0
 
+/*private function declarations*/
+static uint8_t checkIfTimeForTask(TASK_STRUCT task, uint32_t time);
 
 void TaskHandler_init(void)
 {
@@ -89,7 +93,6 @@ uint8_t checkIfTimeForTask(TASK_STRUCT task, uint32_t time)
 
 void TaskHandler_run(void)
 {
-	static uint32_t prev_timer = 100;  // set something different than 0
 	uint32_t timer;
 	uint8_t i;
 
@@ -97,7 +100,7 @@ void TaskHandler_run(void)
 	timer = systemTicks;
 
 	// check task execution only if 1 ms has elapsed
-	if (timer != prev_timer)
+	if (timer != prevTicks)
 	{
 		// go through all tasks and check if it is needed to execute them
 		for(i = 0; i < NUMBER_OF_TASKS; i++)
@@ -108,6 +111,11 @@ void TaskHandler_run(void)
 			}
 		}
 		// do not come back here during this ms
-		prev_timer = timer;
+		prevTicks = timer;
 	}
+}
+
+void TaskHandlet_setPreviousTicks(uint32_t ticks)
+{
+	prevTicks = ticks;
 }

@@ -1,6 +1,7 @@
 #include "DataHandler.h"
 #include "TaskHandler.h"
 #include "InterfaceConfig.h"
+#include "DataLayer.h"
 
 /*Increase periodic transmit packet elapse time, if reached to period then it is notification
  *for interface modules (UART, CAN) to send packets out. Next time coming here it is over the period
@@ -27,6 +28,21 @@ void DataHandler_task(void)
 				packetDesc->period += elapsedTime;
 				if (packetDesc->period > transmitPacket.period)
 					packetDesc->period = elapsedTime;
+			}
+		}
+		for (j = 0; j < interfaceDesc.receivePacketCount; j++)
+		{
+			InterfaceReceivePacket receivePacket = interfaceDesc.receivePacketList[j];
+			PacketDescriptor* packetDesc = &PacketDescriptorList[receivePacket.packet];
+			Bool allInvalid = FALSE;
+
+			// only async packets
+			if (packetDesc->period < 0 && packetDesc->period == PACKET_NEW)
+			{
+				for (j = 0; j < packetDesc->parameterCount; j++)
+					allInvalid |= priv_validFlags[(packetDesc->parameterList + j)->param];
+				if (!allInvalid)
+					packetDesc->period = PACKET_WAITING;
 			}
 		}
 	}

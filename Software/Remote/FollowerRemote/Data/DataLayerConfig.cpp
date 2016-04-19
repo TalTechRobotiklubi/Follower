@@ -16,6 +16,7 @@ extern "C" {
 // ----------------------------------------------------------------------------
 U8    pDLValueBool[1];
 U8    pDLValueU8[9];
+S8    pDLValueS8[2];
 S16   pDLValueS16[12];
 Float pDLValueFloat[1];
 
@@ -46,7 +47,9 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* RequestRotationSpeed    */ { TypeS16,   &pDLValueS16[11]  },
 	/* PidParameter            */ { TypeU8,    &pDLValueU8[8]    },
 	/* PidValue                */ { TypeFloat, &pDLValueFloat[0] },
-	/* PidUpdating             */ { TypeBool,  &pDLValueBool[0]  }
+	/* PidUpdating             */ { TypeBool,  &pDLValueBool[0]  },
+	/* CameraRequestXDegree    */ { TypeS8,    &pDLValueS8[0]    },
+	/* CameraRequestZDegree    */ { TypeS8,    &pDLValueS8[1]    }
 };
 
 }

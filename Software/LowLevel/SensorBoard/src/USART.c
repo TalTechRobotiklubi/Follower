@@ -329,9 +329,14 @@ void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, ReceivingD
 				}
 				break;
 			case preambulaFound:
-				rxState->message.id = rxBuffer[tempTail];
-				rxState->calcCrc += rxState->message.id;
-				rxState->analyseState = idOK;
+				if (rxBuffer[tempTail] == 0xaa || rxBuffer[tempTail] == 0xAA)
+					rxState->analyseState = preambulaFound;
+				else
+				{
+					rxState->message.id = rxBuffer[tempTail];
+					rxState->calcCrc += rxState->message.id;
+					rxState->analyseState = idOK;
+				}
 				break;
 			case idOK:
 				rxState->message.length = rxBuffer[tempTail];
@@ -451,7 +456,7 @@ void handleTransmitData(void)
 void USART_init()
 {
 	USARTx_init(USART2);
-	USARTx_init(UART4);
+	//USARTx_init(UART4);
 }
 
 /*Periodic UART task*/

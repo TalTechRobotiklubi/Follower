@@ -29,8 +29,18 @@ static float kdX = 0.0f;
 static float kpW = 0.0f;
 static float kiW = 0.0f;
 static float kdW = 0.0f;
-static float accX_c = 20.0f;
-static float accW_c = 0.4f;
+static float accX = 20.0f;
+static float accW = 0.4f;
+
+static float kpX_t = 0.0f;  // temporary fields
+static float kiX_t = 0.0f;
+static float kdX_t = 0.0f;
+static float kpW_t = 0.0f;
+static float kiW_t = 0.0f;
+static float kdW_t = 0.0f;
+static float accX_t = 0.0f;
+static float accW_t = 0.0f;
+
 static Euler position = {0.0, 0.0, 0.0};
 static int32_t leftEncoder = 0;  //are 32-bits enough
 static int32_t rightEncoder = 0;
@@ -46,48 +56,57 @@ static void drive();
 
 uint8_t updateParameters()
 {
+	float value;
+	PidParam param;
 	uint8_t isUpdating;
-	DL_getData(DLParamPidUpdating, &isUpdating);
-	if (isUpdating)
+	Bool result = DL_getData(DLParamPidValue, &value);
+	result = result && DL_getData(DLParamPidParameter, &param);
+	if (result)
 	{
-		float value;
-		PidParam param;
-		if (DL_getData(DLParamPidValue, &value) &&
-				DL_getData(DLParamPidParameter, &param))
+		switch(param)
 		{
-			switch(param)
-			{
-			case KP_X:
-				kpX = value;
-				break;
-			case KI_X:
-				kiX = value;
-				break;
-			case KD_X:
-				kdX = value;
-				break;
-			case KP_W:
-				kpW = value;
-				break;
-			case KI_W:
-				kiW = value;
-				break;
-			case KD_W:
-				kdW = value;
-				break;
-			case ACC_X:
-				accX_c = value;
-				break;
-			case ACC_W:
-				accW_c = value;
-				break;
-			default:
-				break;
-			}
+		case KP_X:
+			kpX_t = value;
+			break;
+		case KI_X:
+			kiX_t = value;
+			break;
+		case KD_X:
+			kdX_t = value;
+			break;
+		case KP_W:
+			kpW_t = value;
+			break;
+		case KI_W:
+			kiW_t = value;
+			break;
+		case KD_W:
+			kdW_t = value;
+			break;
+		case ACC_X:
+			accX_t = value;
+			break;
+		case ACC_W:
+			accW_t = value;
+			break;
+		default:
+			break;
 		}
-		return 1;
 	}
-	return 0;
+
+	if (DL_getData(DLParamPidUpdating, &isUpdating))
+	{
+		if (isUpdating)
+		{
+			kpX = kpX_t;
+			kiX = kiX_t;
+			kdX = kdX_t;
+			return 1;
+		}
+		return 0;
+	}
+	else
+		return 0;
 }
 
 void calculateEuler()
@@ -162,15 +181,15 @@ void drive()
 
 	// Linear acceleration
 	if(fwd_speed < speedX)
-		fwd_speed += accX_c;
+		fwd_speed += accX;
 	else if(fwd_speed > speedX)
-		fwd_speed -= accX_c;
+		fwd_speed -= accX;
 
 	// Rotational acceleration
 	if(turn_speed < speedW)
-		turn_speed += accW_c;
+		turn_speed += accW;
 	else if(turn_speed > speedW)
-		turn_speed -= accW_c;
+		turn_speed -= accW;
 
 	// calculate linear and angular speed
 	encX = (rightEncoder + leftEncoder)/2;
