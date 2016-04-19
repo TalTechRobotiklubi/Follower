@@ -4,17 +4,18 @@
 #include "DataLayer.h"
 #include "DataLayerConfig.h"
 #include "PacketConfig.h"
-
+#include "InterfaceConfig.h"
+#include "TaskHandler.h"
 
 // ----------------------------------------------------------------------------
 // Variables
 // ----------------------------------------------------------------------------
-
+static Bool priv_validFlags[DLNumberOfParams];
 // ----------------------------------------------------------------------------
 // Function prototypes
 // ----------------------------------------------------------------------------
-void setDataAccordingToType(DLParam param, DLValuePointer value, Type type);
-void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
+static void setDataAccordingToType(DLParam param, DLValuePointer value, Type type);
+static void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 
 void DL_init()
 {
@@ -22,6 +23,86 @@ void DL_init()
 	for (; i < DLNumberOfParams; ++i)
 		priv_validFlags[i] = FALSE;
 }
+
+/*Increase periodic transmit packet elapse time, if reached to period then it is notification
+ *for interface modules (UART, CAN) to send packets out. Next time coming here it is over the period
+ *so reset the counting by adding 1 count of elapsed time.
+ *It means that packet periods must divide with period of DataHandler_TASK (5 ms), otherwise periodic packet
+ *is never sent out. Another restriction is that interface modules (CAN, UART) must be called with same
+ *period as DL_TASK. */
+void DL_task(void)
+{
+	int i;
+	for (i = 0; i < NumberOfInterfaces; ++i)
+	{
+		NodeInterfaceDescriptor interfaceDesc = InterfaceList[i];
+		int j;
+		for (j = 0; j < interfaceDesc.transmitPacketCount; j++)
+		{
+			InterfaceTransmitPacket transmitPacket = interfaceDesc.transmitPacketList[j];
+			PacketDescriptor* packetDesc = &PacketDescriptorList[transmitPacket.packet];
+
+			// only periodic packets
+			if (transmitPacket.period > 0 && packetDesc->period >= 0)
+			{
+				uint16_t elapsedTime = TaskHandler_tableOfTasks[TASK_DATAHANDLER].period;
+				packetDesc->period += elapsedTime;
+				if (packetDesc->period > transmitPacket.period)
+					packetDesc->period = elapsedTime;
+			}
+		}
+		for (j = 0; j < interfaceDesc.receivePacketCount; j++)
+		{
+			InterfaceReceivePacket receivePacket = interfaceDesc.receivePacketList[j];
+			PacketDescriptor* packetDesc = &PacketDescriptorList[receivePacket.packet];
+			Bool allInvalid = FALSE;
+
+			// only async packets
+			if (packetDesc->period < 0 && packetDesc->period == PACKET_NEW)
+			{
+				for (j = 0; j < packetDesc->parameterCount; j++)
+					allInvalid |= priv_validFlags[(packetDesc->parameterList + j)->param];
+				if (!allInvalid)
+					packetDesc->period = PACKET_WAITING;
+			}
+		}
+	}
+}
+
+void DL_setAsyncPacketInvalid(PacketDescriptor* packetDesc)
+{
+	int j;
+	for (j = 0; j < packetDesc->parameterCount; j++)
+		priv_validFlags[(packetDesc->parameterList + j)->param] = FALSE;
+	packetDesc->period = PACKET_WAITING;
+}
+
+#if 0
+/*checks if any received data is timed out*/
+void checkTimeouts(uint8_t numOfPackets, PacketWithIndex *packet)
+{
+	uint8_t i, j;
+
+	for (i = 0; i < numOfPackets; i++)
+	{
+		/*only periodic packets*/
+		if( ((packet[i].iperiod >= 0)) && (Packet_getMessagePeriod(packet[i].index >= 0)) )
+		{
+			/*increase timeout counter and check if it is exceeded 10 times its normal period*/
+			packet[i].iperiod += TaskHandler_tableOfTasks[TASK_DATA].period;
+			if (packet[i].iperiod >= (Packet_getMessagePeriod(packet[i].index) * 10))
+			{
+				/*set all packet parameter values as invalid*/
+				for (j = 0; j < Packet_getMessageParameterCount(packet[i].index); j++)
+				{
+					DL_setDataValidity((Packet_getMessageParameterList(packet[i].index) + j)->eParam, FALSE);
+				}
+			}
+		}
+	}
+}
+#endif
+
 
 // ----------------------------------------------------------------------------
 // Use this function in logic layer to get data from DL. Handle also status for asynchronous data,
@@ -131,7 +212,6 @@ void DL_setData(DLParam param, DLValuePointer pValue)
 void DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value)
 {
 	setDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
-	
 	priv_validFlags[param] = TRUE;
 }
 

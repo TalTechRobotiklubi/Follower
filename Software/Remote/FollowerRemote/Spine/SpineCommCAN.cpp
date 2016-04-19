@@ -111,25 +111,30 @@ bool SpineCommCAN::communicate()
         }
         break;
       case preambulaFound:
-        // check if it is a message we expect
-        numOfPackets = packethandler_.Packet_getNumOfUARTRxPackets();
-        packet = packethandler_.Packet_getUARTRxPacketsData();
-        for (int j = 0; j < numOfPackets; j++)
+        if (readBuf[i] == char(0xaa) || readBuf[i] == char(0xAA))
+          analyseState = preambulaFound;
+        else
         {
-          if (readBuf[i] == char(packet[j].uiID))
+          // check if it is a message we expect
+          numOfPackets = packethandler_.Packet_getNumOfUARTRxPackets();
+          packet = packethandler_.Packet_getUARTRxPacketsData();
+          for (int j = 0; j < numOfPackets; j++)
           {
-            // remember the index of the suitable message
-            rxMessageIndex = j;
-            message.canMessage.id = (unsigned char)readBuf[i];
-            message.crc += (unsigned char)readBuf[i];
-            analyseState = idOK;
-            break;
+            if (readBuf[i] == char(packet[j].uiID))
+            {
+              // remember the index of the suitable message
+              rxMessageIndex = j;
+              message.canMessage.id = (unsigned char)readBuf[i];
+              message.crc += (unsigned char)readBuf[i];
+              analyseState = idOK;
+              break;
+            }
           }
-        }
-        // if not ok message then start from beginning
-        if (analyseState != idOK)
-        {
-          analyseState = noData;
+          // if not ok message then start from beginning
+          if (analyseState != idOK)
+          {
+            analyseState = noData;
+          }
         }
         break;
       case idOK:
@@ -443,9 +448,9 @@ void SpineCommCAN::sendDataLayerDataToUART(PacketWithIndex *packet)
   buffer.push_back(crc.u8.byteLow);
   buffer.push_back(crc.u8.byteHigh);
 
-//  if (message.canMessage.id == 0xD5)
+  //if (message.canMessage.id == 0xD5)
 //  {
-//    qDebug() << message.canMessage.dlc << message.canMessage.data[0] << message.canMessage.data[1]
+//    qDebug() << message.canMessage.id << message.canMessage.dlc << message.canMessage.data[0] << message.canMessage.data[1]
 //        << message.canMessage.data[2] << message.canMessage.data[3]
 //        << message.canMessage.data[4] << message.canMessage.data[5];
     serialPort_->write(buffer);

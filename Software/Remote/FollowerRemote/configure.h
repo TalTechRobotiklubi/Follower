@@ -22,6 +22,9 @@ signals:
   void sendParameter(uint8_t param, float value);
   void parameterSendFinished();
 
+public slots:
+  void onNewFeedbackData(const QList<uint8_t>& list);
+
 private slots:
   void on_button_send_clicked();
 

@@ -7,7 +7,6 @@
 #include "Sensor.h"
 #include "USART.h"
 #include "CAN.h"
-#include "DataHandler.h"
 #include "Drive.h"
 #include "DataLayer.h"
 
@@ -28,7 +27,7 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
  *Check that id is corresponding to enum value.*/
 const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		/*id              	  period (ms)   offset (ms)   taskPointer */
-		{TASK_DATAHANDLER,			5,			0,			DataHandler_task					},
+		{TASK_DATAHANDLER,			5,			0,			DL_task								},
 		{TASK_CAN,		  	  	  	5,		    1,			CAN_task							},
 		{TASK_USART,		  	    5,		    2,			USART_task							},
 		{TASK_DRIVE,			   10,			3,			Drive_task							},

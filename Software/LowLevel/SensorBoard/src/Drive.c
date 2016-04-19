@@ -98,9 +98,12 @@ uint8_t updateParameters()
 	{
 		if (isUpdating)
 		{
+			uint8_t ack = 0xEE;
 			kpX = kpX_t;
 			kiX = kiX_t;
 			kdX = kdX_t;
+			DL_setData(DLParamRobotFeedback1, &ack);
+			DL_setData(DLParamRobotFeedback2, &ack);
 			return 1;
 		}
 		return 0;
@@ -217,8 +220,8 @@ void drive()
 	}
 
 	// Set motor speeds
-	DL_setData(DLParamMotor1RequestSpeed, &leftSpeedOld);
-	DL_setData(DLParamMotor2RequestSpeed, &rightSpeedOld);
+//	DL_setData(DLParamMotor1RequestSpeed, &leftSpeedOld);
+//	DL_setData(DLParamMotor2RequestSpeed, &rightSpeedOld);
 
 	// Save old values for PID
 	posXold = posX;

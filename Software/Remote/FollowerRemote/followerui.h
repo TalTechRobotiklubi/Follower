@@ -1,6 +1,8 @@
 #ifndef FOLLOWERUI_H
 #define FOLLOWERUI_H
 
+#include <stdint.h>
+
 #include <QtWidgets/QMainWindow>
 #include "ui_followerui.h"
 #include "Follower.h"
@@ -29,6 +31,7 @@ protected:
 signals:
   void startCommunication(QString nPort);
   void stopCommunication(void);
+  void feedbackReceived(const QList<uint8_t> list);
 
 public slots:
   void connectSpine();

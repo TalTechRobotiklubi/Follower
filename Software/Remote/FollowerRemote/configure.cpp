@@ -17,12 +17,17 @@ Configure::~Configure()
   delete ui;
 }
 
+void Configure::onNewFeedbackData(const QList<uint8_t>& list)
+{
+
+}
+
 void Configure::on_button_send_clicked()
 {
   if(!isSending_ && !timer_.isActive())
   {
     sendCount_ = 0;
-    timer_.start(2000);
+    timer_.start(100);
   }
 }
 
@@ -46,13 +51,6 @@ void Configure::addParameterToTable(const QString& param, int row, float value)
 
 void Configure::send()
 {
-//  if (sendCount_ == ui->tableParams->rowCount())
-//  {
-//    timer_.stop();
-//    isSending_ = false;
-//    emit parameterSendFinished();
-//    return;
-//  }
   if (ui->tableParams->rowCount() > 0 && sendCount_ <= ui->tableParams->rowCount())
   {
     QTableWidgetItem *item = ui->tableParams->item(sendCount_, 1);

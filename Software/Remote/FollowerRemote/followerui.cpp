@@ -146,6 +146,12 @@ void FollowerUi::newUiData()
   ui.lbl_roll->setText(QString("AccZ: %1").arg(roll));
 
   //qDebug() << yaw << pitch << roll;
+  QList<uint8_t> data = {0,0,0,0};
+  dataLayer_->DL_getData(DLParamRobotFeedback1, &data[0]);
+  dataLayer_->DL_getData(DLParamRobotFeedback2, &data[1]);
+  dataLayer_->DL_getData(DLParamRobotFeedback3, &data[2]);
+  dataLayer_->DL_getData(DLParamRobotFeedback4, &data[3]);
+  emit feedbackReceived(data);
 }
 
 void FollowerUi::keyPressEvent ( QKeyEvent * event )
@@ -271,5 +277,6 @@ void FollowerUi::on_pushButton_clicked()
     uint8_t update = 1;
     this->dataLayer_->DL_setData(DLParamPidUpdating, &update);
   });
+  connect(this, &FollowerUi::feedbackReceived, &conf, &Configure::onNewFeedbackData);
   conf.exec();
 }

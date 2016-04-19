@@ -32,7 +32,7 @@ void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(Int
 			{
 				initalizeInterfaceMessage(&message, packetDesc);
 				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
-				packetDesc->period = PACKET_WAITING;
+				DL_setAsyncPacketInvalid(packetDesc);
 			}
 		}
 	}
