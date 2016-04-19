@@ -96,7 +96,7 @@ PacketDescriptor PacketDescriptorList[NumberOfPackets] =
   /* MotorSpeeds     */ { 0xD0,  0, packetMotorSpeedsParameterList,     2, 4 },
   /* RobotControl    */ { 0xD3,  0, packetRobotControlParameterList,    2, 4 },
   /* PidSetup        */ { 0xD5,  -1, packetPidSetupParameterList,       3, 6 },
-  /* CameraControl   */ { 0xE0,  0, packetCameraControlParameterList,   2, 2 }
+  /* CameraControl   */ { 0xE0,  -1, packetCameraControlParameterList,  2, 2 }
 };
 #define NUMBER_OF_PACKETS (sizeof(psPacketDescriptorList)/sizeof(Packet))
 

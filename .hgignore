@@ -5,15 +5,14 @@ Software/LowLevel/SensorBoard/Debug
 Software/LowLevel/SensorBoard/.settings
 Software/LowLevel/VisionBoard/Debug
 Software/LowLevel/VisionBoard/.settings
-Software/Remote/FollowerRemote/Debug
-Software/Remote/FollowerRemote/GeneratedFiles
-
-Software/Remote/FollowerRemoteTests
 Software/LowLevel/Documents/datasheets
 Software/LowLevel/Documents/stm32f4_dsp_stdperiph_lib
 Software/LowLevel/Documents/stsw-stm32068
 Software/LowLevel/Pixy
-Software/LowLevel/SensorBoard_
+
+Software/Remote/FollowerRemote/Debug
+Software/Remote/FollowerRemote/GeneratedFiles
+Software/Remote/FollowerRemoteTests
 
 Software/Tracker/bin
 Software/Tracker/build
