@@ -178,7 +178,7 @@
       </Description>
     </Parameter>
     <Parameter>
-      <Name>GyroX</Name>
+      <Name>GyroYaw</Name>
       <Type>S16</Type>
       <Unit>
       </Unit>
@@ -186,7 +186,7 @@
       </Description>
     </Parameter>
     <Parameter>
-      <Name>GyroY</Name>
+      <Name>GyroPitch</Name>
       <Type>S16</Type>
       <Unit>
       </Unit>
@@ -194,7 +194,7 @@
       </Description>
     </Parameter>
     <Parameter>
-      <Name>GyroZ</Name>
+      <Name>GyroRoll</Name>
       <Type>S16</Type>
       <Unit>
       </Unit>
@@ -321,6 +321,38 @@
       <Description>
       </Description>
     </Parameter>
+    <Parameter>
+      <Name>RobotFeedback5</Name>
+      <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>RobotFeedback6</Name>
+      <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>RobotFeedback7</Name>
+      <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>RobotFeedback8</Name>
+      <Type>S16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
   </Parameters>
   <Packets>
     <Packet>
@@ -423,13 +455,13 @@
       <NominalPeriod>0</NominalPeriod>
       <PacketParameters>
         <PacketParameter>
-          <Parameter>GyroX</Parameter>
+          <Parameter>GyroYaw</Parameter>
         </PacketParameter>
         <PacketParameter>
-          <Parameter>GyroY</Parameter>
+          <Parameter>GyroPitch</Parameter>
         </PacketParameter>
         <PacketParameter>
-          <Parameter>GyroZ</Parameter>
+          <Parameter>GyroRoll</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
@@ -508,6 +540,18 @@
         <PacketParameter>
           <Parameter>RobotFeedback4</Parameter>
         </PacketParameter>
+        <PacketParameter>
+          <Parameter>RobotFeedback5</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>RobotFeedback6</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>RobotFeedback7</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>RobotFeedback8</Parameter>
+        </PacketParameter>
       </PacketParameters>
     </Packet>
     <Packet>
@@ -546,7 +590,7 @@
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>Quaternions</Packet>
+              <Packet>Gyro</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
@@ -564,6 +608,11 @@
             </TransmitPacket>
             <TransmitPacket>
               <Packet>PidSetup</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>CameraControl</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </TransmitPacket>
@@ -608,10 +657,10 @@
             <TransmitPacket>
               <Packet>RobotFeedback</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>20</Period>
+              <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>Quaternions</Packet>
+              <Packet>Gyro</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>100</Period>
             </TransmitPacket>
@@ -645,10 +694,10 @@
             <TransmitPacket>
               <Packet>RobotFeedback</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>20</Period>
+              <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>Quaternions</Packet>
+              <Packet>Gyro</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>100</Period>
             </TransmitPacket>
@@ -658,12 +707,12 @@
           <Name>UART_IMU</Name>
           <ReceivePackets>
             <ReceivePacket>
-              <Packet>Gyro</Packet>
+              <Packet>Quaternions</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>Quaternions</Packet>
+              <Packet>Gyro</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
@@ -717,6 +766,11 @@
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
+            <ReceivePacket>
+              <Packet>Gyro</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
           </ReceivePackets>
           <TransmitPackets>
             <TransmitPacket>
@@ -752,6 +806,11 @@
             </ReceivePacket>
             <ReceivePacket>
               <Packet>DistanceSensors</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>Gyro</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
@@ -796,6 +855,11 @@
             </TransmitPacket>
             <TransmitPacket>
               <Packet>RobotFeedback</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>Gyro</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </TransmitPacket>

@@ -114,7 +114,7 @@ uint8_t updateParameters()
 
 void calculateEuler()
 {
-	int16_t read;
+/*	int16_t read;
 	double qw;
 	double qx;
 	double qy;
@@ -140,13 +140,36 @@ void calculateEuler()
 	position.yaw *= 180.0f / M_PI;
 	position.pitch *= 180.0f / M_PI;
 	position.roll *= 180.0f / M_PI;
+
+	int16_t yaw = (int16_t)position.yaw;
+	int16_t pitch = (int16_t)position.pitch;
+	int16_t roll = (int16_t)position.roll;
+
+	DL_setData(DLParamGyroYaw, &yaw);
+	DL_setData(DLParamGyroPitch, &pitch);
+	DL_setData(DLParamGyroRoll, &roll);*/
+
+	int16_t yaw;
+	int16_t pitch;
+	int16_t roll;
+	DL_getData(DLParamGyroYaw, &yaw);
+	DL_getData(DLParamGyroPitch, &pitch);
+	DL_getData(DLParamGyroRoll, &roll);
+
+	DL_setData(DLParamGyroYaw, &yaw);
+	DL_setData(DLParamGyroPitch, &pitch);
+	DL_setData(DLParamGyroRoll, &roll);
+//
+//	position.yaw = yaw * 180.0f / M_PI;
+//	position.pitch = pitch * 180.0f / M_PI;
+//	position.roll = roll * 180.0f / M_PI;
 }
 
 void readEncoders()
 {
 	int16_t left;
 	int16_t right;
-	if (DL_getData(DLParamMotor1EncoderClicks, &left)) // ??? motor 1is leftor right
+	if (DL_getData(DLParamMotor1EncoderClicks, &left)) // ??? motor 1 is left or right
 		leftEncoder += left;
 	if (DL_getData(DLParamMotor2EncoderClicks, &right))
 		rightEncoder += right;

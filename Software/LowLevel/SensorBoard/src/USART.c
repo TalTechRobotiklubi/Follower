@@ -456,7 +456,7 @@ void handleTransmitData(void)
 void USART_init()
 {
 	USARTx_init(USART2);
-	//USARTx_init(UART4);
+	USARTx_init(UART4);
 }
 
 /*Periodic UART task*/

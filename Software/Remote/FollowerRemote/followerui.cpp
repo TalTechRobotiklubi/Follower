@@ -127,30 +127,27 @@ void FollowerUi::newUiData()
   ui.lbl_andur7->setText(QString("Andur7: %1cm").arg(sensors[6]));
   ui.lbl_andur8->setText(QString("Andur8: %1cm").arg(sensors[7]));
 
-  int16_t qw = 0;
-  int16_t qx = 0;
-  int16_t qy = 0;
-  int16_t qz = 0;
+  int16_t yaw = 0;
+  int16_t pitch = 0;
+  int16_t roll = 0;
 
-  dataLayer_->DL_getData(DLParamQw, &qw);
-  dataLayer_->DL_getData(DLParamQx, &qx);
-  dataLayer_->DL_getData(DLParamQy, &qy);
-  dataLayer_->DL_getData(DLParamQz, &qz);
+  dataLayer_->DL_getData(DLParamGyroYaw, &yaw);
+  dataLayer_->DL_getData(DLParamGyroPitch, &pitch);
+  dataLayer_->DL_getData(DLParamGyroRoll, &roll);
 
-  // TODO. Do calc here to find euler degrees
-  float yaw = 0;
-  float pitch = 0;
-  float roll = 0;
-  ui.lbl_yaw->setText(QString("AccX: %1").arg(yaw));
-  ui.lbl_pitch->setText(QString("AccY: %1").arg(pitch));
-  ui.lbl_roll->setText(QString("AccZ: %1").arg(roll));
+  ui.lbl_yaw->setText(QString("Yaw: %1").arg(yaw));
+  ui.lbl_pitch->setText(QString("Pitch: %1").arg(pitch));
+  ui.lbl_roll->setText(QString("Roll: %1").arg(roll));
 
-  //qDebug() << yaw << pitch << roll;
-  QList<uint8_t> data = {0,0,0,0};
+  QList<uint8_t> data = {0,0,0,0,0,0,0,0};
   dataLayer_->DL_getData(DLParamRobotFeedback1, &data[0]);
   dataLayer_->DL_getData(DLParamRobotFeedback2, &data[1]);
   dataLayer_->DL_getData(DLParamRobotFeedback3, &data[2]);
   dataLayer_->DL_getData(DLParamRobotFeedback4, &data[3]);
+  dataLayer_->DL_getData(DLParamRobotFeedback4, &data[4]);
+  dataLayer_->DL_getData(DLParamRobotFeedback4, &data[5]);
+  dataLayer_->DL_getData(DLParamRobotFeedback4, &data[6]);
+  dataLayer_->DL_getData(DLParamRobotFeedback4, &data[7]);
   emit feedbackReceived(data);
 }
 

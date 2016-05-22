@@ -22,6 +22,13 @@ void DL_init()
 	int i = 0;
 	for (; i < DLNumberOfParams; ++i)
 		priv_validFlags[i] = FALSE;
+	for (i = 0; i < NumberOfPackets; ++i)
+	{
+		PacketDescriptor* packetDesc = &PacketDescriptorList[i];
+		// only periodic packets
+		if (packetDesc->period >= 0)
+			packetDesc->period = 0;
+	}
 }
 
 /*Increase periodic transmit packet elapse time, if reached to period then it is notification
@@ -71,10 +78,13 @@ void DL_task(void)
 
 void DL_setAsyncPacketInvalid(PacketDescriptor* packetDesc)
 {
-	int j;
-	for (j = 0; j < packetDesc->parameterCount; j++)
-		priv_validFlags[(packetDesc->parameterList + j)->param] = FALSE;
-	packetDesc->period = PACKET_WAITING;
+	if (packetDesc->period < 0)
+	{
+		int j;
+		for (j = 0; j < packetDesc->parameterCount; j++)
+			priv_validFlags[(packetDesc->parameterList + j)->param] = FALSE;
+		packetDesc->period = PACKET_WAITING;
+	}
 }
 
 #if 0

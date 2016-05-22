@@ -19,7 +19,7 @@ typedef enum
 {
 	PacketRobotFeedback,   // 0
 	PacketDistanceSensors, // 1
-	PacketQuaternions,     // 2
+	PacketGyro,            // 2
 	PacketMotorSpeeds,     // 3
 	PacketRobotControl,    // 4
 	PacketPidSetup,        // 5

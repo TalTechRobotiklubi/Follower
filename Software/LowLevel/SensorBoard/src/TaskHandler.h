@@ -61,6 +61,6 @@ extern const TASK_STRUCT TaskHandler_tableOfTasks[];
 /*global functions*/
 void TaskHandler_init(void);
 void TaskHandler_run(void);
-void TaskHandlet_setPreviousTicks(uint32_t ticks);
+void TaskHandler_setPreviousTicks(uint32_t ticks);
 
 #endif /* _TASKHANDLER_H_ */

@@ -5,6 +5,8 @@
 
 #include <QDialog>
 #include <QTimer>
+#include <QFile>
+#include <QTextStream>
 
 namespace Ui {
 class Configure;
@@ -32,11 +34,15 @@ private:
   void initTable();
   void addParameterToTable(const QString& param, int row, float value);
   void send();
+  QString createFilePath();
+  void writePidParametersToFile();
 
   Ui::Configure *ui;
   QTimer timer_;
   bool isSending_;
   int sendCount_;
+  QFile activeFile_;
+  QTextStream* fileStream_;
 };
 
 #endif // CONFIGURE_H
