@@ -19,3 +19,5 @@ copy %source_path%PacketConfig.h %destination_path%PacketConfig.h
 copy %source_path%PacketConfig.c %destination_path%PacketConfig.c
 copy %source_path%InterfaceConfig.h %destination_path%InterfaceConfig.h
 copy %source_path%InterfaceConfig.c %destination_path%InterfaceConfig.c
+copy %source_path%InterfaceHandler.h %destination_path%InterfaceHandler.h
+copy %source_path%InterfaceHandler.c %destination_path%InterfaceHandler.c

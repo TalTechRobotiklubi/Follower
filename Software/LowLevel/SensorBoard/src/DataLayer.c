@@ -22,13 +22,6 @@ void DL_init()
 	int i = 0;
 	for (; i < DLNumberOfParams; ++i)
 		priv_validFlags[i] = FALSE;
-	for (i = 0; i < NumberOfPackets; ++i)
-	{
-		PacketDescriptor* packetDesc = &PacketDescriptorList[i];
-		// only periodic packets
-		if (packetDesc->period >= 0)
-			packetDesc->period = 0;
-	}
 }
 
 /*Increase periodic transmit packet elapse time, if reached to period then it is notification
@@ -46,16 +39,16 @@ void DL_task(void)
 		int j;
 		for (j = 0; j < interfaceDesc.transmitPacketCount; j++)
 		{
-			InterfaceTransmitPacket transmitPacket = interfaceDesc.transmitPacketList[j];
-			PacketDescriptor* packetDesc = &PacketDescriptorList[transmitPacket.packet];
+			InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[j];
+			//PacketDescriptor* packetDesc = &PacketDescriptorList[transmitPacket.packet];
 
 			// only periodic packets
-			if (transmitPacket.period > 0 && packetDesc->period >= 0)
+			if (transmitPacket->period > 0)
 			{
 				uint16_t elapsedTime = TaskHandler_tableOfTasks[TASK_DATAHANDLER].period;
-				packetDesc->period += elapsedTime;
-				if (packetDesc->period > transmitPacket.period)
-					packetDesc->period = elapsedTime;
+				transmitPacket->elapsed -= elapsedTime;
+				if (transmitPacket->elapsed < transmitPacket->period)
+					transmitPacket->elapsed = 0;
 			}
 		}
 		for (j = 0; j < interfaceDesc.receivePacketCount; j++)
@@ -115,8 +108,7 @@ void checkTimeouts(uint8_t numOfPackets, PacketWithIndex *packet)
 
 
 // ----------------------------------------------------------------------------
-// Use this function in logic layer to get data from DL. Handle also status for asynchronous data,
-// so that after reading async data the status changes to WAITING.
+// Use this function in logic layer to get data from DL.
 // Param as parameter
 // pValue as pointer to place where data will be stored from DL
 // Returns if the value is valid or not

@@ -8,6 +8,8 @@ static uint8_t hasNewPidSetupMessage = 0;
 static InterfaceMessage pidSetupMessage;
 static uint8_t hasNewGyroMessage = 0;
 static InterfaceMessage gyroMessage;
+static uint8_t hasNewQuaternionsMessage = 0;
+static InterfaceMessage quaternionsMessage;
 
 /*function definitions*/
 void USART_init(void)
@@ -25,6 +27,11 @@ void USART_task(void)
 	{
 		InterfaceHandler_storeReceivedData(&gyroMessage);
 		hasNewPidSetupMessage = 0;
+	}
+	if (hasNewQuaternionsMessage)
+	{
+		InterfaceHandler_storeReceivedData(&quaternionsMessage);
+		hasNewQuaternionsMessage = 0;
 	}
 }
 
@@ -63,4 +70,26 @@ void USART_setGyroMessagePending(int16_t yaw, int16_t pitch, int16_t roll)
 	gyroMessage.data[4] = r.d[1];
 	gyroMessage.data[5] = r.d[0];
 	hasNewGyroMessage = 1;
+}
+
+void USART_setQuaternionsMessagePending(uint16_t qw, uint16_t qx, uint16_t qy, uint16_t qz)
+{
+	SplitUint16 qw_, qx_, qy_, qz_;
+	qw_.u = qw;
+	qx_.u = qx;
+	qy_.u = qy;
+	qz_.u = qz;
+	quaternionsMessage.packet = PacketGyro;
+	quaternionsMessage.period = PacketDescriptorList[PacketQuaternions].period;
+	quaternionsMessage.id = PacketDescriptorList[PacketQuaternions].id;
+	quaternionsMessage.length = PacketDescriptorList[PacketQuaternions].dlc;
+	quaternionsMessage.data[0] = qw_.d[1];
+	quaternionsMessage.data[1] = qw_.d[0];
+	quaternionsMessage.data[2] = qx_.d[1];
+	quaternionsMessage.data[3] = qx_.d[0];
+	quaternionsMessage.data[4] = qy_.d[1];
+	quaternionsMessage.data[5] = qy_.d[0];
+	quaternionsMessage.data[6] = qz_.d[1];
+	quaternionsMessage.data[7] = qz_.d[0];
+	hasNewQuaternionsMessage = 1;
 }

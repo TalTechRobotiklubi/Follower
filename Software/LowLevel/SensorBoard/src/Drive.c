@@ -41,14 +41,12 @@ static float kdW_t = 0.0f;
 static float accX_t = 0.0f;
 static float accW_t = 0.0f;
 
-static Euler position = {0.0, 0.0, 0.0};
 static int32_t leftEncoder = 0;  //are 32-bits enough
 static int32_t rightEncoder = 0;
 static float speedX = 0;
 static float speedW = 0;
 
 static uint8_t updateParameters();
-static void calculateEuler();
 static void readEncoders();
 static void stop();
 static void readRequestedSpeeds();
@@ -110,59 +108,6 @@ uint8_t updateParameters()
 	}
 	else
 		return 0;
-}
-
-void calculateEuler()
-{
-/*	int16_t read;
-	double qw;
-	double qx;
-	double qy;
-	double qz;
-	DL_getData(DLParamQw, &read);
-	qw = read / 16384;
-	DL_getData(DLParamQx, &read);
-	qx = read / 16384;
-	DL_getData(DLParamQy, &read);
-	qy = read / 16384;
-	DL_getData(DLParamQz, &read);
-	qz = read / 16384;
-
-	int32_t qww = qw*qw;
-	int32_t qxx = qx*qx;
-	int32_t qyy = qy*qy;
-	int32_t qzz = qz*qz;
-
-	position.yaw = atan2(2.0f * (qx * qy + qw * qz), qww + qxx -qyy - qzz);
-	position.pitch = -asin(2.0f * (qx* qz - qw * qy));
-	position.roll = atan2(2.0f * (qw * qx + qy * qz), qww - qxx - qyy + qzz);
-
-	position.yaw *= 180.0f / M_PI;
-	position.pitch *= 180.0f / M_PI;
-	position.roll *= 180.0f / M_PI;
-
-	int16_t yaw = (int16_t)position.yaw;
-	int16_t pitch = (int16_t)position.pitch;
-	int16_t roll = (int16_t)position.roll;
-
-	DL_setData(DLParamGyroYaw, &yaw);
-	DL_setData(DLParamGyroPitch, &pitch);
-	DL_setData(DLParamGyroRoll, &roll);*/
-
-	int16_t yaw;
-	int16_t pitch;
-	int16_t roll;
-	DL_getData(DLParamGyroYaw, &yaw);
-	DL_getData(DLParamGyroPitch, &pitch);
-	DL_getData(DLParamGyroRoll, &roll);
-
-	DL_setData(DLParamGyroYaw, &yaw);
-	DL_setData(DLParamGyroPitch, &pitch);
-	DL_setData(DLParamGyroRoll, &roll);
-//
-//	position.yaw = yaw * 180.0f / M_PI;
-//	position.pitch = pitch * 180.0f / M_PI;
-//	position.roll = roll * 180.0f / M_PI;
 }
 
 void readEncoders()
@@ -267,7 +212,6 @@ void Drive_task()
 		stop();
 		return;
 	}
-	calculateEuler();
 	readEncoders();
 	readRequestedSpeeds();
 	drive();

@@ -498,19 +498,6 @@
       </PacketParameters>
     </Packet>
     <Packet>
-      <ID>243</ID>
-      <Name>InertialMeasurement34</Name>
-      <NominalPeriod>0</NominalPeriod>
-      <PacketParameters>
-        <PacketParameter>
-          <Parameter>Qy</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>Qz</Parameter>
-        </PacketParameter>
-      </PacketParameters>
-    </Packet>
-    <Packet>
       <ID>211</ID>
       <Name>RobotControl</Name>
       <NominalPeriod>0</NominalPeriod>
@@ -590,7 +577,7 @@
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>Gyro</Packet>
+              <Packet>Quaternions</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
@@ -660,7 +647,7 @@
               <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>Gyro</Packet>
+              <Packet>Quaternions</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>100</Period>
             </TransmitPacket>
@@ -697,7 +684,7 @@
               <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>Gyro</Packet>
+              <Packet>Quaternions</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>100</Period>
             </TransmitPacket>
@@ -767,7 +754,7 @@
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>Gyro</Packet>
+              <Packet>Quaternions</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
@@ -810,7 +797,7 @@
               <Period>-1</Period>
             </ReceivePacket>
             <ReceivePacket>
-              <Packet>Gyro</Packet>
+              <Packet>Quaternions</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
@@ -859,7 +846,7 @@
               <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
-              <Packet>Gyro</Packet>
+              <Packet>Quaternions</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </TransmitPacket>

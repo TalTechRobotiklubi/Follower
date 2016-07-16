@@ -23,9 +23,9 @@ typedef enum
 	PacketMotorSpeeds,     // 3
 	PacketDistanceSensors, // 4
 	PacketRobotFeedback,   // 5
-	PacketGyro,            // 6
+	PacketQuaternions,     // 6
 	PacketPidSetup,        // 7
-	PacketQuaternions,     // 8
+	PacketGyro,            // 8
 	// Count of items is 9
 	NumberOfPackets
 }

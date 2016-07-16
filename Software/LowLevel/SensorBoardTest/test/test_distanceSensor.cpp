@@ -17,6 +17,7 @@ TEST(distanceSensorDataIsSentOutViaCan)
 	uint8_t expD1 = 12;
 	uint8_t expD2 = 23;
 
+	CAN_init();
 	DL_init();
 	DL_setData(DLParamDistanceSensor1, &expD1);
 	DL_setData(DLParamDistanceSensor2, &expD2);
@@ -25,7 +26,7 @@ TEST(distanceSensorDataIsSentOutViaCan)
 	systemTicks = DataHandlerOffset;
 	TaskHandler_run();
 
-	InterfaceTransmitPacket transmitPacket = InterfaceList[InterfaceCAN].transmitPacketList[DistanceSensorPacketIndex];
+	InterfaceTransmitPacket transmitPacket = InterfaceList[InterfaceCAN].transmitPacketList[DistanceSensorPacketTransmitIndex];
 	int16_t packetPeriod = transmitPacket.period;
 	int16_t dataHandlerPeriod = TaskHandler_tableOfTasks[TASK_DATAHANDLER].period;
 	for (int i = 1; i < packetPeriod / dataHandlerPeriod; ++i)
@@ -37,7 +38,7 @@ TEST(distanceSensorDataIsSentOutViaCan)
 	TaskHandler_run();
 
 	uint8_t cnt = CAN_sentMessageCount();
-	CHECK_EQUAL(2, cnt);  // +1 is gyro message
+	CHECK_EQUAL(2, cnt);  // +1 is quaterions message
 
 	InterfaceMessage msg = CAN_sentMessages()[0];
 	CHECK_EQUAL(240, msg.id);

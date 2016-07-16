@@ -42,13 +42,14 @@ const PacketParameter packetDistanceSensorsParameterList[8] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "Gyro" parameters table
+// Packet "Quaternions" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter packetGyroParameterList[3] = 
+const PacketParameter packetQuaternionsParameterList[4] = 
 {
-	{ DLParamGyroYaw,    0, 16 },
-	{ DLParamGyroPitch, 16, 16 },
-	{ DLParamGyroRoll,  32, 16 }
+	{ DLParamQw,  0, 16 },
+	{ DLParamQx, 16, 16 },
+	{ DLParamQy, 32, 16 },
+	{ DLParamQz, 48, 16 }
 };
 
 // ----------------------------------------------------------------------------
@@ -93,9 +94,9 @@ const PacketParameter packetCameraControlParameterList[2] =
 // ----------------------------------------------------------------------------
 PacketDescriptor PacketDescriptorList[NumberOfPackets] = 
 {
-	/* RobotFeedback   */ { 0xD4, 0, packetRobotFeedbackParameterList,   8, 16 },
-	/* DistanceSensors */ { 0xF0, 0, packetDistanceSensorsParameterList, 8,  8 },
-	/* Gyro            */ { 0xF1, 0, packetGyroParameterList,            3,  6 },
+	/* RobotFeedback   */ { 0xD4, -1, packetRobotFeedbackParameterList,   8, 16 },
+	/* DistanceSensors */ { 0xF0, -1, packetDistanceSensorsParameterList, 8,  8 },
+	/* Quaternions     */ { 0xF2, -1, packetQuaternionsParameterList,     4,  8 },
 	/* MotorSpeeds     */ { 0xD0, 0, packetMotorSpeedsParameterList,     2,  4 },
 	/* RobotControl    */ { 0xD3, 0, packetRobotControlParameterList,    2,  4 },
 	/* PidSetup        */ { 0xD5, -1, packetPidSetupParameterList,       3,  6 },

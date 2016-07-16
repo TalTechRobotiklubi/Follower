@@ -29,31 +29,31 @@ Interface;
 // ----------------------------------------------------------------------------
 typedef struct
 {
-	Packet ePacket;
-	int16_t ulPeriod;
+	Packet packet;
+	int16_t period;
 }
 InterfaceReceivePacket;
 
 typedef struct
 {
-	Packet ePacket;
-	int16_t ulPeriod;
+	Packet packet;
+	int16_t period;
 }
 InterfaceTransmitPacket;
 
 typedef struct
 {
-	InterfaceReceivePacket const * psReceivePacketList;
-	uint32_t uiReceivePacketCount;
-	InterfaceTransmitPacket const * psTransmitPacketList;
-	uint32_t uiTransmitPacketCount;
+	InterfaceReceivePacket const * receivePacketList;
+	uint32_t receivePacketCount;
+	InterfaceTransmitPacket const * transmitPacketList;
+	uint32_t transmitPacketCount;
 }
 NodeInterfaceDescriptor;
 
 // ----------------------------------------------------------------------------
 // Export interface descriptors
 // ----------------------------------------------------------------------------
-extern const NodeInterfaceDescriptor psInterfaceList[NumberOfInterfaces];
+extern const NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces];
 
 #endif
 

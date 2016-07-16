@@ -84,13 +84,14 @@ const PacketParameter packetRobotFeedbackParameterList[8] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "Gyro" parameters table
+// Packet "Quaternions" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter packetGyroParameterList[3] = 
+const PacketParameter packetQuaternionsParameterList[4] = 
 {
-	{ DLParamGyroYaw,    0, 16 },
-	{ DLParamGyroPitch, 16, 16 },
-	{ DLParamGyroRoll,  32, 16 }
+	{ DLParamQw,  0, 16 },
+	{ DLParamQx, 16, 16 },
+	{ DLParamQy, 32, 16 },
+	{ DLParamQz, 48, 16 }
 };
 
 // ----------------------------------------------------------------------------
@@ -104,20 +105,19 @@ const PacketParameter packetPidSetupParameterList[3] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "Quaternions" parameters table
+// Packet "Gyro" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter packetQuaternionsParameterList[4] = 
+const PacketParameter packetGyroParameterList[3] = 
 {
-	{ DLParamQw,  0, 16 },
-	{ DLParamQx, 16, 16 },
-	{ DLParamQy, 32, 16 },
-	{ DLParamQz, 48, 16 }
+	{ DLParamGyroYaw,    0, 16 },
+	{ DLParamGyroPitch, 16, 16 },
+	{ DLParamGyroRoll,  32, 16 }
 };
 
 // ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
-PacketDescriptor PacketDescriptorList[NumberOfPackets] = 
+PacketDescriptor PacketDescriptorList[NumberOfPackets] =
 {
 	/* Motor1Status    */ { 0xD1, -1, packetMotor1StatusParameterList,    6,  7 },
 	/* Motor2Status    */ { 0xD2, -1, packetMotor2StatusParameterList,    6,  7 },
@@ -125,8 +125,8 @@ PacketDescriptor PacketDescriptorList[NumberOfPackets] =
 	/* MotorSpeeds     */ { 0xD0, -1, packetMotorSpeedsParameterList,     2,  4 },
 	/* DistanceSensors */ { 0xF0,  0, packetDistanceSensorsParameterList, 8,  8 },
 	/* RobotFeedback   */ { 0xD4, -1, packetRobotFeedbackParameterList,   8, 16 },
-	/* Gyro            */ { 0xF1,  0, packetGyroParameterList,            3,  6 },
+	/* Quaternions     */ { 0xF2,  0, packetQuaternionsParameterList,     4,  8 },
 	/* PidSetup        */ { 0xD5, -1, packetPidSetupParameterList,        3,  6 },
-	/* Quaternions     */ { 0xF2, -1, packetQuaternionsParameterList,     4,  8}
+	/* Gyro            */ { 0xF1, -1, packetGyroParameterList,            3,  6 }
 };
 

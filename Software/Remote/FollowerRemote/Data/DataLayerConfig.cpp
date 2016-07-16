@@ -17,7 +17,7 @@ extern "C" {
 U8    pDLValueBool[1];
 U8    pDLValueU8[9];
 S8    pDLValueS8[2];
-S16   pDLValueS16[15];
+S16   pDLValueS16[16];
 Float pDLValueFloat[1];
 
 // ----------------------------------------------------------------------------
@@ -41,13 +41,14 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* DistanceSensor6         */ { TypeU8,    &pDLValueU8[5]    },
 	/* DistanceSensor7         */ { TypeU8,    &pDLValueU8[6]    },
 	/* DistanceSensor8         */ { TypeU8,    &pDLValueU8[7]    },
-	/* GyroYaw                 */ { TypeS16,   &pDLValueS16[8]   },
-	/* GyroPitch               */ { TypeS16,   &pDLValueS16[9]   },
-	/* GyroRoll                */ { TypeS16,   &pDLValueS16[10]  },
-	/* Motor1RequestSpeed      */ { TypeS16,   &pDLValueS16[11]  },
-	/* Motor2RequestSpeed      */ { TypeS16,   &pDLValueS16[12]  },
-	/* RequestTranslationSpeed */ { TypeS16,   &pDLValueS16[13]  },
-	/* RequestRotationSpeed    */ { TypeS16,   &pDLValueS16[14]  },
+	/* Qw                      */ { TypeS16,   &pDLValueS16[8]   },
+	/* Qx                      */ { TypeS16,   &pDLValueS16[9]   },
+	/* Qy                      */ { TypeS16,   &pDLValueS16[10]  },
+	/* Qz                      */ { TypeS16,   &pDLValueS16[11]  },
+	/* Motor1RequestSpeed      */ { TypeS16,   &pDLValueS16[12]  },
+	/* Motor2RequestSpeed      */ { TypeS16,   &pDLValueS16[13]  },
+	/* RequestTranslationSpeed */ { TypeS16,   &pDLValueS16[14]  },
+	/* RequestRotationSpeed    */ { TypeS16,   &pDLValueS16[15]  },
 	/* PidParameter            */ { TypeU8,    &pDLValueU8[8]    },
 	/* PidValue                */ { TypeFloat, &pDLValueFloat[0] },
 	/* PidUpdating             */ { TypeBool,  &pDLValueBool[0]  },

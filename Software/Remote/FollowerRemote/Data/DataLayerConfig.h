@@ -32,19 +32,20 @@ typedef enum
 	DLParamDistanceSensor6,         // 13
 	DLParamDistanceSensor7,         // 14
 	DLParamDistanceSensor8,         // 15
-	DLParamGyroYaw,                 // 16
-	DLParamGyroPitch,               // 17
-	DLParamGyroRoll,                // 18
-	DLParamMotor1RequestSpeed,      // 19
-	DLParamMotor2RequestSpeed,      // 20
-	DLParamRequestTranslationSpeed, // 21
-	DLParamRequestRotationSpeed,    // 22
-	DLParamPidParameter,            // 23
-	DLParamPidValue,                // 24
-	DLParamPidUpdating,             // 25
-	DLParamCameraRequestXDegree,    // 26
-	DLParamCameraRequestZDegree,    // 27
-	// Count of items is 28
+	DLParamQw,                      // 16
+	DLParamQx,                      // 17
+	DLParamQy,                      // 18
+	DLParamQz,                      // 19
+	DLParamMotor1RequestSpeed,      // 20
+	DLParamMotor2RequestSpeed,      // 21
+	DLParamRequestTranslationSpeed, // 22
+	DLParamRequestRotationSpeed,    // 23
+	DLParamPidParameter,            // 24
+	DLParamPidValue,                // 25
+	DLParamPidUpdating,             // 26
+	DLParamCameraRequestXDegree,    // 27
+	DLParamCameraRequestZDegree,    // 28
+	// Count of items is 29
 	DLNumberOfParams
 }
 DLParam;

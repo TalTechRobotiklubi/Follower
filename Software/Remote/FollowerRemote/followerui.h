@@ -45,6 +45,8 @@ private slots:
   void on_pushButton_clicked();
 
 private:
+  void calcAndWriteEulerAnglesToUI(int16_t raw_qw, int16_t raw_qx, int16_t raw_qy, int16_t raw_qz);
+
   Ui::FollowerUiClass ui;
   WorkerThreadBase* workerThread_;
   DataLayerBase* dataLayer_;

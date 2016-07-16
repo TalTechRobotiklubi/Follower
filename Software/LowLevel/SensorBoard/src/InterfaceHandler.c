@@ -19,7 +19,7 @@ void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(Int
 		// periodic packets
 		if (transmitPacket.period >= 0)
 		{
-			if (packetDesc->period == transmitPacket.period)
+			if (transmitPacket.elapsed == 0)
 			{
 				message.packet = transmitPacket.packet;
 				initalizeInterfaceMessage(&message, packetDesc);

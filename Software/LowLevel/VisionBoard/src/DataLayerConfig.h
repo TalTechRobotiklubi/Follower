@@ -16,34 +16,33 @@
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	DLParamMotor1ActualSpeed,    // 0
-	DLParamMotor1EncoderClicks,  // 1
-	DLParamMotor1CurrentDraw,    // 2
-	DLParamMotor1DriverTemp,     // 3
-	DLParamMotor1BridgeAFault,   // 4
-	DLParamMotor1BridgeBFault,   // 5
-	DLParamMotor2ActualSpeed,    // 6
-	DLParamMotor2EncoderClicks,  // 7
-	DLParamMotor2CurrentDraw,    // 8
-	DLParamMotor2DriverTemp,     // 9
-	DLParamMotor2BridgeAFault,   // 10
-	DLParamMotor2BridgeBFault,   // 11
-	DLParamDistanceSensor1,      // 12
-	DLParamDistanceSensor2,      // 13
-	DLParamDistanceSensor3,      // 14
-	DLParamDistanceSensor4,      // 15
-	DLParamDistanceSensor5,      // 16
-	DLParamDistanceSensor6,      // 17
-	DLParamDistanceSensor7,      // 18
-	DLParamDistanceSensor8,      // 19
-	DLParamAccelerationX,        // 20
-	DLParamAccelerationY,        // 21
-	DLParamAccelerationZ,        // 22
-	DLParamMotor1RequestSpeed,   // 23
-	DLParamMotor2RequestSpeed,   // 24
-	DLParamCameraRequestXDegree, // 25
-	DLParamCameraRequestZDegree, // 26
-	// Count of items is 27
+	DLParamRobotFeedback1,          // 0
+	DLParamRobotFeedback2,          // 1
+	DLParamRobotFeedback3,          // 2
+	DLParamRobotFeedback4,          // 3
+	DLParamRobotFeedback5,          // 4
+	DLParamRobotFeedback6,          // 5
+	DLParamRobotFeedback7,          // 6
+	DLParamRobotFeedback8,          // 7
+	DLParamDistanceSensor1,         // 8
+	DLParamDistanceSensor2,         // 9
+	DLParamDistanceSensor3,         // 10
+	DLParamDistanceSensor4,         // 11
+	DLParamDistanceSensor5,         // 12
+	DLParamDistanceSensor6,         // 13
+	DLParamDistanceSensor7,         // 14
+	DLParamDistanceSensor8,         // 15
+	DLParamQw,                      // 16
+	DLParamQx,                      // 17
+	DLParamQy,                      // 18
+	DLParamQz,                      // 19
+	DLParamMotor1RequestSpeed,      // 20
+	DLParamMotor2RequestSpeed,      // 21
+	DLParamRequestTranslationSpeed, // 22
+	DLParamRequestRotationSpeed,    // 23
+	DLParamCameraRequestXDegree,    // 24
+	DLParamCameraRequestZDegree,    // 25
+	// Count of items is 26
 	DLNumberOfParams
 }
 DLParam;

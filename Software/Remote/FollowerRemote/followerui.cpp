@@ -5,6 +5,10 @@
 #include <QList>
 #include <qdebug.h>
 
+#define _USE_MATH_DEFINES 1
+
+#include <math.h>
+
 #include "WorkerThreadBase.h"
 #include "WorkerObjectBase.h"
 #include "DataLayerBase.h"
@@ -127,17 +131,16 @@ void FollowerUi::newUiData()
   ui.lbl_andur7->setText(QString("Andur7: %1cm").arg(sensors[6]));
   ui.lbl_andur8->setText(QString("Andur8: %1cm").arg(sensors[7]));
 
-  int16_t yaw = 0;
-  int16_t pitch = 0;
-  int16_t roll = 0;
+  int16_t qw = 0;
+  int16_t qx = 0;
+  int16_t qy = 0;
+  int16_t qz = 0;
+  dataLayer_->DL_getData(DLParamQw, &qw);
+  dataLayer_->DL_getData(DLParamQx, &qx);
+  dataLayer_->DL_getData(DLParamQy, &qy);
+  dataLayer_->DL_getData(DLParamQz, &qz);
 
-  dataLayer_->DL_getData(DLParamGyroYaw, &yaw);
-  dataLayer_->DL_getData(DLParamGyroPitch, &pitch);
-  dataLayer_->DL_getData(DLParamGyroRoll, &roll);
-
-  ui.lbl_yaw->setText(QString("Yaw: %1").arg(yaw));
-  ui.lbl_pitch->setText(QString("Pitch: %1").arg(pitch));
-  ui.lbl_roll->setText(QString("Roll: %1").arg(roll));
+  calcAndWriteEulerAnglesToUI(qw, qx, qy, qz);
 
   QList<uint8_t> data = {0,0,0,0,0,0,0,0};
   dataLayer_->DL_getData(DLParamRobotFeedback1, &data[0]);
@@ -276,4 +279,30 @@ void FollowerUi::on_pushButton_clicked()
   });
   connect(this, &FollowerUi::feedbackReceived, &conf, &Configure::onNewFeedbackData);
   conf.exec();
+}
+
+void FollowerUi::calcAndWriteEulerAnglesToUI(int16_t raw_qw, int16_t raw_qx,
+                                             int16_t raw_qy, int16_t raw_qz)
+{
+  double qw = raw_qw / 16384.0;
+  double qx = raw_qx / 16384.0;
+  double qy = raw_qy / 16384.0;
+  double qz = raw_qz / 16384.0;
+
+  int32_t qww = qw*qw;
+  int32_t qxx = qx*qx;
+  int32_t qyy = qy*qy;
+  int32_t qzz = qz*qz;
+
+  double yaw = atan2(2.0f * (qx * qy + qw * qz), qww + qxx -qyy - qzz);
+  double pitch = -asin(2.0f * (qx* qz - qw * qy));
+  double roll = atan2(2.0f * (qw * qx + qy * qz), qww - qxx - qyy + qzz);
+
+  yaw *= 180.0f / M_PI;
+  pitch *= 180.0f / M_PI;
+  roll *= 180.0f / M_PI;
+
+  ui.lbl_yaw->setText(QString("Yaw: %1").arg(yaw));
+  ui.lbl_pitch->setText(QString("Pitch: %1").arg(pitch));
+  ui.lbl_roll->setText(QString("Roll: %1").arg(roll));
 }

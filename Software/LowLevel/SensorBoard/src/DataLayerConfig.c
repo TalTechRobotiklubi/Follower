@@ -54,15 +54,15 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* RobotFeedback6          */ { TypeS16,   &pDLValueS16[13]  },
 	/* RobotFeedback7          */ { TypeS16,   &pDLValueS16[14]  },
 	/* RobotFeedback8          */ { TypeS16,   &pDLValueS16[15]  },
-	/* GyroYaw                 */ { TypeS16,   &pDLValueS16[16]  },
-	/* GyroPitch               */ { TypeS16,   &pDLValueS16[17]  },
-	/* GyroRoll                */ { TypeS16,   &pDLValueS16[18]  },
+	/* Qw                      */ { TypeS16,   &pDLValueS16[16]  },
+	/* Qx                      */ { TypeS16,   &pDLValueS16[17]  },
+	/* Qy                      */ { TypeS16,   &pDLValueS16[18]  },
+	/* Qz                      */ { TypeS16,   &pDLValueS16[19]  },
 	/* PidParameter            */ { TypeU8,    &pDLValueU8[12]   },
 	/* PidValue                */ { TypeFloat, &pDLValueFloat[0] },
 	/* PidUpdating             */ { TypeBool,  &pDLValueBool[4]  },
-	/* Qw                      */ { TypeS16,   &pDLValueS16[19]  },
-	/* Qx                      */ { TypeS16,   &pDLValueS16[20]  },
-	/* Qy                      */ { TypeS16,   &pDLValueS16[21]  },
-	/* Qz                      */ { TypeS16,   &pDLValueS16[22]  }
+	/* GyroYaw                 */ { TypeS16,   &pDLValueS16[20]  },
+	/* GyroPitch               */ { TypeS16,   &pDLValueS16[21]  },
+	/* GyroRoll                */ { TypeS16,   &pDLValueS16[22]  }
 };
 

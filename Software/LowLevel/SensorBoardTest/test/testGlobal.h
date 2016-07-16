@@ -22,10 +22,17 @@ typedef union
 	uint8_t d[2];
 } SplitInt16;
 
+typedef union
+{
+	uint16_t u;
+	uint8_t d[2];
+} SplitUint16;
+
 extern uint8_t DataHandlerOffset;
 extern uint8_t CanOffset;
 extern uint8_t UsartOffset;
 
-extern uint8_t DistanceSensorPacketIndex;
+extern uint8_t DistanceSensorPacketTransmitIndex;
+extern uint8_t QuaterionsPacketTransmitIndex;
 
 #endif /* TEST_GLOBAL_H_ */

@@ -12,36 +12,36 @@
 // ----------------------------------------------------------------------------
 // Interface tables
 // ----------------------------------------------------------------------------
-const InterfaceReceivePacket psNodeInterfaceCANReceivePacketList[4] = 
+const InterfaceReceivePacket nodeInterfaceCANReceivePacketList[3] = 
 {
-	{ PacketMotor1Status,    -1 },
-	{ PacketMotor2Status,    -1 },
+	{ PacketRobotFeedback,   -1 },
 	{ PacketDistanceSensors, -1 },
-	{ PacketAcceleration,    -1 }
+	{ PacketQuaternions,     -1 }
 };
 
-const InterfaceTransmitPacket psNodeInterfaceCANTransmitPacketList[1] = 
+const InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[2] = 
 {
-	{ PacketMotorSpeeds, -1 }
+	{ PacketMotorSpeeds,  -1 },
+	{ PacketRobotControl, -1 }
 };
 
-const InterfaceReceivePacket psNodeInterfaceUSBReceivePacketList[2] = 
+const InterfaceReceivePacket nodeInterfaceUSBReceivePacketList[3] = 
 {
 	{ PacketMotorSpeeds,   -1 },
-	{ PacketCameraControl, -1 }
+	{ PacketCameraControl, -1 },
+	{ PacketRobotControl,  -1 }
 };
 
-const InterfaceTransmitPacket psNodeInterfaceUSBTransmitPacketList[4] = 
+const InterfaceTransmitPacket nodeInterfaceUSBTransmitPacketList[3] = 
 {
-	{ PacketMotor1Status,    -1 },
-	{ PacketMotor2Status,    -1 },
 	{ PacketDistanceSensors, -1 },
-	{ PacketAcceleration,    -1 }
+	{ PacketRobotFeedback,   -1 },
+	{ PacketQuaternions,     -1 }
 };
 
-const NodeInterfaceDescriptor psInterfaceList[NumberOfInterfaces] = 
+const NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
 {
-	/* CAN */ { psNodeInterfaceCANReceivePacketList, 4, psNodeInterfaceCANTransmitPacketList, 1 },
-	/* USB */ { psNodeInterfaceUSBReceivePacketList, 2, psNodeInterfaceUSBTransmitPacketList, 4 }
+	/* CAN */ { nodeInterfaceCANReceivePacketList, 3, nodeInterfaceCANTransmitPacketList, 2 },
+	/* USB */ { nodeInterfaceUSBReceivePacketList, 3, nodeInterfaceUSBTransmitPacketList, 3 }
 };
 
