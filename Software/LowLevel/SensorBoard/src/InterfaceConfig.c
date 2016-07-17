@@ -19,7 +19,7 @@ const InterfaceReceivePacket nodeInterfaceCANReceivePacketList[3] =
 	{ PacketRobotControl, -1 }
 };
 
-InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[4] =
+InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[4] = 
 {
 	{ PacketMotorSpeeds,      -1,  -1 },
 	{ PacketDistanceSensors, 100, 100 },
@@ -34,10 +34,10 @@ const InterfaceReceivePacket nodeInterfaceUART_RemoteReceivePacketList[3] =
 	{ PacketPidSetup,     -1 }
 };
 
-InterfaceTransmitPacket nodeInterfaceUART_RemoteTransmitPacketList[3] =
+InterfaceTransmitPacket nodeInterfaceUART_RemoteTransmitPacketList[3] = 
 {
 	{ PacketDistanceSensors, 100, 100 },
-	{ PacketRobotFeedback,    -1, -1  },
+	{ PacketRobotFeedback,    -1,  -1 },
 	{ PacketQuaternions,     100, 100 }
 };
 
@@ -47,7 +47,7 @@ const InterfaceReceivePacket nodeInterfaceUART_IMUReceivePacketList[2] =
 	{ PacketGyro,        -1 }
 };
 
-NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] =
+NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
 {
 	/* CAN         */ { nodeInterfaceCANReceivePacketList,         3, nodeInterfaceCANTransmitPacketList,         4 },
 	/* UART_Remote */ { nodeInterfaceUART_RemoteReceivePacketList, 3, nodeInterfaceUART_RemoteTransmitPacketList, 3 },
