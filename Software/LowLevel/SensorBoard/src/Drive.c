@@ -18,9 +18,9 @@ typedef enum
 
 typedef struct
 {
-	double yaw;
-	double pitch;
-	double roll;
+	float yaw;
+	float pitch;
+	float roll;
 } Euler;
 
 static float kpX = 0.0f;
@@ -50,6 +50,7 @@ static uint8_t updateParameters();
 static void readEncoders();
 static void stop();
 static void readRequestedSpeeds();
+static void readTurningSpeeds();
 static void drive();
 
 uint8_t updateParameters()
@@ -140,6 +141,15 @@ void readRequestedSpeeds()
 	speedW = (float)read;
 }
 
+void readTurningSpeeds()
+{
+	int16_t yaw;
+	DL_getData(DLParamGyroYaw, &yaw);
+	float wSpeed = yaw * 2000 / 32767;
+	int i;
+	i++;
+}
+
 void drive()
 {
 	static float fwd_speed = 0, turn_speed = 0;
@@ -214,7 +224,12 @@ void Drive_task()
 	}
 	readEncoders();
 	readRequestedSpeeds();
+	readTurningSpeeds();
 	drive();
+
+	int16_t x;
+	DL_getData(DLParamGyroRoll, &x);
+
 }
 
 void Drive_setSpeed(float speedX, float speedW)

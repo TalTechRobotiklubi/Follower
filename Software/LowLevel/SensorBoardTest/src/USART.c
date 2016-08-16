@@ -79,7 +79,7 @@ void USART_setQuaternionsMessagePending(uint16_t qw, uint16_t qx, uint16_t qy, u
 	qx_.u = qx;
 	qy_.u = qy;
 	qz_.u = qz;
-	quaternionsMessage.packet = PacketGyro;
+	quaternionsMessage.packet = PacketQuaternions;
 	quaternionsMessage.period = PacketDescriptorList[PacketQuaternions].period;
 	quaternionsMessage.id = PacketDescriptorList[PacketQuaternions].id;
 	quaternionsMessage.length = PacketDescriptorList[PacketQuaternions].dlc;

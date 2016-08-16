@@ -5,12 +5,9 @@
 class DataLayerBase
 {
 public:
-    DataLayerBase();
+  DataLayerBase();
 	virtual ~DataLayerBase();
 
-    virtual bool    DL_getData(DLParam param, DLValuePointer value) = 0;
-    virtual void    DL_setData(DLParam param, DLValuePointer value) = 0;
-
-private:
-    void            dummy() {}
+  virtual bool DL_getData(DLParam param, DLValuePointer value) = 0;
+  virtual void DL_setData(DLParam param, DLValuePointer value) = 0;
 };

@@ -1,8 +1,9 @@
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
-#include "PacketHandler.h"
 #include "DataLayerCAN.h"
+#include "InterfaceConfig.h"
+#include "DataLayerConfig.h"
 
 DataLayerCAN::DataLayerCAN(void)
 {
@@ -14,6 +15,47 @@ DataLayerCAN::~DataLayerCAN(void)
 {
 }
 
+/*Decrease periodic transmit packet elapse time, if reached to 0 then it is notification
+ *for interface modules (UART, CAN) to send packets out and update the elapsed time to initial value.
+ *
+ *In case of async packet it is set to PACKET_WAITING if all parameters in the packet are invalid.
+ */
+void DataLayerCAN::DL_task(uint16_t timeElapsedMs)
+{
+  for (int i = 0; i < NumberOfInterfaces; ++i)
+  {
+    NodeInterfaceDescriptor interfaceDesc = InterfaceList[i];
+    uint j;
+    for (j = 0; j < interfaceDesc.transmitPacketCount; j++)
+    {
+      InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[j];
+
+      // only periodic packets
+      if (transmitPacket->period > 0)
+      {
+        transmitPacket->elapsed -= timeElapsedMs;
+        if (transmitPacket->elapsed < 0)
+          transmitPacket->elapsed = 0;
+      }
+    }
+    for (j = 0; j < interfaceDesc.receivePacketCount; j++)
+    {
+      InterfaceReceivePacket receivePacket = interfaceDesc.receivePacketList[j];
+      PacketDescriptor* packetDesc = &PacketDescriptorList[receivePacket.packet];
+      bool allInvalid = false;
+
+      // only async packets
+      if (packetDesc->period < 0 && packetDesc->period == PACKET_NEW)
+      {
+        for (j = 0; j < packetDesc->parameterCount; j++)
+          allInvalid |= pbValidFlags_[(packetDesc->parameterList + j)->param];
+        if (!allInvalid)
+          packetDesc->period = PACKET_WAITING;
+      }
+    }
+  }
+}
+
 // ----------------------------------------------------------------------------
 // Use this function in logic layer to get data from DL. Handle also status for asynchronous data,
 // so that after reading async data the status changes to WAITING.
@@ -23,45 +65,37 @@ DataLayerCAN::~DataLayerCAN(void)
 // ----------------------------------------------------------------------------
 bool DataLayerCAN::DL_getData(DLParam param, DLValuePointer pValue)
 {
-	uint8_t numOfPackets, i, j;
-	PacketWithIndex *packet;
-
-    QMutexLocker locker(&mutex_);
+  QMutexLocker locker(&mutex_);
+  bool retVal = false;
 
 	GetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
-	/*check if parameter is part of any async UART packets*/
-	numOfPackets = packetHandler_.Packet_getNumOfUARTRxPackets();
-	packet = packetHandler_.Packet_getUARTRxPacketsData();
-
-	for (i = 0; i < numOfPackets; i++)
-	{
-		if ((packet[i].iperiod < 0) && (packetHandler_.Packet_getMessagePeriod(packet[i].index) < 0))
-		{
-			for (j = 0; j < packetHandler_.Packet_getMessageParameterCount(packet[i].index); j++)
-			{
-        if ((packetHandler_.Packet_getMessageParameterList(packet[i].index) + j)->param == param)
-				{
-					if (packet[i].iperiod != PACKET_WAITING)
-					{
-						packet[i].iperiod = PACKET_WAITING;
-                        pbValidFlags_[param] = true;
-					}
-                    else
-                        pbValidFlags_[param] = false;
-                    break;
-				}
-			}
-		}
-	}
-    return pbValidFlags_[param];
+  /*check if parameter is part of any async packets*/
+  for (int i = 0; i < NumberOfPackets; i++)
+  {
+    PacketDescriptor *packet = &PacketDescriptorList[i];
+    if (packet->period < 0)
+    {
+      for (int j = 0; j < packet->parameterCount; j++)
+      {
+        if ((packet->parameterList + j)->param == param)
+        {
+          retVal = pbValidFlags_[param];
+          if (pbValidFlags_[param] == true)
+            pbValidFlags_[param] = false;
+          return retVal;
+        }
+      }
+    }
+  }
+  return pbValidFlags_[param];
 }
 
 /*Use this function in COMM driver layer (CAN, UART etc.) to get data from DL.
  *Param as parameter
  *pValue as pointer to place where data will be stored from DL
  *Returns if the value is valid or not*/
-bool DataLayerCAN::DL_getDataByComm(DLParam param, DLValuePointer pValue)
+bool DataLayerCAN::DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer pValue)
 {
 	GetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
@@ -73,54 +107,53 @@ bool DataLayerCAN::DL_getDataByComm(DLParam param, DLValuePointer pValue)
  *pValue as pointer to place where data will be stored from DL*/
 void DataLayerCAN::DL_setData(DLParam param, DLValuePointer pValue)
 {
-	uint32_t tempData, size, newValue;
-    uint32_t mask = 0;
-	uint8_t numOfPackets, i, j;
-	PacketWithIndex *packet;
-    Type type;
+  uint32_t tempData, newValue;
+  uint32_t mask = 0;
+  uint8_t i, j;
+  Type type;
+  uint32_t size;
 
-    QMutexLocker locker(&mutex_);
+  QMutexLocker locker(&mutex_);
 
-    /*format data so they are comparable*/
-	type = psDLParamDescriptorList[param].eType;
-	GetDataAccordingToType(param, &tempData, type);
-	size = psTypeSize[type];
-	for (i = 0; i < size; i++)
-	{
-		mask |= (1 << i);
-	}
-	tempData = tempData & mask;
-	newValue = (*(uint32_t*)pValue) & mask;
-	/*check if data has changed*/
+  /*format data so they are comparable*/
+  type = psDLParamDescriptorList[param].eType;
+  GetDataAccordingToType(param, &tempData, type);
+  size = psTypeSize[type];
+  for (i = 0; i < size; i++)
+  {
+    mask |= (1 << i);
+  }
+  tempData = tempData & mask;
+  newValue = (*(uint32_t*)pValue) & mask;
+  /*check if data has changed*/
     if (tempData != newValue )
-	{
-		SetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
+  {
+    SetDataAccordingToType(param, pValue, type);
 
-		/*check if parameter is part of any async UART packets*/
-		numOfPackets = packetHandler_.Packet_getNumOfUARTTxPackets();
-		packet = packetHandler_.Packet_getUARTTxPacketsData();
-
-		for (i = 0; i < numOfPackets; i++)
-		{
-			if ((packet[i].iperiod < 0) && (packetHandler_.Packet_getMessagePeriod(packet[i].index) < 0))
-			{
-				for (j = 0; j < packetHandler_.Packet_getMessageParameterCount(packet[i].index); j++)
-				{
-          if ((packetHandler_.Packet_getMessageParameterList(packet[i].index) + j)->param == param)
-					{
-						packet[i].iperiod = PACKET_READY_TO_SEND;
-					}
-				}
-			}
-		}
-	}
+    /*check if parameter is part of any async packets*/
+    for (i = 0; i < NumberOfPackets; i++)
+    {
+      PacketDescriptor* packet = &PacketDescriptorList[i];
+      if (packet->period < 0)
+      {
+        for (j = 0; j < packet->parameterCount; j++)
+        {
+          if ((packet->parameterList + j)->param == param)
+          {
+            packet->period = PACKET_NEW;
+            return;
+          }
+        }
+      }
+    }
+  }
 }
 
 /*Use this function in COMM driver layer (CAN, UART etc.) to set data to DL.
  *Communication tasks (CAN_TASK etc.) are already handling data status.
  *Param as parameter
  *pValue as pointer to data for storing to DL*/
-void DataLayerCAN::DL_setDataByComm(DLParam param, DLValuePointer value)
+void DataLayerCAN::DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value)
 {
 	SetDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
 	
@@ -199,6 +232,16 @@ void DataLayerCAN::DL_setDefaultValuesForParameters(void)
     }
 }
 
+void DataLayerCAN::DL_setAsyncPacketInvalid(PacketDescriptor* packetDesc)
+{
+  if (packetDesc->period < 0)
+  {
+    int j;
+    for (j = 0; j < packetDesc->parameterCount; j++)
+      pbValidFlags_[(packetDesc->parameterList + j)->param] = false;
+    packetDesc->period = PACKET_WAITING;
+  }
+}
 
 QMutex& DataLayerCAN::getMutex()
 {

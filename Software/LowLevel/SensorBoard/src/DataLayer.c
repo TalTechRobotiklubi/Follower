@@ -3,7 +3,6 @@
 // ----------------------------------------------------------------------------
 #include "DataLayer.h"
 #include "DataLayerConfig.h"
-#include "PacketConfig.h"
 #include "InterfaceConfig.h"
 #include "TaskHandler.h"
 
@@ -24,12 +23,11 @@ void DL_init()
 		priv_validFlags[i] = FALSE;
 }
 
-/*Increase periodic transmit packet elapse time, if reached to period then it is notification
- *for interface modules (UART, CAN) to send packets out. Next time coming here it is over the period
- *so reset the counting by adding 1 count of elapsed time.
- *It means that packet periods must divide with period of DataHandler_TASK (5 ms), otherwise periodic packet
- *is never sent out. Another restriction is that interface modules (CAN, UART) must be called with same
- *period as DL_TASK. */
+/*Decrease periodic transmit packet elapse time, if reached to 0 then it is notification
+ *for interface modules (UART, CAN) to send packets out and update the elapsed time to initial value.
+ *
+ *In case of async packet it is set to PACKET_WAITING if all parameters in the packet are invalid.
+ */
 void DL_task(void)
 {
 	int i;
@@ -40,14 +38,13 @@ void DL_task(void)
 		for (j = 0; j < interfaceDesc.transmitPacketCount; j++)
 		{
 			InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[j];
-			//PacketDescriptor* packetDesc = &PacketDescriptorList[transmitPacket.packet];
 
 			// only periodic packets
 			if (transmitPacket->period > 0)
 			{
 				uint16_t elapsedTime = TaskHandler_tableOfTasks[TASK_DATAHANDLER].period;
 				transmitPacket->elapsed -= elapsedTime;
-				if (transmitPacket->elapsed < transmitPacket->period)
+				if (transmitPacket->elapsed < 0)
 					transmitPacket->elapsed = 0;
 			}
 		}
@@ -111,7 +108,8 @@ void checkTimeouts(uint8_t numOfPackets, PacketWithIndex *packet)
 // Use this function in logic layer to get data from DL.
 // Param as parameter
 // pValue as pointer to place where data will be stored from DL
-// Returns if the value is valid or not
+// Returns if the value is valid or not. Validity of the value is determined in
+// two ways: in case of periodic packet
 // ----------------------------------------------------------------------------
 Boolean DL_getData(DLParam param, DLValuePointer pValue)
 {

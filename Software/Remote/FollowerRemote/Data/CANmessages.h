@@ -3,7 +3,7 @@
 
 #define PC_QT_APPLICATION
 
-#define DATA_BUFFER_SIZE 32
+//#define DATA_BUFFER_SIZE 32
 
 #ifdef PC_QT_APPLICATION
 #include "qglobal.h"

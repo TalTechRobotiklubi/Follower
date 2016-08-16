@@ -284,15 +284,17 @@ void FollowerUi::on_pushButton_clicked()
 void FollowerUi::calcAndWriteEulerAnglesToUI(int16_t raw_qw, int16_t raw_qx,
                                              int16_t raw_qy, int16_t raw_qz)
 {
+  qDebug() << "Quaternions: " << raw_qw << raw_qx << raw_qy << raw_qz;
+
   double qw = raw_qw / 16384.0;
   double qx = raw_qx / 16384.0;
   double qy = raw_qy / 16384.0;
   double qz = raw_qz / 16384.0;
 
-  int32_t qww = qw*qw;
-  int32_t qxx = qx*qx;
-  int32_t qyy = qy*qy;
-  int32_t qzz = qz*qz;
+  double qww = qw*qw;
+  double qxx = qx*qx;
+  double qyy = qy*qy;
+  double qzz = qz*qz;
 
   double yaw = atan2(2.0f * (qx * qy + qw * qz), qww + qxx -qyy - qzz);
   double pitch = -asin(2.0f * (qx* qz - qw * qy));

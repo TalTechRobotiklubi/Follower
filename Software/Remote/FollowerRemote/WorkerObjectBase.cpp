@@ -10,13 +10,10 @@ WorkerObjectBase::WorkerObjectBase(SpineComm* spineComm)
     
 }
 
-
 WorkerObjectBase::~WorkerObjectBase(void)
 {
    
 }
-
-
 
 void WorkerObjectBase::startCommunication(QString nPort)
 {

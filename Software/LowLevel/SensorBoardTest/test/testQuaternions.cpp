@@ -19,6 +19,7 @@ TEST(quaternionsDataIsInvalidByDefault)
 	int16_t qy = 0;
 	int16_t qz = 0;
 
+	DL_init();
 	CHECK(!DL_getData(DLParamQw, &qw));
 	CHECK(!DL_getData(DLParamQx, &qx));
 	CHECK(!DL_getData(DLParamQy, &qy));
@@ -27,10 +28,10 @@ TEST(quaternionsDataIsInvalidByDefault)
 
 TEST(quaternionsMessageDataIsSetToDataLayer)
 {
-	int16_t expQw = 0;
-	int16_t expQx = 0;
-	int16_t expQy = 0;
-	int16_t expQz = 0;
+	int16_t expQw = 10;
+	int16_t expQx = 110;
+	int16_t expQy = 1110;
+	int16_t expQz = 11110;
 	int16_t actQw = 0;
 	int16_t actQx = 0;
 	int16_t actQy = 0;

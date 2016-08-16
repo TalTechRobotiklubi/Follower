@@ -24,14 +24,15 @@ SOURCES += \
     Data/DataLayerCAN.cpp \
     Data/DataLayerConfig.cpp \
     Data/PacketConfig.cpp \
-    Data/PacketHandler.cpp \
     Data/Typedef.cpp \
     Spine/SpineCommCAN.cpp \
     Algorithms/algorithmbuilder.cpp \
     Algorithms/algorithmwander.cpp \
     Algorithms/algorithmtrack.cpp \
     Algorithms/algorithmturn.cpp \
-    configure.cpp
+    configure.cpp \
+    Data/InterfaceConfig.cpp \
+    Data/InterfaceHandler.cpp
 
 HEADERS  +=  \
     CANWorkerThread.h \
@@ -48,7 +49,6 @@ HEADERS  +=  \
     Data/DataLayerCAN.h \
     Data/DataLayerConfig.h \
     Data/PacketConfig.h \
-    Data/PacketHandler.h \
     Data/Typedef.h \
     Spine/CSpineComm.h \
     Spine/SpineCommCAN.h \
@@ -57,7 +57,9 @@ HEADERS  +=  \
     Algorithms/algorithmwander.h \
     Algorithms/algorithmtrack.h \
     Algorithms/algorithmturn.h \
-    configure.h
+    configure.h \
+    Data/InterfaceConfig.h \
+    Data/InterfaceHandler.h
 
 INCLUDEPATH += \
 	 ./Data \
