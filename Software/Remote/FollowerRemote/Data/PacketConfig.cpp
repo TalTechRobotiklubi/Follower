@@ -14,16 +14,12 @@ extern "C" {
 // ----------------------------------------------------------------------------
 // Packet "RobotFeedback" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter packetRobotFeedbackParameterList[8] = 
+const PacketParameter packetRobotFeedbackParameterList[4] = 
 {
-	{ DLParamRobotFeedback1,   0, 16 },
-	{ DLParamRobotFeedback2,  16, 16 },
-	{ DLParamRobotFeedback3,  32, 16 },
-	{ DLParamRobotFeedback4,  48, 16 },
-	{ DLParamRobotFeedback5,  64, 16 },
-	{ DLParamRobotFeedback6,  80, 16 },
-	{ DLParamRobotFeedback7,  96, 16 },
-	{ DLParamRobotFeedback8, 112, 16 }
+	{ DLParamRobotFeedback1,  0, 16 },
+	{ DLParamRobotFeedback2, 16, 16 },
+	{ DLParamRobotFeedback3, 32, 16 },
+	{ DLParamRobotFeedback4, 48, 16 }
 };
 
 // ----------------------------------------------------------------------------
@@ -94,15 +90,14 @@ const PacketParameter packetCameraControlParameterList[2] =
 // ----------------------------------------------------------------------------
 PacketDescriptor PacketDescriptorList[NumberOfPackets] = 
 {
-	/* RobotFeedback   */ { 0xD4, -1, packetRobotFeedbackParameterList,   8, 16 },
+	/* RobotFeedback   */ { 0xD4, -1, packetRobotFeedbackParameterList,   4,  8 },
 	/* DistanceSensors */ { 0xF0, -1, packetDistanceSensorsParameterList, 8,  8 },
 	/* Quaternions     */ { 0xF2, -1, packetQuaternionsParameterList,     4,  8 },
-	/* MotorSpeeds     */ { 0xD0, 0, packetMotorSpeedsParameterList,     2,  4 },
-	/* RobotControl    */ { 0xD3, 0, packetRobotControlParameterList,    2,  4 },
+	/* MotorSpeeds     */ { 0xD0, 0, packetMotorSpeedsParameterList,     2, 4 },
+	/* RobotControl    */ { 0xD3, 0, packetRobotControlParameterList,    2, 4 },
 	/* PidSetup        */ { 0xD5, -1, packetPidSetupParameterList,       3,  6 },
 	/* CameraControl   */ { 0xE0, -1, packetCameraControlParameterList,  2,  2 }
 };
-#define NUMBER_OF_PACKETS (sizeof(psPacketDescriptorList)/sizeof(Packet))
 
 }
 #endif

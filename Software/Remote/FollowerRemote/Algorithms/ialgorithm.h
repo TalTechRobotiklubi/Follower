@@ -8,8 +8,18 @@ class IAlgorithm
 public:
     struct Execution
     {
-        int leftSpeed;
-        int rightSpeed;
+        int16_t xSpeed;
+        int16_t wSpeed;
+
+        Execution()
+         : xSpeed(0), wSpeed(0)
+        { }
+
+        Execution(int16_t xSpeed, int16_t wSpeed)
+        {
+          this->xSpeed = xSpeed;
+          this->wSpeed = wSpeed;
+        }
     };
     virtual ~IAlgorithm() {}
     virtual void start() = 0;

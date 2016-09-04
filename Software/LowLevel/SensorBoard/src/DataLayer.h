@@ -27,6 +27,7 @@ void DL_setData(DLParam param, DLValuePointer value);
 void DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value);
 Type DL_getDataType(DLParam param);
 void DL_setDataValidity(DLParam, Boolean validity);
-void DL_setAsyncPacketInvalid(PacketDescriptor* packetDesc);
+void DL_setDataInAsyncPacketInvalid(PacketDescriptor* packetDesc);
+void DL_setDataWithForcedAsyncSend(DLParam param, DLValuePointer value);
 
 #endif

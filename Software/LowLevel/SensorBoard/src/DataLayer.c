@@ -15,6 +15,7 @@ static Bool priv_validFlags[DLNumberOfParams];
 // ----------------------------------------------------------------------------
 static void setDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 static void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
+static void markNewAsyncMessageReadyForSending(DLParam param);
 
 void DL_init()
 {
@@ -54,11 +55,12 @@ void DL_task(void)
 			PacketDescriptor* packetDesc = &PacketDescriptorList[receivePacket.packet];
 			Bool allInvalid = FALSE;
 
-			// only async packets
+			// only async receive packets
 			if (packetDesc->period < 0 && packetDesc->period == PACKET_NEW)
 			{
-				for (j = 0; j < packetDesc->parameterCount; j++)
-					allInvalid |= priv_validFlags[(packetDesc->parameterList + j)->param];
+				int k;
+				for (k = 0; k < packetDesc->parameterCount; k++)
+					allInvalid |= priv_validFlags[(packetDesc->parameterList + k)->param];
 				if (!allInvalid)
 					packetDesc->period = PACKET_WAITING;
 			}
@@ -66,14 +68,13 @@ void DL_task(void)
 	}
 }
 
-void DL_setAsyncPacketInvalid(PacketDescriptor* packetDesc)
+void DL_setDataInAsyncPacketInvalid(PacketDescriptor* packetDesc)
 {
 	if (packetDesc->period < 0)
 	{
 		int j;
 		for (j = 0; j < packetDesc->parameterCount; j++)
 			priv_validFlags[(packetDesc->parameterList + j)->param] = FALSE;
-		packetDesc->period = PACKET_WAITING;
 	}
 }
 
@@ -167,7 +168,7 @@ void DL_setData(DLParam param, DLValuePointer pValue)
 {
 	uint32_t tempData, newValue;
 	uint32_t mask = 0;
-	uint8_t i, j;
+	uint8_t i;
 	Type type;
 	uint32_t size;
 
@@ -185,23 +186,7 @@ void DL_setData(DLParam param, DLValuePointer pValue)
     if (tempData != newValue )
 	{
 		setDataAccordingToType(param, pValue, type);
-
-		/*check if parameter is part of any async packets*/
-		for (i = 0; i < NumberOfPackets; i++)
-		{
-			PacketDescriptor* packet = &PacketDescriptorList[i];
-			if (packet->period < 0)
-			{
-				for (j = 0; j < packet->parameterCount; j++)
-				{
-					if ((packet->parameterList + j)->param == param)
-					{
-						packet->period = PACKET_NEW;
-						return;
-					}
-				}
-			}
-		}
+		markNewAsyncMessageReadyForSending(param);
 	}
 }
 
@@ -223,6 +208,44 @@ Type DL_getDataType(DLParam param)
 void DL_setDataValidity(DLParam param, Boolean validity)
 {
 	priv_validFlags[param] = validity;
+}
+
+void DL_setDataWithForcedAsyncSend(DLParam param, DLValuePointer value)
+{
+	setDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
+	markNewAsyncMessageReadyForSending(param);
+}
+
+void markNewAsyncMessageReadyForSending(DLParam param)
+{
+	int i;
+	for (i = 0; i < NumberOfInterfaces; ++i)
+	{
+		NodeInterfaceDescriptor interfaceDesc = InterfaceList[i];
+		int j;
+		for (j = 0; j < interfaceDesc.transmitPacketCount; j++)
+		{
+			InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[j];
+			uint8_t packetFound = 0;
+
+			// only async packets
+			if (transmitPacket->period < 0)
+			{
+				PacketDescriptor* packet = &PacketDescriptorList[transmitPacket->packet];
+				int k;
+				for (k = 0; k < packet->parameterCount; k++)
+				{
+					if ((packet->parameterList + j)->param == param)
+					{
+						transmitPacket->period = PACKET_NEW;
+						packetFound = 1;
+					}
+				}
+			}
+			if (packetFound)
+				break;
+		}
+	}
 }
 
 /*gets data from data layer*/

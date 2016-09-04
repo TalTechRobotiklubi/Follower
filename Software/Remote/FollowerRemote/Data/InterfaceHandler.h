@@ -12,6 +12,8 @@
 
 #include "InterfaceConfig.h"
 
+#define DATA_BUFFER_SIZE 32
+
 class DataLayerCAN;
 
 typedef struct

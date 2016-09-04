@@ -14,7 +14,7 @@
 // ----------------------------------------------------------------------------
 Bool  pDLValueBool[5];
 U8    pDLValueU8[13];
-S16   pDLValueS16[23];
+S16   pDLValueS16[19];
 Float pDLValueFloat[1];
 
 // ----------------------------------------------------------------------------
@@ -50,19 +50,15 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* RobotFeedback2          */ { TypeS16,   &pDLValueS16[9]   },
 	/* RobotFeedback3          */ { TypeS16,   &pDLValueS16[10]  },
 	/* RobotFeedback4          */ { TypeS16,   &pDLValueS16[11]  },
-	/* RobotFeedback5          */ { TypeS16,   &pDLValueS16[12]  },
-	/* RobotFeedback6          */ { TypeS16,   &pDLValueS16[13]  },
-	/* RobotFeedback7          */ { TypeS16,   &pDLValueS16[14]  },
-	/* RobotFeedback8          */ { TypeS16,   &pDLValueS16[15]  },
-	/* Qw                      */ { TypeS16,   &pDLValueS16[16]  },
-	/* Qx                      */ { TypeS16,   &pDLValueS16[17]  },
-	/* Qy                      */ { TypeS16,   &pDLValueS16[18]  },
-	/* Qz                      */ { TypeS16,   &pDLValueS16[19]  },
+	/* Qw                      */ { TypeS16,   &pDLValueS16[12]  },
+	/* Qx                      */ { TypeS16,   &pDLValueS16[13]  },
+	/* Qy                      */ { TypeS16,   &pDLValueS16[14]  },
+	/* Qz                      */ { TypeS16,   &pDLValueS16[15]  },
 	/* PidParameter            */ { TypeU8,    &pDLValueU8[12]   },
 	/* PidValue                */ { TypeFloat, &pDLValueFloat[0] },
 	/* PidUpdating             */ { TypeBool,  &pDLValueBool[4]  },
-	/* GyroYaw                 */ { TypeS16,   &pDLValueS16[20]  },
-	/* GyroPitch               */ { TypeS16,   &pDLValueS16[21]  },
-	/* GyroRoll                */ { TypeS16,   &pDLValueS16[22]  }
+	/* GyroYaw                 */ { TypeS16,   &pDLValueS16[16]  },
+	/* GyroPitch               */ { TypeS16,   &pDLValueS16[17]  },
+	/* GyroRoll                */ { TypeS16,   &pDLValueS16[18]  }
 };
 

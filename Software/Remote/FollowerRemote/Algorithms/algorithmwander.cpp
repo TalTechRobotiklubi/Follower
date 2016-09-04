@@ -40,14 +40,14 @@ AlgorithmWander::Execution AlgorithmWander::run()
         if (counter & 1)
         {
             //motorspeed(900,-900);
-            execution.leftSpeed = 900;
-            execution.rightSpeed = -900;
+            execution.xSpeed = 900;
+            execution.wSpeed = -900;
         }
         else
         {
             //motorspeed(-900,900);
-            execution.leftSpeed = -900;
-            execution.rightSpeed = 900;
+            execution.xSpeed = -900;
+            execution.wSpeed = 900;
         }
         lastState = 0;
         pidI = 0;
@@ -77,8 +77,8 @@ AlgorithmWander::Execution AlgorithmWander::run()
         int pid = pidP;//+i/75+d/4;
 
         //motorspeed(speed-pid,speed+pid);
-        execution.leftSpeed = speed-pid;
-        execution.rightSpeed = speed+pid;
+        execution.xSpeed = speed-pid;
+        execution.wSpeed = speed+pid;
         lastState = 1;
     }
     return execution;

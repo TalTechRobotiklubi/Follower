@@ -16,7 +16,10 @@ void AlgorithmTrack::start()
 
 IAlgorithm::Execution AlgorithmTrack::run()
 {
-    return Execution();
+  int16_t speedX = 300;
+  int16_t speedW = 0;
+
+  return Execution(speedX, speedW);
 }
 
 void AlgorithmTrack::stop()

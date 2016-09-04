@@ -142,16 +142,13 @@ void FollowerUi::newUiData()
 
   calcAndWriteEulerAnglesToUI(qw, qx, qy, qz);
 
-  QList<uint8_t> data = {0,0,0,0,0,0,0,0};
-  dataLayer_->DL_getData(DLParamRobotFeedback1, &data[0]);
-  dataLayer_->DL_getData(DLParamRobotFeedback2, &data[1]);
-  dataLayer_->DL_getData(DLParamRobotFeedback3, &data[2]);
-  dataLayer_->DL_getData(DLParamRobotFeedback4, &data[3]);
-  dataLayer_->DL_getData(DLParamRobotFeedback4, &data[4]);
-  dataLayer_->DL_getData(DLParamRobotFeedback4, &data[5]);
-  dataLayer_->DL_getData(DLParamRobotFeedback4, &data[6]);
-  dataLayer_->DL_getData(DLParamRobotFeedback4, &data[7]);
-  emit feedbackReceived(data);
+  QList<uint8_t> data = {0,0,0,0};
+  bool newData = dataLayer_->DL_getData(DLParamRobotFeedback1, &data[0]);
+  newData |= dataLayer_->DL_getData(DLParamRobotFeedback2, &data[1]);
+  newData |= dataLayer_->DL_getData(DLParamRobotFeedback3, &data[2]);
+  newData |= dataLayer_->DL_getData(DLParamRobotFeedback4, &data[3]);
+  if (newData)
+    emit feedbackReceived(data);
 }
 
 void FollowerUi::keyPressEvent ( QKeyEvent * event )
@@ -284,7 +281,7 @@ void FollowerUi::on_pushButton_clicked()
 void FollowerUi::calcAndWriteEulerAnglesToUI(int16_t raw_qw, int16_t raw_qx,
                                              int16_t raw_qy, int16_t raw_qz)
 {
-  qDebug() << "Quaternions: " << raw_qw << raw_qx << raw_qy << raw_qz;
+  //qDebug() << "Quaternions: " << raw_qw << raw_qx << raw_qy << raw_qz;
 
   double qw = raw_qw / 16384.0;
   double qx = raw_qx / 16384.0;

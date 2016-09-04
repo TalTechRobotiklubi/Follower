@@ -76,9 +76,9 @@ TEST(quaterionsDataIsSentOutPeriodicallyViaCan)
 	TaskHandler_run();
 
 	uint8_t cnt = CAN_sentMessageCount();
-	CHECK_EQUAL(2, cnt);  // +1 is distance sensor message
+	CHECK_EQUAL(1, cnt);
 
-	InterfaceMessage msg = CAN_sentMessages()[1];
+	InterfaceMessage msg = CAN_sentMessages()[cnt - 1];
 	CHECK_EQUAL(242, msg.id);
 	SplitInt16 s;
 	s.d[1] = msg.data[0];

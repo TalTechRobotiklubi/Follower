@@ -50,18 +50,21 @@ void Configure::on_button_send_clicked()
       writePidParametersToFile();
     else
       qDebug() << "Measuremnt file open failed!";
-    timer_.start(100);
+    timer_.start(50);
   }
 }
 
 void Configure::initTable()
 {
-  ui->tableParams->setRowCount(3);
+  ui->tableParams->setRowCount(6);
   ui->tableParams->setColumnCount(2);
 
-  addParameterToTable("P", 0, 0.2f);
-  addParameterToTable("I", 1, 0.3f);
-  addParameterToTable("D", 2, 0.4f);
+  addParameterToTable("Px", 0, 0.2f);
+  addParameterToTable("Ix", 1, 0.0f);
+  addParameterToTable("Dx", 2, 0.0f);
+  addParameterToTable("Pw", 3, 0.0f);
+  addParameterToTable("Iw", 4, 0.0f);
+  addParameterToTable("Dw", 5, 0.0f);
 }
 
 void Configure::addParameterToTable(const QString& param, int row, float value)

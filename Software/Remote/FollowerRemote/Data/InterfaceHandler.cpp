@@ -279,8 +279,6 @@ void initalizeInterfaceMessage(InterfaceMessage* message, PacketDescriptor* pack
 
 	int i;
 	for (i = 0; i < message->length; i++)
-	{
 		message->data[i] = 0;
-	}
 }
 

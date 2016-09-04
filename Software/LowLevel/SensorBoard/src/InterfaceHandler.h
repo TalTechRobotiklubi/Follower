@@ -20,7 +20,6 @@ typedef struct
 } InterfaceMessage;
 
 extern void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(InterfaceMessage* msg));
-extern void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interface, void (*funcToDriver)(InterfaceMessage* msg));
 extern Bool InterfaceHandler_checkIfReceivedMessageExists(Interface interface, InterfaceMessage* msg);
 extern void InterfaceHandler_storeReceivedData(InterfaceMessage* msg);
 

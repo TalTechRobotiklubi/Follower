@@ -16,7 +16,7 @@ DataLayerCAN::~DataLayerCAN(void)
 }
 
 /*Decrease periodic transmit packet elapse time, if reached to 0 then it is notification
- *for interface modules (UART, CAN) to send packets out and update the elapsed time to initial value.
+ *for interface module (UART) to send packets out and update the elapsed time to initial value.
  *
  *In case of async packet it is set to PACKET_WAITING if all parameters in the packet are invalid.
  */

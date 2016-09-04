@@ -29,34 +29,13 @@ void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(Int
 		}
 		else // aperiodic packets
 		{
-			if (packetDesc->period == PACKET_NEW)
+			if (transmitPacket->period == PACKET_NEW)
 			{
+				message.packet = transmitPacket->packet;
 				initalizeInterfaceMessage(&message, packetDesc);
 				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
-				DL_setAsyncPacketInvalid(packetDesc);
-			}
-		}
-	}
-}
-
-/*peeks async data and transmits it if needed. Does not affect the status*/
-void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interface, void (*funcToDriver)(InterfaceMessage* msg))
-{
-	uint8_t i;
-	InterfaceMessage message;
-
-	NodeInterfaceDescriptor interfaceDesc = InterfaceList[interface];
-	for (i = 0; i < interfaceDesc.transmitPacketCount; i++)
-	{
-		InterfaceTransmitPacket transmitPacket = interfaceDesc.transmitPacketList[i];
-		PacketDescriptor *packetDesc = &PacketDescriptorList[transmitPacket.packet];
-
-		if (transmitPacket.period < 0) // aperiodic packets
-		{
-			if (packetDesc->period == PACKET_NEW)
-			{
-				initalizeInterfaceMessage(&message, packetDesc);
-				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
+				DL_setDataInAsyncPacketInvalid(packetDesc);
+				transmitPacket->period = PACKET_WAITING;
 			}
 		}
 	}
@@ -165,13 +144,9 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 	if (dataLayerOk == packetDesc->parameterCount)
 	{
 		if (msg->period >= 0)
-		{
 			packetDesc->period = 0;
-		}
 		else
-		{
 			packetDesc->period = PACKET_NEW;
-		}
 	}
 }
 

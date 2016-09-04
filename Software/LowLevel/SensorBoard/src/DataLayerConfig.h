@@ -44,21 +44,17 @@ typedef enum
 	DLParamRobotFeedback2,          // 25
 	DLParamRobotFeedback3,          // 26
 	DLParamRobotFeedback4,          // 27
-	DLParamRobotFeedback5,          // 28
-	DLParamRobotFeedback6,          // 29
-	DLParamRobotFeedback7,          // 30
-	DLParamRobotFeedback8,          // 31
-	DLParamQw,                      // 32
-	DLParamQx,                      // 33
-	DLParamQy,                      // 34
-	DLParamQz,                      // 35
-	DLParamPidParameter,            // 36
-	DLParamPidValue,                // 37
-	DLParamPidUpdating,             // 38
-	DLParamGyroYaw,                 // 39
-	DLParamGyroPitch,               // 40
-	DLParamGyroRoll,                // 41
-	// Count of items is 42
+	DLParamQw,                      // 28
+	DLParamQx,                      // 29
+	DLParamQy,                      // 30
+	DLParamQz,                      // 31
+	DLParamPidParameter,            // 32
+	DLParamPidValue,                // 33
+	DLParamPidUpdating,             // 34
+	DLParamGyroYaw,                 // 35
+	DLParamGyroPitch,               // 36
+	DLParamGyroRoll,                // 37
+	// Count of items is 38
 	DLNumberOfParams
 }
 DLParam;

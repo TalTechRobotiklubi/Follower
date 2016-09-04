@@ -527,18 +527,6 @@
         <PacketParameter>
           <Parameter>RobotFeedback4</Parameter>
         </PacketParameter>
-        <PacketParameter>
-          <Parameter>RobotFeedback5</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>RobotFeedback6</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>RobotFeedback7</Parameter>
-        </PacketParameter>
-        <PacketParameter>
-          <Parameter>RobotFeedback8</Parameter>
-        </PacketParameter>
       </PacketParameters>
     </Packet>
     <Packet>

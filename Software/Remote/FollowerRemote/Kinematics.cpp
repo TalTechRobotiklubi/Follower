@@ -71,9 +71,13 @@ void Kinematics::setMotorSpeeds(int speedleft,int speedright)
 
 void Kinematics::stop()
 {
-    requestM1_ = 0;
-    requestM2_ = 0;
-    calculateAndSetSpeeds();
+//    requestM1_ = 0;
+//    requestM2_ = 0;
+//    calculateAndSetSpeeds();
+  int16_t speedX = 0;
+  int16_t speedW = 0;
+  dataLayer_->DL_setData(DLParamRequestTranslationSpeed, &speedX);
+  dataLayer_->DL_setData(DLParamRequestRotationSpeed, &speedW);
 }
 
 void Kinematics::startAlgorithm(int algorithmNum)
@@ -96,15 +100,15 @@ void Kinematics::runAlgorithm()
     if (running_)
     {
       IAlgorithm::Execution exec = algorithm_->run();
-      setMotorSpeeds(exec.leftSpeed, exec.rightSpeed);
+      dataLayer_->DL_setData(DLParamRequestTranslationSpeed, &exec.xSpeed);
+      dataLayer_->DL_setData(DLParamRequestRotationSpeed, &exec.wSpeed);
     }
 }
-
 
 void Kinematics::timerUpdate()
 {
     runAlgorithm();
-    calculateAndSetSpeeds();  // smooth acceleration and stopping
+    //calculateAndSetSpeeds();  // smooth acceleration and stopping
 }
 
 

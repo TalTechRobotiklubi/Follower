@@ -36,7 +36,7 @@ enum MessageAnalyseState
 };
 
 SpineCommCAN::SpineCommCAN(void)
-  : serialPort_(0)
+  : serialPort_(nullptr)
 {
 }
 
@@ -57,6 +57,7 @@ bool SpineCommCAN::open(const QString& name)
 
   connect(serialPort_, SIGNAL(error(QSerialPort::SerialPortError)), this,
               SLOT(handleError()));
+
   if (!serialPort_->open(QIODevice::ReadWrite))
   {
     qDebug() << "[Serial port] open:" << serialPort_->errorString();
@@ -68,6 +69,8 @@ bool SpineCommCAN::open(const QString& name)
 void SpineCommCAN::close()
 {
   serialPort_->close();
+  delete serialPort_;
+  serialPort_ = nullptr;
 }
 
 bool SpineCommCAN::communicate()
@@ -163,6 +166,17 @@ bool SpineCommCAN::communicate()
           hasNewData = true;
           QMutexLocker locker(&dataLayerCAN_.getMutex());
           InterfaceHandler_storeReceivedData(&dataLayerCAN_, &message);
+          if (message.id == 212)
+          {
+            int16_t f1;
+            int16_t f2;
+            int16_t f3;
+            dataLayerCAN_.DL_getDataWithoutAffectingStatus(DLParamRobotFeedback1, &f1);
+            dataLayerCAN_.DL_getDataWithoutAffectingStatus(DLParamRobotFeedback2, &f2);
+            dataLayerCAN_.DL_getDataWithoutAffectingStatus(DLParamRobotFeedback3, &f3);
+            qDebug() << "Feedback" << f1 << f2 << f3;
+          }
+
           // ready for next packet
           analyseState = noData;
         }
@@ -175,6 +189,8 @@ bool SpineCommCAN::communicate()
         break;
     }
   }
+  dataLayerCAN_.DL_task(getPeriodInMs());
+
   return hasNewData;
 }
 
@@ -220,16 +236,8 @@ void SpineCommCAN::sendMessage(InterfaceMessage* message)
     crc.u16 += message->data[j];
     buffer.push_back(message->data[j]);
   }
-  //message->crc = crc.u16;
-  // j is increased here
   buffer.push_back(crc.u8.byteLow);
   buffer.push_back(crc.u8.byteHigh);
 
-  //if (message.canMessage.id == 0xD5)
-//  {
-//    qDebug() << message.canMessage.id << message.canMessage.dlc << message.canMessage.data[0] << message.canMessage.data[1]
-//        << message.canMessage.data[2] << message.canMessage.data[3]
-//        << message.canMessage.data[4] << message.canMessage.data[5];
-    serialPort_->write(buffer);
-//  }
+  serialPort_->write(buffer);
 }

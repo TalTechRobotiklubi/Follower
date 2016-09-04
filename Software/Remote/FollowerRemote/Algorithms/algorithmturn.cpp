@@ -42,8 +42,8 @@ AlgorithmTurn::Execution AlgorithmTurn::run() {
 
     if (((Turn < -150) && (sensorDiagRight < SafeTurn) && (sensorDiagRight)) ||
        ((Turn > 150) && (sensorDiagLeft < SafeTurn) && (sensorDiagLeft))) {
-          execution.leftSpeed = speed;
-          execution.rightSpeed = speed;
+          execution.xSpeed = speed;
+          execution.wSpeed = speed;
           FollowsObstacle = 1;
     }
     else if (((sensorDiagLeft < StopDistance)&&(sensorDiagLeft))
@@ -52,19 +52,19 @@ AlgorithmTurn::Execution AlgorithmTurn::run() {
          ||((sensorRight < StopDistance)&&(sensorRight))) {
         if (((sensorDiagRight > sensorDiagLeft) && (sensorDiagLeft) && (sensorDiagRight)) ||
                 ((sensorLeft < StopDistance) && (sensorLeft))) {
-           execution.leftSpeed = 0;
-           execution.rightSpeed = 0;
+           execution.xSpeed = 0;
+           execution.wSpeed = 0;
            time_delay();
            if (((sensorLeft < StopDistance) && (sensorLeft)) ||
                ((sensorDiagLeft < StopDistance) && (sensorDiagLeft))) {
-               execution.leftSpeed = 600;
-               execution.rightSpeed = 0;
+               execution.xSpeed = 600;
+               execution.wSpeed = 0;
                time_delay();
                Turn++;
            }
            else if ((sensorRight < StopDistance) && (sensorRight)) {
-               execution.leftSpeed = 0;
-               execution.rightSpeed = 600;
+               execution.xSpeed = 0;
+               execution.wSpeed = 600;
                time_delay();
                Turn--;
            }
@@ -72,19 +72,19 @@ AlgorithmTurn::Execution AlgorithmTurn::run() {
         else if (((sensorDiagLeft > sensorDiagRight) && (sensorDiagLeft) && (sensorDiagRight)) ||
                  ((sensorRight < StopDistance) && (sensorRight)))
         {
-            execution.leftSpeed = 0;
-            execution.rightSpeed = 0;
+            execution.xSpeed = 0;
+            execution.wSpeed = 0;
             time_delay();
             if (((sensorRight < StopDistance) && (sensorRight)) ||
                ((sensorDiagRight < StopDistance) && (sensorDiagRight))) { //kontroll,et pööre on sooritatud piisavalt
-                execution.leftSpeed = 0;
-                execution.rightSpeed = 600;
+                execution.xSpeed = 0;
+                execution.wSpeed = 600;
                 time_delay();
                 Turn--;
             }
             else if ((sensorLeft < StopDistance) && (sensorLeft)) {
-                execution.leftSpeed = 600;
-                execution.rightSpeed = 0;
+                execution.xSpeed = 600;
+                execution.wSpeed = 0;
                 time_delay();
                 Turn++;
             }
@@ -93,21 +93,21 @@ AlgorithmTurn::Execution AlgorithmTurn::run() {
     else if ((Turn < -10) || (Turn > 10))
          {
             if (Turn < 0) {
-                execution.leftSpeed = 600;
-                execution.rightSpeed = 0;
+                execution.xSpeed = 600;
+                execution.wSpeed = 0;
                 time_delay();
                 Turn++;
             }
             else if (Turn > 0) {
-                execution.leftSpeed = 0;
-                execution.rightSpeed = 600;
+                execution.xSpeed = 0;
+                execution.wSpeed = 600;
                 time_delay();
                 Turn--;
             }
     }
     else {
-          execution.leftSpeed = speed;
-          execution.rightSpeed = speed;
+          execution.xSpeed = speed;
+          execution.wSpeed = speed;
         }
     
     qDebug() << "T" << Turn << "FO" << FollowsObstacle;

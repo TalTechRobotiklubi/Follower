@@ -101,8 +101,11 @@ uint8_t updateParameters()
 			kpX = kpX_t;
 			kiX = kiX_t;
 			kdX = kdX_t;
-			DL_setData(DLParamRobotFeedback1, &ack);
-			DL_setData(DLParamRobotFeedback2, &ack);
+			kpW = kpW_t;
+			kiW = kiW_t;
+			kdW = kdW_t;
+			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback1, &ack);
+			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback2, &ack);
 			return 1;
 		}
 		return 0;
@@ -146,8 +149,6 @@ void readTurningSpeeds()
 	int16_t yaw;
 	DL_getData(DLParamGyroYaw, &yaw);
 	float wSpeed = yaw * 2000 / 32767;
-	int i;
-	i++;
 }
 
 void drive()
@@ -155,9 +156,10 @@ void drive()
 	static float fwd_speed = 0, turn_speed = 0;
 	static int16_t rightSpeedOld = 0, leftSpeedOld = 0;
 	static float posXold = 0, posWold = 0;
+	static int cnt = 0;
 	float posX = 0, posW = 0;
 	float errX, errW;
-	int encX, encW;
+	int16_t encX, encW;
 	int rightSpeed = 0, leftSpeed = 0;
 
 	// Linear acceleration
@@ -185,7 +187,7 @@ void drive()
 	errW = kpW * posW + kdW * (posW - posWold);
 
 	rightSpeed = errX + errW;
-	leftSpeed = errX - errW;
+	leftSpeed = errX + errW;
 
 	//  Calculate new speed values
 	rightSpeedOld += rightSpeed;
@@ -198,9 +200,25 @@ void drive()
 	}
 
 	// Set motor speeds
-//	DL_setData(DLParamMotor1RequestSpeed, &leftSpeedOld);
-//	DL_setData(DLParamMotor2RequestSpeed, &rightSpeedOld);
-
+	{
+		int16_t limit = 500;
+		leftSpeedOld = leftSpeedOld > limit ? limit : leftSpeedOld;
+		leftSpeedOld = leftSpeedOld < -limit ? -limit : leftSpeedOld;
+		rightSpeedOld = rightSpeedOld > limit ? limit : rightSpeedOld;
+		rightSpeedOld = rightSpeedOld < -limit ? -limit : rightSpeedOld;
+		int16_t rightSet = -rightSpeedOld;  // reverse right
+		DL_setData(DLParamMotor1RequestSpeed, &leftSpeedOld);
+		DL_setData(DLParamMotor2RequestSpeed, &rightSet);
+		if (++cnt == 5)
+		{
+			int16_t temp = (int)fwd_speed;
+			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback1, &temp);
+			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback2, &encX);
+			temp = (int)posX;
+			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback3, &temp);
+			cnt = 0;
+		}
+	}
 	// Save old values for PID
 	posXold = posX;
 	posWold = posW;
@@ -226,10 +244,6 @@ void Drive_task()
 	readRequestedSpeeds();
 	readTurningSpeeds();
 	drive();
-
-	int16_t x;
-	DL_getData(DLParamGyroRoll, &x);
-
 }
 
 void Drive_setSpeed(float speedX, float speedW)
