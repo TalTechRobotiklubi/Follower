@@ -30,7 +30,7 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_DATAHANDLER,			5,			0,			DL_task								},
 		{TASK_CAN,		  	  	  	5,		    1,			CAN_task							},
 		{TASK_USART,		  	    5,		    2,			USART_task							},
-		{TASK_DRIVE,			   10,			3,			Drive_task							},
+		{TASK_DRIVE,			   20,			3,			Drive_task							},
 		{TASK_SENSOR1_START,	  200,			0,			Sensor_TASK_startMeasurement1		},
 		{TASK_SENSOR1_READ,		  200,		   49,			Sensor_TASK_readDistance1			},
 		{TASK_SENSOR2_START,	  200,		   50,			Sensor_TASK_startMeasurement2		},

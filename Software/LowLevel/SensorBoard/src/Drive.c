@@ -29,7 +29,7 @@ static float kdX = 0.0f;
 static float kpW = 0.0f;
 static float kiW = 0.0f;
 static float kdW = 0.0f;
-static float accX = 20.0f;
+static float accX = 2.0f;
 static float accW = 0.4f;
 
 static float kpX_t = 0.0f;  // temporary fields
@@ -41,10 +41,10 @@ static float kdW_t = 0.0f;
 static float accX_t = 0.0f;
 static float accW_t = 0.0f;
 
-static int32_t leftEncoder = 0;  //are 32-bits enough
-static int32_t rightEncoder = 0;
-static float speedX = 0;
-static float speedW = 0;
+static int16_t priv_leftEncoder = 0;  //are 32-bits enough
+static int16_t priv_rightEncoder = 0;
+static float priv_speedX = 0;
+static float priv_speedW = 0;
 
 static uint8_t updateParameters();
 static void readEncoders();
@@ -116,12 +116,13 @@ uint8_t updateParameters()
 
 void readEncoders()
 {
+	// TODO! Fail safe to add if one motor feedback not received then stop another
 	int16_t left;
 	int16_t right;
-	if (DL_getData(DLParamMotor1EncoderClicks, &left)) // ??? motor 1 is left or right
-		leftEncoder += left;
+	if (DL_getData(DLParamMotor1EncoderClicks, &left)) // motor 1 is left
+		priv_leftEncoder = left;
 	if (DL_getData(DLParamMotor2EncoderClicks, &right))
-		rightEncoder += right;
+		priv_rightEncoder = right;
 }
 
 void stop()
@@ -139,9 +140,9 @@ void readRequestedSpeeds()
 {
 	int16_t read;
 	DL_getData(DLParamRequestTranslationSpeed, &read);
-	speedX = (float)read;
+	priv_speedX = (float)read/10.0;
 	DL_getData(DLParamRequestRotationSpeed, &read);
-	speedW = (float)read;
+	priv_speedW = (float)read/10.0;
 }
 
 void readTurningSpeeds()
@@ -158,42 +159,43 @@ void drive()
 	static float posXold = 0, posWold = 0;
 	static int cnt = 0;
 	float posX = 0, posW = 0;
-	float errX, errW;
+	float errLX, errRX, errW;
 	int16_t encX, encW;
 	int rightSpeed = 0, leftSpeed = 0;
 
-	// Linear acceleration
-	if(fwd_speed < speedX)
+	// Linear acceleration, TODO - do not allow negative
+	if(fwd_speed < priv_speedX)
 		fwd_speed += accX;
-	else if(fwd_speed > speedX)
+	else if(fwd_speed > priv_speedX)
 		fwd_speed -= accX;
 
 	// Rotational acceleration
-	if(turn_speed < speedW)
+	if(turn_speed < priv_speedW)
 		turn_speed += accW;
-	else if(turn_speed > speedW)
+	else if(turn_speed > priv_speedW)
 		turn_speed -= accW;
 
 	// calculate linear and angular speed
-	encX = (rightEncoder + leftEncoder)/2;
-	encW = (rightEncoder - leftEncoder);
+	errLX = fwd_speed - priv_leftEncoder;
+	errRX = kiX * fwd_speed + priv_rightEncoder;
+	//encW = (priv_rightEncoder - priv_leftEncoder);
 
 	// calculate linear and angular speed errors
-	posX = fwd_speed - encX;
-	posW = turn_speed - encW;
+	//posX = fwd_speed - encX;
+	//posW = turn_speed - encW;
 
 	// Calculate driving errors for PID
-	errX = kpX * posX + kdX * (posX - posXold);
-	errW = kpW * posW + kdW * (posW - posWold);
+	//errX = kpX * posX + kdX * (posX - posXold);
+	//errW = kpW * posW + kdW * (posW - posWold);
 
-	rightSpeed = errX + errW;
-	leftSpeed = errX + errW;
+//	leftSpeed = errX - errW;
+//	rightSpeed = errX + errW;
 
 	//  Calculate new speed values
-	rightSpeedOld += rightSpeed;
-	leftSpeedOld += leftSpeed;
+	leftSpeedOld += errLX * kpX;
+	rightSpeedOld += errRX * kpX;
 
-	if(!speedX && !speedW)
+	if(!priv_speedX && !priv_speedW)
 	{
 		rightSpeedOld = 0;
 		leftSpeedOld = 0;
@@ -201,7 +203,7 @@ void drive()
 
 	// Set motor speeds
 	{
-		int16_t limit = 500;
+		int16_t limit = 900;
 		leftSpeedOld = leftSpeedOld > limit ? limit : leftSpeedOld;
 		leftSpeedOld = leftSpeedOld < -limit ? -limit : leftSpeedOld;
 		rightSpeedOld = rightSpeedOld > limit ? limit : rightSpeedOld;
@@ -209,13 +211,13 @@ void drive()
 		int16_t rightSet = -rightSpeedOld;  // reverse right
 		DL_setData(DLParamMotor1RequestSpeed, &leftSpeedOld);
 		DL_setData(DLParamMotor2RequestSpeed, &rightSet);
-		if (++cnt == 5)
+		if (++cnt == 10)
 		{
 			int16_t temp = (int)fwd_speed;
 			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback1, &temp);
-			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback2, &encX);
+			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback2, &priv_leftEncoder);
 			temp = (int)posX;
-			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback3, &temp);
+			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback3, &leftSpeedOld);
 			cnt = 0;
 		}
 	}
@@ -223,8 +225,8 @@ void drive()
 	posXold = posX;
 	posWold = posW;
 
-	leftEncoder = 0;
-	rightEncoder = 0;
+	//priv_leftEncoder = 0;
+	//priv_rightEncoder = 0;
 }
 
 void Drive_init()

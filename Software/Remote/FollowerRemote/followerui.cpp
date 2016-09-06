@@ -165,7 +165,7 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
   {
     case Qt::Key_A:
       //sendCmd(-setSpeed, -setSpeed, 0);
-      kinematics_->left(setSpeed);
+      kinematics_->left(-setSpeed);
       break;
     case Qt::Key_D:
       //sendCmd(setSpeed, setSpeed, 0);
@@ -177,7 +177,7 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
       break;
     case Qt::Key_Z:
       //sendCmd(setSpeed, -setSpeed, 0);
-      kinematics_->backward(setSpeed);
+      kinematics_->backward(-setSpeed);
       break;
     case Qt::Key_S:
       //sendCmd(0, 0, 0);

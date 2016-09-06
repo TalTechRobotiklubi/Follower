@@ -41,7 +41,7 @@ int16_t i16CHBCount					= 0;
 uint16_t u16ErrorTimer				= 0;
 uint16_t u16CumulativeErrors		= 0;
 
-static uint16_t priv_ticks					= 0;	//Ticks to be sent to PC
+static int16_t priv_ticks					= 0;	//Ticks to be sent to PC
 //----------------------------------------------------------------------------------------------------------------------------
 // LOCAL FUNCTION PROTOTYPES
 //----------------------------------------------------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ void initData()
 void EXTI4_IRQHandler(void)
 {
 	EXTI_ClearITPendingBit(EXTI_Line4);
-	priv_ticks++;
+	//priv_ticks++;
 	i16CHACount++;
 	//Remember old values of encoder inputs
 	u8QeiPinStatus = u8QeiPinStatus << 2;
@@ -196,7 +196,7 @@ void EXTI4_IRQHandler(void)
 }
 
 /*****************************************************************************************************************************
-* Encoder channel A pin change interrupt				                                                                     *
+* Encoder channel B pin change interrupt				                                                                     *
 *****************************************************************************************************************************/
 void EXTI9_5_IRQHandler(void)
 {
@@ -235,7 +235,8 @@ void EXTI9_5_IRQHandler(void)
 *****************************************************************************************************************************/
 void vQeiProcessIRQ(uint32_t u32TIM1,uint32_t u32TIM3)
 {
-	i32Count += i8LookupTable[u8QeiPinStatus];  
+	i32Count += i8LookupTable[u8QeiPinStatus];
+	priv_ticks += i8LookupTable[u8QeiPinStatus];
 
 	//------------------------------------------------------------------------------------------------------------------------
 	// Get the direction of rotation. 1 means counterclockwise rotation, 0 means clockwise direction.
@@ -324,19 +325,14 @@ void vQeiProcessIRQ(uint32_t u32TIM1,uint32_t u32TIM3)
 void QEI_task()
 {
 	static uint16_t u16Time = 0;
-	uint16_t clicks = 0;
+	int16_t clicks = 0;
 	uint16_t actualSpeed = 0;
 	int16_t requestSpeed = 0;
 
 	if (CurrentId == Motor1Message)
-	{
 		DL_getDataWithoutAffectingStatus(DLParamMotor1EncoderClicks, &clicks);
-	}
 	else if (CurrentId == Motor2Message)
-	{
 		DL_getDataWithoutAffectingStatus(DLParamMotor2EncoderClicks, &clicks);
-		DL_getDataWithoutAffectingStatus(DLParamMotor2RequestSpeed, &requestSpeed);
-	}
 
 	__disable_irq();
 	clicks += priv_ticks;
@@ -418,16 +414,23 @@ void QEI_task()
 	}
 	u16Time++;
 	
-	if (u8MotorDir)
-	{
-		//speed = 0xFFFF - tempSpeed2 + 1;
-		actualSpeed = 0xFFFF - actualSpeed + 1;
-		clicks = 0xFFFF - clicks + 1;
-	}
+//	if (u8MotorDir)
+//	{
+//		//speed = 0xFFFF - tempSpeed2 + 1;
+//		actualSpeed = 0xFFFF - actualSpeed + 1;
+//		//clicks = 0xFFFF - clicks + 1;
+//		clicks = -clicks;
+//	}
 	__enable_irq();
 
-	DL_setDataWithoutAffectingStatus(DLParamMotor1EncoderClicks, &clicks);
-	DL_setDataWithoutAffectingStatus(DLParamMotor2EncoderClicks, &clicks);
-	DL_setDataWithoutAffectingStatus(DLParamMotor1ActualSpeed, &actualSpeed);
-	DL_setDataWithoutAffectingStatus(DLParamMotor2ActualSpeed, &actualSpeed);
+	if (CurrentId == Motor1Message)
+	{
+		DL_setDataWithoutAffectingStatus(DLParamMotor1EncoderClicks, &clicks);
+		DL_setDataWithoutAffectingStatus(DLParamMotor1ActualSpeed, &actualSpeed);
+	}
+	else if (CurrentId == Motor2Message)
+	{
+		DL_setDataWithoutAffectingStatus(DLParamMotor2EncoderClicks, &clicks);
+		DL_setDataWithoutAffectingStatus(DLParamMotor2ActualSpeed, &actualSpeed);
+	}
 }

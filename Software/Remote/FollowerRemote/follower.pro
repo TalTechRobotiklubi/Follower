@@ -32,9 +32,7 @@ SOURCES += \
     Algorithms/algorithmturn.cpp \
     configure.cpp \
     Data/InterfaceConfig.cpp \
-    Data/InterfaceHandler.cpp \
-    Spine/SerialPort.cpp \
-    Spine/SerialWinImpl.cpp
+    Data/InterfaceHandler.cpp
 
 HEADERS  +=  \
     CANWorkerThread.h \
@@ -60,9 +58,7 @@ HEADERS  +=  \
     Algorithms/algorithmturn.h \
     configure.h \
     Data/InterfaceConfig.h \
-    Data/InterfaceHandler.h \
-    Spine/SerialPort.h \
-    Spine/SerialWinImpl.h
+    Data/InterfaceHandler.h
 
 INCLUDEPATH += \
 	 ./Data \

@@ -36,30 +36,22 @@ void Kinematics::stopTimer()
 
 void Kinematics::forward(int speed)
 {
-    requestM1_ = speed;
-    requestM2_ = -speed;
-    calculateAndSetSpeeds();
+  dataLayer_->DL_setData(DLParamRequestTranslationSpeed, &speed);
 }
 
 void Kinematics::backward(int speed)
 {
-    requestM1_ = -speed;
-    requestM2_ = speed;
-    calculateAndSetSpeeds();
+  dataLayer_->DL_setData(DLParamRequestTranslationSpeed, &speed);
 }
 
 void Kinematics::right(int speed)
 {
-    requestM1_ = speed/2;
-    requestM2_ = speed/2;
-    calculateAndSetSpeeds();
+  dataLayer_->DL_setData(DLParamRequestRotationSpeed, &speed);
 }
 
 void Kinematics::left(int speed)
 {
-    requestM1_ = -speed/2;
-    requestM2_ = -speed/2;
-    calculateAndSetSpeeds();
+  dataLayer_->DL_setData(DLParamRequestRotationSpeed, &speed);
 }
 
 void Kinematics::setMotorSpeeds(int speedleft,int speedright)
