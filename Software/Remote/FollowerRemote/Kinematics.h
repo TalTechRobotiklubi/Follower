@@ -23,6 +23,8 @@ public:
     void startAlgorithm(int algorithmNum);
     void stopAlgorithm();
 
+    void cameraLook(int x, int z);
+
 public slots:
     void timerUpdate();
 private:
@@ -41,5 +43,11 @@ private:
     QTimer          timer_;
     bool            running_;
     IAlgorithm*     algorithm_;
+
+    char            currentCamX;
+    char            currentCamZ;
+
+    char            currentCamSpeedX;
+    char            currentCamspeedZ;
 };
 

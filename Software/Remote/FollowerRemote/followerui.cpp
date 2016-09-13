@@ -201,6 +201,23 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
     case Qt::Key_P:  // stop
       kinematics_->stopAlgorithm();
       break;
+
+    case Qt::Key_U:
+      kinematics_->cameraLook(0,+1);
+      break;
+
+    case Qt::Key_J:
+      kinematics_->cameraLook(0,-1);
+      break;
+
+    case Qt::Key_H:
+      kinematics_->cameraLook(+1,0);
+      break;
+
+    case Qt::Key_K:
+      kinematics_->cameraLook(-1,0);
+      break;
+
   }
 }
 

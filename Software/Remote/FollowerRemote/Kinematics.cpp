@@ -16,6 +16,11 @@ Kinematics::Kinematics(DataLayerBase* dataLayer)
     connect(&timer_, SIGNAL(timeout()), this, SLOT(timerUpdate()));
     running_ = false;
     algorithm_ = 0;
+
+    currentCamX = 0;
+    currentCamZ = 0;
+    currentCamSpeedX = 0;
+    currentCamspeedZ = 0;
 }
 
 Kinematics::~Kinematics(void)
@@ -87,6 +92,12 @@ void Kinematics::stopAlgorithm()
     qDebug() << "Algorithm stop";
 }
 
+void Kinematics::cameraLook(int x, int z)
+{
+  currentCamSpeedX = x;
+  currentCamspeedZ = z;
+}
+
 void Kinematics::runAlgorithm()
 {
     if (running_)
@@ -100,17 +111,44 @@ void Kinematics::runAlgorithm()
 void Kinematics::timerUpdate()
 {
     runAlgorithm();
-    //calculateAndSetSpeeds();  // smooth acceleration and stopping
+    calculateAndSetSpeeds();  // smooth acceleration and stopping
 }
 
 
 void Kinematics::calculateAndSetSpeeds()
 {
-    currentM1_ = calculateNewSpeed(currentM1_, requestM1_);
+   /* currentM1_ = calculateNewSpeed(currentM1_, requestM1_);
     currentM2_ = calculateNewSpeed(currentM2_, requestM2_);
     dataLayer_->DL_setData(DLParamMotor1RequestSpeed, &currentM1_);
     dataLayer_->DL_setData(DLParamMotor2RequestSpeed, &currentM2_);
+   */
+
     //qDebug() << currentM1_ << currentM2_;
+
+    currentCamX += currentCamSpeedX;
+    currentCamZ += currentCamspeedZ;
+
+    if (currentCamX > 100)
+    {
+     currentCamX = 100;
+    }
+    else if (currentCamX < -100)
+    {
+     currentCamX = -100;
+    }
+
+    if (currentCamZ > 100)
+    {
+     currentCamZ = 100;
+    }
+    else if (currentCamZ < -100)
+    {
+     currentCamZ = -100;
+    }
+
+    dataLayer_->DL_setData(DLParamCameraRequestXDegree, &currentCamX);
+    dataLayer_->DL_setData(DLParamCameraRequestZDegree, &currentCamZ);
+
 }
 
 int Kinematics::calculateNewSpeed(int currentSpeed, int requestedSpeed)
