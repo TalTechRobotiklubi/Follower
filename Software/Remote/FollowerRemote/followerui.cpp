@@ -36,6 +36,11 @@ FollowerUi::FollowerUi(Follower *robot)
 
 
 
+   connect(ui.sb_setAngularSpeed, SIGNAL(valueChanged(int)), this, SLOT(updateSmoothDriveConf(int)));
+   connect(ui.sb_setSpeed, SIGNAL(valueChanged(int)), this, SLOT(updateSmoothDriveConf(int)));
+   connect(ui.cb_smoothDrive, SIGNAL(stateChanged(int)), this, SLOT(updateSmoothDriveConf(int)));
+
+
   robotgui_ = new TRobot();
   scene_ = new QGraphicsScene(this);
   scene_->setBackgroundBrush(QBrush(Qt::black));
@@ -50,6 +55,7 @@ FollowerUi::FollowerUi(Follower *robot)
   qDebug() << "Kiirus maha - O";
 
   UpdatePortList();
+  updateSmoothDriveConf(0);
 }
 
 FollowerUi::~FollowerUi()
@@ -153,6 +159,8 @@ void FollowerUi::newUiData()
 
 void FollowerUi::keyPressEvent ( QKeyEvent * event )
 {
+  //qDebug() << "press" << event->timestamp();
+
   if(workerThread_ == NULL)
   {
     return;
@@ -160,16 +168,17 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
 
   int key = event->key();
   int setSpeed = ui.sb_setSpeed->value();
+  int setAngularSpeed = ui.sb_setAngularSpeed->value();
 
   switch(key)
   {
     case Qt::Key_A:
       //sendCmd(-setSpeed, -setSpeed, 0);
-      kinematics_->left(-setSpeed);
+      kinematics_->left(-setAngularSpeed);
       break;
     case Qt::Key_D:
       //sendCmd(setSpeed, setSpeed, 0);
-      kinematics_->right(setSpeed);
+      kinematics_->right(setAngularSpeed);
       break;
     case Qt::Key_W:
       //sendCmd(-setSpeed, setSpeed, 0);
@@ -220,6 +229,8 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
 
   }
 }
+
+
 
 void FollowerUi::wheelEvent (QWheelEvent* event)
 {
@@ -321,4 +332,13 @@ void FollowerUi::calcAndWriteEulerAnglesToUI(int16_t raw_qw, int16_t raw_qx,
   ui.lbl_yaw->setText(QString("Yaw: %1").arg(yaw));
   ui.lbl_pitch->setText(QString("Pitch: %1").arg(pitch));
   ui.lbl_roll->setText(QString("Roll: %1").arg(roll));
+}
+
+void FollowerUi::updateSmoothDriveConf(int p)
+{
+    int setSpeed = ui.sb_setSpeed->value();
+    int setAngularSpeed = ui.sb_setAngularSpeed->value();
+
+    kinematics_->updateFromUi(setSpeed,setAngularSpeed,ui.cb_smoothDrive->isChecked());
+
 }

@@ -17,7 +17,8 @@ TRobot::TRobot(void)
 	int s0 = -s3;
 	int s4 = s2+int (sidelen*0.355);
 	
-	if (!LoadFromFile()){
+    if (!LoadFromFile())
+    {
 
 		sensor[0].x = s3;
 		sensor[0].y = 0;
@@ -46,7 +47,7 @@ TRobot::TRobot(void)
 
 		for (int i = 0; i< 8;i++)
 		{
-			sensor[i].sonarlen = -1;
+            sensor[i].sonarlen = -1;
 			sensor[i].state = 0;
 			sensor[i].deg = 45*i;
 			sensor[i].id = '1'+i;
@@ -101,25 +102,26 @@ void TRobot::paint(QPainter *painter,const QStyleOptionGraphicsItem* ,QWidget*)
 		PaintSonar(&sensor[i],painter,zoom);
 	}
 
-	int driveangle = 0;
 
-	driveangle = GetSpeedAngle(m2speed,m1speed);
+    int driveangle = 0;
 
-	PaintAngledArrow(0,0,-100,driveangle,painter,zoom); 
+    driveangle = GetSpeedAngle(m2speed,m1speed);
+
+    PaintAngledArrow(0,0,-100,driveangle,painter,zoom);
 
 
 }
 void TRobot::PaintSonar(Tsensor *sen,QPainter *painter,double size)
 {	
-	if ((sen->sonarlen > 2000)|(sen->sonarlen < 0)) return;
+    if ((sen->sonarlen > 2000)||(sen->sonarlen < 0)) return;
 
 	QPen pen(Qt::blue);
 	pen.setColor(GetDisdanceColor(sen->sonarlen));
 	pen.setWidth(3);
 	painter->setPen(pen);
 
-	for (int r = 0; r< sen->sonarlen; r +=5 ){
-
+    for (int r = 0; r< sen->sonarlen; r +=5 )
+    {
 		painter->drawArc(QRect((sen->x-r)*size,(sen->y-r)*size,(r<<1)*size,(r<<1)*size),((sen->deg-15.5))*16,31*16);
 	}
 }
@@ -127,32 +129,40 @@ void TRobot::PaintSonar(Tsensor *sen,QPainter *painter,double size)
 void TRobot::PaintSensor(Tsensor *sen,QPainter *painter,double size)
 {
 	QPen pen(Qt::blue);
-	if (sen->state){
-		pen.setColor(Qt::red);
-	}
+
+    switch (sen->state)
+    {
+        case 1: pen.setColor(Qt::red); break;
+        case 2: pen.setColor(Qt::yellow); break;
+        default : pen.setColor(Qt::blue); break;
+    }
+
 	painter->setPen(pen);
 
 	
 
 	painter->drawEllipse((sen->x-2)*size,(sen->y-2)*size,4*size,4*size);
 
-	if (size >3){
+    if (size >3)
+    {
 		QFont font;
 		font.setPointSize(2*size);
 		painter->setFont(font);
-		painter->drawText((sen->x-0.5)*size,(sen->y+0.5)*size,QString("%1").arg(sen->id));
+        painter->drawText((sen->x-0.5)*size,(sen->y+0.5)*size,QString("%1").arg(sen->id));
 	
 
 
-		if (sen->state == 2) {
+        if (sen->state == 2)
+        {
 			QPoint a[4];// = {6,0,2,0,5,-1,5,1};
-			a[0] = RotatePoint(QPoint(6*size,0),sen->deg);
-			a[1] = RotatePoint(QPoint(2*size,0),sen->deg);
-			a[2] = RotatePoint(QPoint(5*size,-size),sen->deg);
-			a[3] = RotatePoint(QPoint(5*size,size),sen->deg);
+            a[0] = RotatePoint(QPoint(6*size,0),-sen->deg);
+            a[1] = RotatePoint(QPoint(2*size,0),-sen->deg);
+            a[2] = RotatePoint(QPoint(5*size,-size),-sen->deg);
+            a[3] = RotatePoint(QPoint(5*size,size),-sen->deg);
 			int i = 0;
 
-			for (i = 1; i<4;i++){
+            for (i = 1; i<4;i++)
+            {
 				painter->drawLine(sen->x*size+a[i].x(),sen->y*size+a[i].y(),sen->x*size+a[0].x(),sen->y*size+a[0].y());
 			}
 
@@ -174,19 +184,30 @@ int TRobot::GetDisdanceColor(int distance)
 
 	int i = distance>>5;
 
-	if (i == 0){
+    if (i == 0)
+    {
 		return 0xff0000;
-	}else if (i == 1){
+    }
+    else if (i == 1)
+    {
 		return 0xff0000 | (c<<8);
-	}else if (i == 2){
+    }
+    else if (i == 2)
+    {
 		c = ~c;
 		return 0x00ff00 | (c<<16); 
-	}else if (i == 3){
+    }
+    else if (i == 3)
+    {
 		 return 0x00ff00 | c;
-	}else if (i == 4){
+    }
+    else if (i == 4)
+    {
 		c = ~c;
 		return 0x0000ff | (c<<8); 
-	}else{
+    }
+    else
+    {
 		return 0x0000ff;
 	}
 }
@@ -231,33 +252,58 @@ void TRobot::MousePressEvent(int x,int y,int button)
 	int i = -1;
 	int hassensor = 0;
 
-	while ((i<8) && !hassensor){
+    while ((i<7) && !hassensor)
+    {
 		i++;
 		hassensor = IsThereSonar(x,y,&sensor[i]);
 	}
 
-	if (hassensor){
-		if (sensor[i].state){
+    if (hassensor)
+    {
+        if (sensor[i].state)
+        {
 			sensor[i].state = 0;
 			SaveToFile();
-		}else{
-			if (button == Qt::LeftButton){
-				sensor[i].state = 1;
-			}else if (button == Qt::RightButton){
-				sensor[i].state = 2;
-			}
+        }
+        else
+        {
+            int l = 0;
+            int hasselected = sensor[0].state;
+
+            while ((l<7) && !hasselected){
+                l++;
+                hasselected = sensor[l].state;
+            }
+
+            if (!hasselected)
+            {
+                if (button == Qt::LeftButton)
+                {
+                    sensor[i].state = 1;
+                }
+                else if (button == Qt::RightButton)
+                {
+                    sensor[i].state = 2;
+                }
+            }
 		}
 
-	}else{
+    }
+    else
+    {
 
-		for (i = 0; i<8; i++){
-			if (sensor[i].state == 1){
+        for (i = 0; i<8; i++)
+        {
+            if (sensor[i].state == 1)
+            {
 				sensor[i].x = x/zoom;
 				sensor[i].y = y/zoom;
+                sensor[i].state = 0;
 			}
 
-			if (sensor[i].state == 2){
-				sensor[i].deg = 180+GetAngle(x/zoom,y/zoom,sensor[i].x,sensor[i].y) % 360;
+            if (sensor[i].state == 2)
+            {
+                sensor[i].deg = -90+GetAngle(x/zoom,y/zoom,sensor[i].x,sensor[i].y) % 360;
 			}
 
 
@@ -275,39 +321,7 @@ int TRobot::IsThereSonar(int x,int y,Tsensor *sen)
 
 int TRobot::GetAngle(int x1,int y1,int x2,int y2)
 {
-
-
-	if (y1 == y2){
-		if (x1 < x2){
-			return 0;
-		}else if (x1 > x2){
-			return 180;
-		}
-	}
-
-	if ((x1==x2)&&(y1==y2)){
-		return 0;
-	}
-
-	double part1,part2;
-
-	part1 = abs(y2-y1);
-	if (part1==0) {
-		part1 = 0.0000001;
-	}
-
-	part2 = abs(x2-x1);
-	if (part2==0){
-		part2 = 0.0000001;
-	}
-
-	int angle = (int)(qAtan(part1/part2)*57.29577951);
-
-	if ((x1>x2) && (y1<y2)) angle = 180-angle;
-	if ((x1>x2) && (y1>y2)) angle = angle +180;
-	if ((x1<x2) && (y1>y2)) angle = 360-angle;
-
-	return angle;
+    return (int) (qAtan2(x1-x2,y1-y2)*57.29577951);
 }
 
 void TRobot::SaveToFile(void)
@@ -339,7 +353,7 @@ int TRobot::LoadFromFile(void)
 			in >> sensor[i].x; 
 			in >> sensor[i].y; 
 			in >> sensor[i].deg; 
-			sensor[i].id = '0'+i;
+            sensor[i].id = '1'+i;
 			sensor[i].sonarlen = -1;
 			sensor[i].state = 0;
 		}

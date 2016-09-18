@@ -43,6 +43,7 @@ public slots:
 
 private slots:
   void on_pushButton_clicked();
+  void updateSmoothDriveConf(int p);
 
 private:
   void calcAndWriteEulerAnglesToUI(int16_t raw_qw, int16_t raw_qx, int16_t raw_qy, int16_t raw_qz);

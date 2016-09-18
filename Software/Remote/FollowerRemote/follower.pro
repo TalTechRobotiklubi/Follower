@@ -68,3 +68,5 @@ INCLUDEPATH += \
 FORMS    += \
     followerui.ui \
     configure.ui
+
+LIBS += User32.Lib

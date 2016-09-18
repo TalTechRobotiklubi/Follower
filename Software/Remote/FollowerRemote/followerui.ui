@@ -157,7 +157,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Kiirus (m/s)</string>
+           <string>Joonkiirus (m/s)</string>
           </property>
          </widget>
         </item>
@@ -168,6 +168,45 @@
           </property>
           <property name="maximum">
            <number>65535</number>
+          </property>
+          <property name="singleStep">
+           <number>50</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Nurkkiirus (deg/s)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="sb_setAngularSpeed">
+          <property name="minimum">
+           <number>-2000</number>
+          </property>
+          <property name="maximum">
+           <number>2000</number>
+          </property>
+          <property name="singleStep">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cb_smoothDrive">
+          <property name="text">
+           <string>sujuv juhtimine</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>

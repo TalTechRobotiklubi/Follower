@@ -6,6 +6,8 @@
 #include "algorithmbuilder.h"
 #include "algorithmwander.h"
 
+#include "windows.h"
+
 Kinematics::Kinematics(DataLayerBase* dataLayer)
 {
     currentM1_ = 0;
@@ -21,6 +23,10 @@ Kinematics::Kinematics(DataLayerBase* dataLayer)
     currentCamZ = 0;
     currentCamSpeedX = 0;
     currentCamspeedZ = 0;
+
+    smoothControl = true;
+    k_translationSpeed = 0;
+    k_rotationSpeed = 0;
 }
 
 Kinematics::~Kinematics(void)
@@ -112,11 +118,52 @@ void Kinematics::timerUpdate()
 {
     runAlgorithm();
     calculateAndSetSpeeds();  // smooth acceleration and stopping
+
 }
 
 
 void Kinematics::calculateAndSetSpeeds()
 {
+
+
+    if (smoothControl)
+    {
+
+        int key_up_down = GetKeyState(VK_UP) >> 1;
+        int key_left_down = GetKeyState(VK_LEFT) >> 1;
+        int key_right_down = GetKeyState(VK_RIGHT) >> 1;
+        int key_down_down = GetKeyState(VK_DOWN) >> 1;
+
+        int16_t angular_speed = 0;
+
+        if (key_left_down)
+            angular_speed = -k_rotationSpeed;
+
+        if (key_right_down)
+            angular_speed = k_rotationSpeed;
+
+        if (key_right_down && key_left_down)
+             angular_speed = 0;
+
+        int16_t transSpeed = 0;
+
+        if (key_up_down)
+            transSpeed = k_translationSpeed;
+
+        if (key_down_down)
+            transSpeed = -k_translationSpeed;
+
+        if (key_up_down && key_down_down)
+             transSpeed = 0;
+
+        // TODO (Arthur): dont update speed values if it is same than last value
+
+        dataLayer_->DL_setData(DLParamRequestTranslationSpeed, &transSpeed);
+        dataLayer_->DL_setData(DLParamRequestRotationSpeed, &angular_speed);
+        //qDebug() << transSpeed << angular_speed;
+
+    }
+
    /* currentM1_ = calculateNewSpeed(currentM1_, requestM1_);
     currentM2_ = calculateNewSpeed(currentM2_, requestM2_);
     dataLayer_->DL_setData(DLParamMotor1RequestSpeed, &currentM1_);
@@ -180,4 +227,11 @@ int Kinematics::calculateNewSpeed(int currentSpeed, int requestedSpeed)
         // no change as currentSpeed == requestedSpeed
     }
     return currentSpeed;
+}
+
+void Kinematics::updateFromUi(int translationSpeed,int rotationSpeed, bool smcon)
+{
+    smoothControl = smcon;
+    k_translationSpeed = translationSpeed;
+    k_rotationSpeed = rotationSpeed;
 }

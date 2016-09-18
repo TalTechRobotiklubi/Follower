@@ -24,6 +24,7 @@ public:
     void stopAlgorithm();
 
     void cameraLook(int x, int z);
+    void updateFromUi(int translationSpeed,int rotationSpeed, bool smcon);
 
 public slots:
     void timerUpdate();
@@ -49,5 +50,9 @@ private:
 
     char            currentCamSpeedX;
     char            currentCamspeedZ;
+
+    bool            smoothControl;
+    int             k_translationSpeed;
+    int             k_rotationSpeed;
 };
 
