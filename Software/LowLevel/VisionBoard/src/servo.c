@@ -11,6 +11,8 @@ static void interruptConfig(void);
 static void timerConfig(void);
 
 static int8_t servoX = 0;
+static int8_t servoY = 0;
+
 
 void Servo_init()
 {
@@ -27,7 +29,16 @@ void Servo_task()
 	else if (servoX < -100)
 		servoX = -100;
 	servoX = servoX / 2;   // fit 100 degrees to 50 timer clicks
+
+	DL_getData(DLParamCameraRequestZDegree, &servoY);
+	if (servoY > 100)
+		servoY = 100;
+	else if (servoY < -100)
+		servoY = -100;
+	servoY = servoY / 2;   // fit 100 degrees to 50 timer clicks
+
 }
+
 
 
 void gpioConfig(void)
@@ -40,8 +51,8 @@ void gpioConfig(void)
 	/* GPIOE clock enable */
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
 
-	/* GPIOD Configuration: TIM9 CH1 (PE5) */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
+	/* GPIOD Configuration: TIM9 CH1 (PE5 and PE6) */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -50,6 +61,8 @@ void gpioConfig(void)
 
 	/* Connect TIM9 pin to AF2 */
 	GPIO_PinAFConfig(GPIOE, GPIO_PinSource5, GPIO_AF_TIM9);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource6, GPIO_AF_TIM9);
+
 }
 
 void timerConfig()
@@ -79,6 +92,10 @@ void timerConfig()
 	TIM_OC1Init(TIM9, &TIM_OCInitStructure);
 	TIM_OC1PreloadConfig(TIM9, TIM_OCPreload_Enable);
 
+	TIM_OC2Init(TIM9, &TIM_OCInitStructure);
+	TIM_OC2PreloadConfig(TIM9, TIM_OCPreload_Enable);
+
+
 	TIM_ARRPreloadConfig(TIM9, ENABLE);
 	/* TIM9 enable counter */
 	TIM_ITConfig(TIM9, TIM_IT_Update, ENABLE);
@@ -100,6 +117,7 @@ void TIM1_BRK_TIM9_IRQHandler()
 	if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET)
 	{
 		TIM9->CCR1 = CENTER_POINT + servoX;
+		TIM9->CCR2 = CENTER_POINT + servoY;
 		TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
 	}
 }
