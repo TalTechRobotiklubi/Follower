@@ -14,32 +14,32 @@
 // ----------------------------------------------------------------------------
 const InterfaceReceivePacket nodeInterfaceCANReceivePacketList[3] = 
 {
-	{ PacketRobotFeedback,   -1 },
-	{ PacketDistanceSensors, -1 },
-	{ PacketQuaternions,     -1 }
+	{ &PacketDescriptorList[PacketRobotFeedback],   -1 },
+	{ &PacketDescriptorList[PacketDistanceSensors], -1 },
+	{ &PacketDescriptorList[PacketQuaternions],     -1 }
 };
 
-const InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[2] = 
+InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[2] = 
 {
-	{ PacketMotorSpeeds,  -1 },
-	{ PacketRobotControl, -1 }
+	{ &PacketDescriptorList[PacketMotorSpeeds],  -1, -1 },
+	{ &PacketDescriptorList[PacketRobotControl], -1, -1 }
 };
 
 const InterfaceReceivePacket nodeInterfaceUSBReceivePacketList[3] = 
 {
-	{ PacketMotorSpeeds,   -1 },
-	{ PacketCameraControl, -1 },
-	{ PacketRobotControl,  -1 }
+	{ &PacketDescriptorList[PacketMotorSpeeds],   -1 },
+	{ &PacketDescriptorList[PacketCameraControl], -1 },
+	{ &PacketDescriptorList[PacketRobotControl],  -1 }
 };
 
-const InterfaceTransmitPacket nodeInterfaceUSBTransmitPacketList[3] = 
+InterfaceTransmitPacket nodeInterfaceUSBTransmitPacketList[3] = 
 {
-	{ PacketDistanceSensors, -1 },
-	{ PacketRobotFeedback,   -1 },
-	{ PacketQuaternions,     -1 }
+	{ &PacketDescriptorList[PacketDistanceSensors], -1, -1 },
+	{ &PacketDescriptorList[PacketRobotFeedback],   -1, -1 },
+	{ &PacketDescriptorList[PacketQuaternions],     -1, -1 }
 };
 
-const NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
+NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
 {
 	/* CAN */ { nodeInterfaceCANReceivePacketList, 3, nodeInterfaceCANTransmitPacketList, 2 },
 	/* USB */ { nodeInterfaceUSBReceivePacketList, 3, nodeInterfaceUSBTransmitPacketList, 3 }

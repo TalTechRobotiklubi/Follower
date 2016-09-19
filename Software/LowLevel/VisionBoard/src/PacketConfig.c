@@ -12,16 +12,12 @@
 // ----------------------------------------------------------------------------
 // Packet "RobotFeedback" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter packetRobotFeedbackParameterList[8] = 
+const PacketParameter packetRobotFeedbackParameterList[4] = 
 {
-	{ DLParamRobotFeedback1,   0, 16 },
-	{ DLParamRobotFeedback2,  16, 16 },
-	{ DLParamRobotFeedback3,  32, 16 },
-	{ DLParamRobotFeedback4,  48, 16 },
-	{ DLParamRobotFeedback5,  64, 16 },
-	{ DLParamRobotFeedback6,  80, 16 },
-	{ DLParamRobotFeedback7,  96, 16 },
-	{ DLParamRobotFeedback8, 112, 16 }
+	{ DLParamRobotFeedback1,  0, 16 },
+	{ DLParamRobotFeedback2, 16, 16 },
+	{ DLParamRobotFeedback3, 32, 16 },
+	{ DLParamRobotFeedback4, 48, 16 }
 };
 
 // ----------------------------------------------------------------------------

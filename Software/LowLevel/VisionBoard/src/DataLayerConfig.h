@@ -20,29 +20,25 @@ typedef enum
 	DLParamRobotFeedback2,          // 1
 	DLParamRobotFeedback3,          // 2
 	DLParamRobotFeedback4,          // 3
-	DLParamRobotFeedback5,          // 4
-	DLParamRobotFeedback6,          // 5
-	DLParamRobotFeedback7,          // 6
-	DLParamRobotFeedback8,          // 7
-	DLParamDistanceSensor1,         // 8
-	DLParamDistanceSensor2,         // 9
-	DLParamDistanceSensor3,         // 10
-	DLParamDistanceSensor4,         // 11
-	DLParamDistanceSensor5,         // 12
-	DLParamDistanceSensor6,         // 13
-	DLParamDistanceSensor7,         // 14
-	DLParamDistanceSensor8,         // 15
-	DLParamQw,                      // 16
-	DLParamQx,                      // 17
-	DLParamQy,                      // 18
-	DLParamQz,                      // 19
-	DLParamMotor1RequestSpeed,      // 20
-	DLParamMotor2RequestSpeed,      // 21
-	DLParamRequestTranslationSpeed, // 22
-	DLParamRequestRotationSpeed,    // 23
-	DLParamCameraRequestXDegree,    // 24
-	DLParamCameraRequestZDegree,    // 25
-	// Count of items is 26
+	DLParamDistanceSensor1,         // 4
+	DLParamDistanceSensor2,         // 5
+	DLParamDistanceSensor3,         // 6
+	DLParamDistanceSensor4,         // 7
+	DLParamDistanceSensor5,         // 8
+	DLParamDistanceSensor6,         // 9
+	DLParamDistanceSensor7,         // 10
+	DLParamDistanceSensor8,         // 11
+	DLParamQw,                      // 12
+	DLParamQx,                      // 13
+	DLParamQy,                      // 14
+	DLParamQz,                      // 15
+	DLParamMotor1RequestSpeed,      // 16
+	DLParamMotor2RequestSpeed,      // 17
+	DLParamRequestTranslationSpeed, // 18
+	DLParamRequestRotationSpeed,    // 19
+	DLParamCameraRequestXDegree,    // 20
+	DLParamCameraRequestZDegree,    // 21
+	// Count of items is 22
 	DLNumberOfParams
 }
 DLParam;

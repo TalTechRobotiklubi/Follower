@@ -99,9 +99,14 @@ void parseMessages(uint8_t* buffer, uint16_t size)
 			}
 			break;
 		case preambulaFound:
-			message.id = buffer[i];
-			calcCrc += message.id;
-			analyseState = idOK;
+			if (buffer[i] == 0xaa || buffer[i] == 0xAA)
+				analyseState = preambulaFound;
+			else
+			{
+				message.id = buffer[i];
+				calcCrc += message.id;
+				analyseState = idOK;
+			}
 			break;
 		case idOK:
 			message.length = buffer[i];
@@ -141,12 +146,12 @@ void parseMessages(uint8_t* buffer, uint16_t size)
 			break;
 		case crcFirstbyte:
 			// store crc first byte
-			messageCrc.u8.byteHigh = buffer[i];
+			messageCrc.u8.byteLow = buffer[i];
 			analyseState = crcCheck;
 			break;
 		case crcCheck:
 			// store 2nd byte
-			messageCrc.u8.byteLow = buffer[i];
+			messageCrc.u8.byteHigh = buffer[i];
 			// check CRC
 			if (calcCrc == messageCrc.u16)
 			{
@@ -197,6 +202,6 @@ void sendMessage(InterfaceMessage* msg)
 		TM_USB_VCP_Putc(msg->data[j]);
 		crc.u16 += msg->data[j];
 	}
-	TM_USB_VCP_Putc(crc.u8.byteHigh);
 	TM_USB_VCP_Putc(crc.u8.byteLow);
+	TM_USB_VCP_Putc(crc.u8.byteHigh);
 }
