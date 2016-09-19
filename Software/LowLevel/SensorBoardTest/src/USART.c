@@ -2,7 +2,7 @@
 
 #include "InterfaceHandler.h"
 
-#include "testGlobal.h"
+#include "projectConfig.h"
 
 static uint8_t hasNewPidSetupMessage = 0;
 static InterfaceMessage pidSetupMessage;

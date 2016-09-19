@@ -1,8 +1,8 @@
 echo off
 SET current_dir=%~dp0
 
-SET source_path=%current_dir%..\SensorBoard\src\
-SET destination_path=%current_dir%\src\
+SET source_path=%current_dir%..\VisionBoard\src\
+SET destination_path=%current_dir%src\
 
 echo %source_path%
 echo %destination_path%

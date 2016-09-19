@@ -30,7 +30,7 @@ typedef union
 
 extern uint8_t DataHandlerOffset;
 extern uint8_t CanOffset;
-extern uint8_t UsartOffset;
+extern uint8_t UsbOffset;
 
 extern uint8_t DistanceSensorPacketTransmitIndex;
 extern uint8_t QuaterionsPacketTransmitIndex;

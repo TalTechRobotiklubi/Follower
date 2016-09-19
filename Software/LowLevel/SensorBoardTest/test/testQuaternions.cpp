@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <UnitTest++.h>
-#include "testGlobal.h"
+#include "projectConfig.h"
 
 extern "C" {
 #include "SystemTicks.h"
@@ -38,7 +38,7 @@ TEST(quaternionsMessageDataIsSetToDataLayer)
 	int16_t actQz = 0;
 
 	TaskHandler_setPreviousTicks(100);
-	systemTicks = UsartOffset;
+	systemTicks = UsbOffset;
 	USART_setQuaternionsMessagePending(expQw, expQx, expQy, expQz);
 	TaskHandler_run();
 

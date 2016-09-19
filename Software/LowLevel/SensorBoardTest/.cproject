@@ -34,13 +34,11 @@
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.mingw.exe.debug.option.optimization.level.582889677" name="Optimization Level" superClass="gnu.c.compiler.mingw.exe.debug.option.optimization.level" valueType="enumerated"/>
 								<option id="gnu.c.compiler.mingw.exe.debug.option.debugging.level.1013295935" name="Debug Level" superClass="gnu.c.compiler.mingw.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.include.paths.1636457811" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;C:\Project\Follower\Software\LowLevel\SensorBoardTest\src&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Project\Follower\Software\Tools\UnitTest++\src&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Project\Follower\Software\LowLevel\SensorBoardTest\src&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Project\Follower\Software\LowLevel\SensorBoardTest\test&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.preprocessor.def.symbols.308199825" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="UNIT_TESTING"/>
-								</option>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.308199825" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.8398511" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.mingw.exe.debug.835516343" name="C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.mingw.exe.debug"/>
@@ -52,9 +50,7 @@
 									<listOptionValue builtIn="false" value="&quot;C:\Project\Follower\Software\LowLevel\SensorBoardTest\src&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Project\Follower\Software\LowLevel\SensorBoardTest\test&quot;"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.1428392557" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="UNIT_TESTING"/>
-								</option>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1428392557" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def"/>
 								<option id="gnu.cpp.compiler.option.other.other.2037947" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -m32" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1508674754" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -64,7 +60,6 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.895155619" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;C:\Project\Follower\Software\Tools\UnitTest++\Debug&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\Project\Follower\Software\LowLevel\SensorBoard\Debug\src&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.userobjs.521115485" name="Other objects" superClass="gnu.cpp.link.option.userobjs"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.119881814" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">

@@ -57,8 +57,8 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* PidParameter            */ { TypeU8,    &pDLValueU8[12]   },
 	/* PidValue                */ { TypeFloat, &pDLValueFloat[0] },
 	/* PidUpdating             */ { TypeBool,  &pDLValueBool[4]  },
-	/* GyroYaw                 */ { TypeS16,   &pDLValueS16[16]  },
-	/* GyroPitch               */ { TypeS16,   &pDLValueS16[17]  },
-	/* GyroRoll                */ { TypeS16,   &pDLValueS16[18]  }
+	/* GyroX                   */ { TypeS16,   &pDLValueS16[16]  },
+	/* GyroY                   */ { TypeS16,   &pDLValueS16[17]  },
+	/* GyroZ                   */ { TypeS16,   &pDLValueS16[18]  }
 };
 

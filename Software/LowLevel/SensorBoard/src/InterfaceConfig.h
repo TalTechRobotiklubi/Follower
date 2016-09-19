@@ -30,14 +30,14 @@ Interface;
 // ----------------------------------------------------------------------------
 typedef struct
 {
-	Packet packet;
+	PacketDescriptor* packet;
 	int16_t period;
 }
 InterfaceReceivePacket;
 
 typedef struct
 {
-	Packet packet;
+	PacketDescriptor* packet;
 	int16_t period;
 	int16_t elapsed;
 }

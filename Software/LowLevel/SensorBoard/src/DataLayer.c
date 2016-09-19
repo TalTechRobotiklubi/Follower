@@ -51,14 +51,27 @@ void DL_task(void)
 		}
 		for (j = 0; j < interfaceDesc.receivePacketCount; j++)
 		{
-			InterfaceReceivePacket receivePacket = interfaceDesc.receivePacketList[j];
-			PacketDescriptor* packetDesc = &PacketDescriptorList[receivePacket.packet];
+			const InterfaceReceivePacket* receivePacket = &interfaceDesc.receivePacketList[j];
+			PacketDescriptor* packetDesc = receivePacket->packet;
 			Bool allInvalid = FALSE;
 
-			// only async receive packets
+			// only new async receive packets
 			if (packetDesc->period < 0 && packetDesc->period == PACKET_NEW)
 			{
 				int k;
+				// update with new flag same package in all Tx interfaces
+				for (k = 0; k < NumberOfInterfaces; ++k)
+				{
+					NodeInterfaceDescriptor interfaceDesc = InterfaceList[k];
+					int l;
+					for (l = 0; l < interfaceDesc.transmitPacketCount; l++)
+					{
+						InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[l];
+						if (transmitPacket->packet == receivePacket->packet)
+							transmitPacket->period = PACKET_NEW;
+					}
+				}
+
 				for (k = 0; k < packetDesc->parameterCount; k++)
 					allInvalid |= priv_validFlags[(packetDesc->parameterList + k)->param];
 				if (!allInvalid)
@@ -231,7 +244,7 @@ void markNewAsyncMessageReadyForSending(DLParam param)
 			// only async packets
 			if (transmitPacket->period < 0)
 			{
-				PacketDescriptor* packet = &PacketDescriptorList[transmitPacket->packet];
+				PacketDescriptor* packet = transmitPacket->packet;
 				int k;
 				for (k = 0; k < packet->parameterCount; k++)
 				{

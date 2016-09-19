@@ -23,14 +23,14 @@ typedef struct
 	float roll;
 } Euler;
 
-static float kpX = 0.0f;
-static float kiX = 0.0f;
+static float kpX = 0.5f;
+static float kiX = 1.025f;
 static float kdX = 0.0f;
 static float kpW = 0.0f;
 static float kiW = 0.0f;
 static float kdW = 0.0f;
 static float accX = 2.0f;
-static float accW = 0.4f;
+static float accW = 2.0f;
 
 static float kpX_t = 0.0f;  // temporary fields
 static float kiX_t = 0.0f;
@@ -45,6 +45,7 @@ static int16_t priv_leftEncoder = 0;  //are 32-bits enough
 static int16_t priv_rightEncoder = 0;
 static float priv_speedX = 0;
 static float priv_speedW = 0;
+static float priv_gyroZ = 0;
 
 static uint8_t updateParameters();
 static void readEncoders();
@@ -142,14 +143,14 @@ void readRequestedSpeeds()
 	DL_getData(DLParamRequestTranslationSpeed, &read);
 	priv_speedX = (float)read/10.0;
 	DL_getData(DLParamRequestRotationSpeed, &read);
-	priv_speedW = (float)read/10.0;
+	priv_speedW = (float)read;
 }
 
 void readTurningSpeeds()
 {
-	int16_t yaw;
-	DL_getData(DLParamGyroYaw, &yaw);
-	float wSpeed = yaw * 2000 / 32767;
+	int16_t gz;
+	DL_getData(DLParamGyroZ, &gz);
+	priv_gyroZ = gz * 2000 / 32767;
 }
 
 void drive()
@@ -175,9 +176,33 @@ void drive()
 	else if(turn_speed > priv_speedW)
 		turn_speed -= accW;
 
+//	if (priv_speedW > 0)
+//	{
+//		int16_t rSet = priv_speedW;  // reverse right
+//		int16_t lSet = priv_speedW;
+//		DL_setDataWithForcedAsyncSend(DLParamMotor1RequestSpeed, &lSet);
+//		DL_setDataWithForcedAsyncSend(DLParamMotor2RequestSpeed, &rSet);
+//		priv_leftEncoder = 0;
+//	    priv_rightEncoder = 0;
+//	    return;
+//	}
+//	else if (priv_speedW < 0)
+//	{
+//		int16_t rSet = priv_speedW;  // reverse right
+//		int16_t lSet = priv_speedW;
+//		DL_setDataWithForcedAsyncSend(DLParamMotor1RequestSpeed, &lSet);
+//		DL_setDataWithForcedAsyncSend(DLParamMotor2RequestSpeed, &rSet);
+//		priv_leftEncoder = 0;
+//		priv_rightEncoder = 0;
+//		return;
+//	}
+
 	// calculate linear and angular speed
 	errLX = fwd_speed - priv_leftEncoder;
 	errRX = kiX * fwd_speed + priv_rightEncoder;
+	errW = priv_gyroZ + priv_speedW;
+
+
 	//encW = (priv_rightEncoder - priv_leftEncoder);
 
 	// calculate linear and angular speed errors
@@ -192,8 +217,8 @@ void drive()
 //	rightSpeed = errX + errW;
 
 	//  Calculate new speed values
-	leftSpeedOld += errLX * kpX;
-	rightSpeedOld += errRX * kpX;
+	leftSpeedOld += errLX * kpX + errW * kpW;
+	rightSpeedOld += errRX * kpX - errW * kpW;
 
 	if(!priv_speedX && !priv_speedW)
 	{
@@ -211,15 +236,15 @@ void drive()
 		int16_t rightSet = -rightSpeedOld;  // reverse right
 		DL_setData(DLParamMotor1RequestSpeed, &leftSpeedOld);
 		DL_setData(DLParamMotor2RequestSpeed, &rightSet);
-		if (++cnt == 10)
-		{
-			int16_t temp = (int)fwd_speed;
-			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback1, &temp);
-			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback2, &priv_leftEncoder);
-			temp = (int)posX;
-			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback3, &leftSpeedOld);
-			cnt = 0;
-		}
+//		if (++cnt == 10)
+//		{
+//			int16_t temp = (int)fwd_speed;
+//			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback1, &temp);
+//			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback2, &priv_leftEncoder);
+//			temp = (int)posX;
+//			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback3, &leftSpeedOld);
+//			cnt = 0;
+//		}
 	}
 	// Save old values for PID
 	posXold = posX;

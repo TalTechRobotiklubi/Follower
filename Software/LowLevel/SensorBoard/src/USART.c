@@ -418,19 +418,22 @@ void sendMessage(USART_TypeDef *uartX, InterfaceMessage* msg)
 	splitU16 crc;
 	uint16_t j;
 
-	sendChar(uartX, 0xAA);
-	crc.u16 = 0xAA;
-	sendChar(uartX, msg->id);
-	crc.u16 += msg->id;
-	sendChar(uartX, msg->length);
-	crc.u16 += msg->length;
-	for (j = 0; j < msg->length; j++)
+	//if (msg->id == 212)
 	{
-		sendChar(uartX, msg->data[j]);
-		crc.u16 += msg->data[j];
+		sendChar(uartX, 0xAA);
+		crc.u16 = 0xAA;
+		sendChar(uartX, msg->id);
+		crc.u16 += msg->id;
+		sendChar(uartX, msg->length);
+		crc.u16 += msg->length;
+		for (j = 0; j < msg->length; j++)
+		{
+			sendChar(uartX, msg->data[j]);
+			crc.u16 += msg->data[j];
+		}
+		sendChar(uartX, crc.u8.byteLow);
+		sendChar(uartX, crc.u8.byteHigh);
 	}
-	sendChar(uartX, crc.u8.byteLow);
-	sendChar(uartX, crc.u8.byteHigh);
 }
 
 void sendMessageToUSART2(InterfaceMessage* msg)

@@ -1,11 +1,13 @@
-#include "stm32f4xx.h"
 #include "TaskHandler.h"
+
+#include "stm32f4xx.h"
+
 #include "SystemTicks.h"
 #include "GPIO.h"
 #include "CAN.h"
 #include "usb.h"
 #include "servo.h"
-#include "DataHandler.h"
+#include "DataLayer.h"
 
 /*Table of initialization tasks. All functions in tables are called once after initializing system clock.
  * With adding new init check that id is corresponding to enum value.*/
@@ -14,7 +16,8 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
 		{INIT_GPIO,				GPIO_init   },
 		{INIT_CAN,				CAN_init    },
 		{INIT_USB,				USB_init	},
-		{INIT_SERVO,			Servo_init	}
+		{INIT_SERVO,			Servo_init	},
+		{INIT_DATALAYER,		DL_init		}
 };
 #define NUMBER_OF_INITS  (sizeof(TaskHandler_tableOfInits) / sizeof(INIT_STRUCT))
 
@@ -22,7 +25,7 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
  *Check that id is corresponding to enum value.*/
 const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		/*id              	  period (ms)   offset (ms)   taskPointer */
-		{TASK_DATAHANDLER,			5,			0,			DataHandler_task 	},
+		{TASK_DATAHANDLER,			5,			0,			DL_task				},
 		{TASK_CAN,			        5,		    1,			CAN_task      		},
 		{TASK_USB,				    5,		    2,			USB_task			},
 		{TASK_LED,				  400,		    0,			GPIO_task			},
@@ -30,9 +33,11 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))
 
-/*private function declarations*/
-uint8_t checkIfTimeForTask(TASK_STRUCT task, uint32_t time);
+/*private variable declarations*/
+static uint32_t prevTicks = 100;  // set something different than 0
 
+/*private function declarations*/
+static uint8_t checkIfTimeForTask(TASK_STRUCT task, uint32_t time);
 
 void TaskHandler_init(void)
 {
@@ -49,8 +54,8 @@ void TaskHandler_init(void)
 	{
 		(TaskHandler_tableOfInits[i].taskPointer)();
 	}
-	// delay 1s.
-	while (systemTicks < 1500);
+	// reset system ticks as this method (TaskHandler_init) increased it
+	systemTicks = 0;
 }
 
 
@@ -69,31 +74,29 @@ uint8_t checkIfTimeForTask(TASK_STRUCT task, uint32_t time)
 
 void TaskHandler_run(void)
 {
-	static uint32_t prev_timer = 100;  // set something different than 0
 	uint32_t timer;
 	uint8_t i;
 
-	// reset system ticks as init increased it
-	systemTicks = 0;
+	// wait timer ticks every 1 ms
+	timer = systemTicks;
 
-	//run infinitely and wait timer ticks every 1 ms
-	while (1)
+	// check task execution only if 1 ms has elapsed
+	if (timer != prevTicks)
 	{
-		timer = systemTicks;
-
-		// check task execution only if 1 ms has elapsed
-		if (timer != prev_timer)
+		// go through all tasks and check if it is needed to execute them
+		for(i = 0; i < NUMBER_OF_TASKS; i++)
 		{
-			// go through all tasks and check if it is needed to execute them
-			for(i = 0; i < NUMBER_OF_TASKS; i++)
+			if (checkIfTimeForTask(TaskHandler_tableOfTasks[i], timer))
 			{
-				if (checkIfTimeForTask(TaskHandler_tableOfTasks[i], timer))
-				{
-					(TaskHandler_tableOfTasks[i].taskPointer)();
-				}
+				(TaskHandler_tableOfTasks[i].taskPointer)();
 			}
-			// do not come back here during this ms
-			prev_timer = timer;
 		}
+		// do not come back here during this ms
+		prevTicks = timer;
 	}
+}
+
+void TaskHandler_setPreviousTicks(uint32_t ticks)
+{
+	prevTicks = ticks;
 }
