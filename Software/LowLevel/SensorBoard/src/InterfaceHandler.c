@@ -14,16 +14,14 @@ void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(Int
 	for (i = 0; i < interfaceDesc.transmitPacketCount; i++)
 	{
 		InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[i];
-		PacketDescriptor* packetDesc = &PacketDescriptorList[transmitPacket->packet];
 
 		// periodic packets
 		if (transmitPacket->period >= 0)
 		{
 			if (transmitPacket->elapsed == 0)
 			{
-				message.packet = transmitPacket->packet;
-				initalizeInterfaceMessage(&message, packetDesc);
-				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
+				initalizeInterfaceMessage(&message, transmitPacket->packet);
+				sendDataLayerDataToInterface(transmitPacket->packet, &message, funcToDriver);
 				transmitPacket->elapsed = transmitPacket->period;
 			}
 		}
@@ -31,10 +29,9 @@ void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(Int
 		{
 			if (transmitPacket->period == PACKET_NEW)
 			{
-				message.packet = transmitPacket->packet;
-				initalizeInterfaceMessage(&message, packetDesc);
-				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
-				DL_setDataInAsyncPacketInvalid(packetDesc);
+				initalizeInterfaceMessage(&message, transmitPacket->packet);
+				sendDataLayerDataToInterface(transmitPacket->packet, &message, funcToDriver);
+				DL_setDataInAsyncPacketInvalid(transmitPacket->packet);
 				transmitPacket->period = PACKET_WAITING;
 			}
 		}
@@ -49,13 +46,13 @@ Bool InterfaceHandler_checkIfReceivedMessageExists(Interface interface, Interfac
 	NodeInterfaceDescriptor interfaceDesc = InterfaceList[interface];
 	for (i = 0; i < interfaceDesc.receivePacketCount; i++)
 	{
-		InterfaceReceivePacket receivePacket = interfaceDesc.receivePacketList[i];
-		PacketDescriptor* packetDesc = &PacketDescriptorList[receivePacket.packet];
+		const InterfaceReceivePacket* receivePacket = &interfaceDesc.receivePacketList[i];
+		PacketDescriptor* packetDesc = receivePacket->packet;
 
 		if (packetDesc->id == msg->id && packetDesc->dlc == msg->length)
 		{
-			msg->packet = receivePacket.packet;
-			msg->period = receivePacket.period;
+			msg->packet = receivePacket->packet;
+			msg->period = receivePacket->period;
 			return TRUE;
 		}
 	}
@@ -65,7 +62,7 @@ Bool InterfaceHandler_checkIfReceivedMessageExists(Interface interface, Interfac
 /* expects that InterfaceHandler_checkIfReceivedMessageExists is called first*/
 void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 {
-	PacketDescriptor* packetDesc = &PacketDescriptorList[msg->packet];
+	PacketDescriptor* packetDesc = msg->packet;
 	uint8_t byteIndex, bitPosition, j, type;
 	int16_t length;
 	uint8_t dataLayerOk;

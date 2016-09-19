@@ -14,37 +14,37 @@
 // ----------------------------------------------------------------------------
 const InterfaceReceivePacket nodeInterfaceCANReceivePacketList[3] = 
 {
-	{ PacketMotor1Status, -1 },
-	{ PacketMotor2Status, -1 },
-	{ PacketRobotControl, -1 }
+	{ &PacketDescriptorList[PacketMotor1Status], -1 },
+	{ &PacketDescriptorList[PacketMotor2Status], -1 },
+	{ &PacketDescriptorList[PacketRobotControl], -1 }
 };
 
 InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[4] = 
 {
-	{ PacketMotorSpeeds,      -1,  -1 },
-	{ PacketDistanceSensors, 100, 100 },
-	{ PacketRobotFeedback,    -1,  -1 },
-	{ PacketQuaternions,     100, 100 }
+	{ &PacketDescriptorList[PacketMotorSpeeds],      -1,  -1 },
+	{ &PacketDescriptorList[PacketDistanceSensors], 100, 100 },
+	{ &PacketDescriptorList[PacketRobotFeedback],    -1,  -1 },
+	{ &PacketDescriptorList[PacketQuaternions],     100, 100 }
 };
 
 const InterfaceReceivePacket nodeInterfaceUART_RemoteReceivePacketList[3] = 
 {
-	{ PacketMotorSpeeds,  -1 },
-	{ PacketRobotControl, -1 },
-	{ PacketPidSetup,     -1 }
+	{ &PacketDescriptorList[PacketMotorSpeeds],  -1 },
+	{ &PacketDescriptorList[PacketRobotControl], -1 },
+	{ &PacketDescriptorList[PacketPidSetup],     -1 }
 };
 
 InterfaceTransmitPacket nodeInterfaceUART_RemoteTransmitPacketList[3] = 
 {
-	{ PacketDistanceSensors, 100, 100 },
-	{ PacketRobotFeedback,    -1,  -1 },
-	{ PacketQuaternions,     100, 100 }
+	{ &PacketDescriptorList[PacketDistanceSensors], 100, 100 },
+	{ &PacketDescriptorList[PacketRobotFeedback],    -1,  -1 },
+	{ &PacketDescriptorList[PacketQuaternions],     100, 100 }
 };
 
 const InterfaceReceivePacket nodeInterfaceUART_IMUReceivePacketList[2] = 
 {
-	{ PacketQuaternions, -1 },
-	{ PacketGyro,        -1 }
+	{ &PacketDescriptorList[PacketQuaternions], -1 },
+	{ &PacketDescriptorList[PacketGyro],        -1 }
 };
 
 NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 

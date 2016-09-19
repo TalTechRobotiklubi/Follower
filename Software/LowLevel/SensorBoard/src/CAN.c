@@ -20,6 +20,7 @@ typedef struct
 
 // every message has it's own message box
 static CAN_MessageBox priv_CANmessageBoxes[NumberOfPackets];
+static PacketDescriptor* priv_packets[NumberOfPackets];
 static uint8_t  priv_bs1 = 7;
 static uint8_t  priv_bs2 = 4;
 static uint16_t priv_prescaler = 24;
@@ -61,6 +62,7 @@ void initializeMessageBoxes(void)
 	for (i = 0; i < NumberOfPackets; i++)
 	{
 		priv_CANmessageBoxes[i].flag = CAN_Box_Not_Used;
+		priv_packets[i] = &PacketDescriptorList[i];
 	}
 }
 
@@ -178,16 +180,26 @@ void CAN1_RX0_IRQHandler(void)
  * NB! Called from interrupt!!!*/
 void storeReceivedDataToMessageBox(InterfaceMessage* msg, CanRxMsg* canMsg)
 {
-	if (priv_CANmessageBoxes[msg->packet].flag != CAN_Box_Locked)
+	int messageBoxIndex;
+	// find message box index
+	for (messageBoxIndex = 0; messageBoxIndex < NumberOfPackets; messageBoxIndex++)
+	{
+		if (msg->packet == priv_packets[messageBoxIndex])
+			break;
+	}
+	if (messageBoxIndex == NumberOfPackets)
+		return;
+
+	if (priv_CANmessageBoxes[messageBoxIndex].flag != CAN_Box_Locked)
 	{
 		int i;
-		priv_CANmessageBoxes[msg->packet].msg.id = canMsg->StdId;
-		priv_CANmessageBoxes[msg->packet].msg.length = canMsg->DLC;
-		priv_CANmessageBoxes[msg->packet].msg.period = msg->period;
-		priv_CANmessageBoxes[msg->packet].msg.packet = msg->packet;
+		priv_CANmessageBoxes[messageBoxIndex].msg.id = canMsg->StdId;
+		priv_CANmessageBoxes[messageBoxIndex].msg.length = canMsg->DLC;
+		priv_CANmessageBoxes[messageBoxIndex].msg.period = msg->period;
+		priv_CANmessageBoxes[messageBoxIndex].msg.packet = msg->packet;
 		for ( i = 0; i < canMsg->DLC; i++)
-			priv_CANmessageBoxes[msg->packet].msg.data[i] = canMsg->Data[i];
-		priv_CANmessageBoxes[msg->packet].flag = CAN_Box_Rx_New_Data;
+			priv_CANmessageBoxes[messageBoxIndex].msg.data[i] = canMsg->Data[i];
+		priv_CANmessageBoxes[messageBoxIndex].flag = CAN_Box_Rx_New_Data;
 	}
 }
 

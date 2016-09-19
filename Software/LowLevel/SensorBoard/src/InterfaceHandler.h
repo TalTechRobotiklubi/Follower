@@ -17,7 +17,7 @@ typedef struct
 	uint16_t id;
 	uint16_t length;
 	uint8_t data[INTERFACE_MSG_SIZE];
-	Packet packet;
+	PacketDescriptor* packet;
 	int16_t period;
 } InterfaceMessage;
 

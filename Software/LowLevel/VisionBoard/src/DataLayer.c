@@ -210,7 +210,6 @@ void DL_setData(DLParam param, DLValuePointer pValue)
 void DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value)
 {
 	setDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
-	
 	priv_validFlags[param] = TRUE;
 }
 
