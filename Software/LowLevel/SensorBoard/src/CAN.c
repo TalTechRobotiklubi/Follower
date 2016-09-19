@@ -1,7 +1,6 @@
 #include "CAN.h"
 
 #include "stm32f4xx.h"
-
 #include "GPIO.h"
 #include "InterfaceHandler.h"
 

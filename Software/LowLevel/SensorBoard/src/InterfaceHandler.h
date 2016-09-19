@@ -10,11 +10,13 @@
 
 #include "InterfaceConfig.h"
 
+#define INTERFACE_MSG_SIZE  32
+
 typedef struct
 {
 	uint16_t id;
 	uint16_t length;
-	uint8_t data[32];
+	uint8_t data[INTERFACE_MSG_SIZE];
 	Packet packet;
 	int16_t period;
 } InterfaceMessage;

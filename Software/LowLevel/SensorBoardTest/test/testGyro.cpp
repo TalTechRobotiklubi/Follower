@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <UnitTest++.h>
-#include "testGlobal.h"
+#include "projectConfig.h"
 
 extern "C" {
 #include "SystemTicks.h"
@@ -16,9 +16,9 @@ TEST(gyroDataIsInvalidByDefault)
 	uint16_t pitch = 0;
 	uint16_t roll = 0;
 
-	CHECK(!DL_getData(DLParamGyroYaw, &yaw));
-	CHECK(!DL_getData(DLParamGyroPitch, &pitch));
-	CHECK(!DL_getData(DLParamGyroRoll, &roll));
+	CHECK(!DL_getData(DLParamGyroX, &yaw));
+	CHECK(!DL_getData(DLParamGyroY, &pitch));
+	CHECK(!DL_getData(DLParamGyroZ, &roll));
 }
 
 TEST(gyroMessageDataIsSetToDataLayer)
@@ -31,13 +31,13 @@ TEST(gyroMessageDataIsSetToDataLayer)
 	int16_t actRoll = 0;
 
 	TaskHandler_setPreviousTicks(100);
-	systemTicks = UsartOffset;
+	systemTicks = UsbOffset;
 	USART_setGyroMessagePending(expYaw, expPitch, expRoll);
 	TaskHandler_run();
 
-	DL_getData(DLParamGyroYaw, &actYaw);
-	DL_getData(DLParamGyroPitch, &actPitch);
-	DL_getData(DLParamGyroRoll, &actRoll);
+	DL_getData(DLParamGyroX, &actYaw);
+	DL_getData(DLParamGyroY, &actPitch);
+	DL_getData(DLParamGyroZ, &actRoll);
 	CHECK_EQUAL(expYaw, actYaw);
 	CHECK_EQUAL(expPitch, actPitch);
 	CHECK_EQUAL(expRoll, actRoll);

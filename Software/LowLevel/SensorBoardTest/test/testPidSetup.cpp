@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <UnitTest++.h>
-#include "testGlobal.h"
+#include "projectConfig.h"
 
 extern "C" {
 #include "SystemTicks.h"
@@ -32,7 +32,7 @@ TEST(PidSetupMessageDataIsSetToDataLayer)
 	Boolean actUpdating = FALSE;
 
 	TaskHandler_setPreviousTicks(100);
-	systemTicks = UsartOffset;
+	systemTicks = UsbOffset;
 	USART_setPidSetupMessagePending(expParam, expVal, expUpdating);
 	TaskHandler_run();
 
@@ -54,7 +54,7 @@ TEST(AsyncPidSetupDataIsValidOnlyOnce)
 	Boolean actUpdating = FALSE;
 
 	TaskHandler_setPreviousTicks(100);
-	systemTicks = UsartOffset;
+	systemTicks = UsbOffset;
 	USART_setPidSetupMessagePending(expParam, expVal, expUpdating);
 	TaskHandler_run();
 

@@ -51,9 +51,9 @@ typedef enum
 	DLParamPidParameter,            // 32
 	DLParamPidValue,                // 33
 	DLParamPidUpdating,             // 34
-	DLParamGyroYaw,                 // 35
-	DLParamGyroPitch,               // 36
-	DLParamGyroRoll,                // 37
+	DLParamGyroX,                   // 35
+	DLParamGyroY,                   // 36
+	DLParamGyroZ,                   // 37
 	// Count of items is 38
 	DLNumberOfParams
 }

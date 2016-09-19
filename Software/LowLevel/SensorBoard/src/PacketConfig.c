@@ -105,9 +105,9 @@ const PacketParameter packetPidSetupParameterList[3] =
 // ----------------------------------------------------------------------------
 const PacketParameter packetGyroParameterList[3] = 
 {
-	{ DLParamGyroYaw,    0, 16 },
-	{ DLParamGyroPitch, 16, 16 },
-	{ DLParamGyroRoll,  32, 16 }
+	{ DLParamGyroX,  0, 16 },
+	{ DLParamGyroY, 16, 16 },
+	{ DLParamGyroZ, 32, 16 }
 };
 
 // ----------------------------------------------------------------------------

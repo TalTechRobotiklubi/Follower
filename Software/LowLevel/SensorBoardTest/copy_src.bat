@@ -21,3 +21,5 @@ copy %source_path%InterfaceConfig.h %destination_path%InterfaceConfig.h
 copy %source_path%InterfaceConfig.c %destination_path%InterfaceConfig.c
 copy %source_path%InterfaceHandler.h %destination_path%InterfaceHandler.h
 copy %source_path%InterfaceHandler.c %destination_path%InterfaceHandler.c
+copy %source_path%Typedef.h %destination_path%Typedef.h
+copy %source_path%Typedef.c %destination_path%Typedef.c

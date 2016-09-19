@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <UnitTest++.h>
-#include "testGlobal.h"
+#include "projectConfig.h"
 
 extern "C" {
 #include "SystemTicks.h"
