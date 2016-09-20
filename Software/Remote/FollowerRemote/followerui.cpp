@@ -40,6 +40,9 @@ FollowerUi::FollowerUi(Follower *robot)
    connect(ui.sb_setSpeed, SIGNAL(valueChanged(int)), this, SLOT(updateSmoothDriveConf(int)));
    connect(ui.cb_smoothDrive, SIGNAL(stateChanged(int)), this, SLOT(updateSmoothDriveConf(int)));
 
+  // Start the workerThread_ here.
+  // Do not close until program exit or emergency.
+  workerThread_->start();
 
   robotgui_ = new TRobot();
   scene_ = new QGraphicsScene(this);
@@ -69,15 +72,26 @@ FollowerUi::~FollowerUi()
 
 void FollowerUi::connectSpine() {
 
-  if (workerThread_->isRunning())
+  if (!workerThread_->isRunning())
   {
-    emit stopCommunication();
+    qDebug() << "Fatal error: workerThread_ is not runnning!";
+    return;
+  }
+
+  /*
+   * Note: behaviour is flipped here due to the button's checked value being
+   * changed /before/ this function is called. So the below only applies here.
+   * ui.btnConnect->isChecked() -> True => communications are not running
+   *                            -> False => communications are running
+   */
+  if (ui.btnConnect->isChecked())
+  {
+    emit startCommunication(ui.CBPort->currentText());
   }
   else
   {
-    workerThread_->start();
     // open communication
-    emit startCommunication(ui.CBPort->currentText());
+    emit stopCommunication();
   }
 
 }
@@ -104,9 +118,6 @@ void FollowerUi::stopCommStatus()
 {
   // stop timer in kinematics
   kinematics_->stopTimer();
-  //stop thread anyway.
-  workerThread_->exit();
-  workerThread_->wait();
   // set feedback to user that disconnection was ok
   ui.btnConnect->setText(QString("Connect"));
 }
@@ -262,7 +273,7 @@ void FollowerUi::mouseMoveEvent(QMouseEvent*)
 
 void FollowerUi::closeEvent(QCloseEvent* )
 {
-  if (workerThread_->isRunning())
+  if (ui.btnConnect->isChecked())
   {
     emit stopCommunication();
   }
