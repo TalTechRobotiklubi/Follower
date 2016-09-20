@@ -26,7 +26,7 @@ typedef struct
 static float kpX = 0.5f;
 static float kiX = 1.025f;
 static float kdX = 0.0f;
-static float kpW = 0.0f;
+static float kpW = 0.3f;
 static float kiW = 0.0f;
 static float kdW = 0.0f;
 static float accX = 2.0f;
