@@ -21,8 +21,8 @@ const InterfaceReceivePacket nodeInterfaceUARTReceivePacketList[3] =
 
 InterfaceTransmitPacket nodeInterfaceUARTTransmitPacketList[4] = 
 {
-	{ PacketMotorSpeeds,    0,  0 },
-	{ PacketRobotControl,   0,  0 },
+  { PacketMotorSpeeds,   -1, -1 },
+  { PacketRobotControl,  20, 20 },
 	{ PacketPidSetup,      -1, -1 },
 	{ PacketCameraControl, -1, -1 }
 };

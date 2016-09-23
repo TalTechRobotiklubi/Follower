@@ -156,8 +156,6 @@ void Kinematics::calculateAndSetSpeeds()
         if (key_up_down && key_down_down)
              transSpeed = 0;
 
-        // TODO (Arthur): dont update speed values if it is same than last value
-
         dataLayer_->DL_setData(DLParamRequestTranslationSpeed, &transSpeed);
         dataLayer_->DL_setData(DLParamRequestRotationSpeed, &angular_speed);
         //qDebug() << transSpeed << angular_speed;
