@@ -21,6 +21,7 @@ Follower::Follower(void)
 Follower::~Follower(void)
 {
   delete kinematics_;
+  workerThread_->exit();
   workerThread_->wait();
   delete workerThread_;
 }
