@@ -40,7 +40,7 @@ void USART_setPidSetupMessagePending(uint8_t param, float value, uint8_t updatin
 	SplitFloat data;
 	data.fl = value;
 
-	pidSetupMessage.packet = PacketPidSetup;
+	pidSetupMessage.packet = &PacketDescriptorList[PacketPidSetup];
 	pidSetupMessage.period = PacketDescriptorList[PacketPidSetup].period;
 	pidSetupMessage.id = PacketDescriptorList[PacketPidSetup].id;
 	pidSetupMessage.length = PacketDescriptorList[PacketPidSetup].dlc;
@@ -59,7 +59,7 @@ void USART_setGyroMessagePending(int16_t yaw, int16_t pitch, int16_t roll)
 	y.i = yaw;
 	p.i = pitch;
 	r.i = roll;
-	gyroMessage.packet = PacketGyro;
+	gyroMessage.packet = &PacketDescriptorList[PacketGyro];
 	gyroMessage.period = PacketDescriptorList[PacketGyro].period;
 	gyroMessage.id = PacketDescriptorList[PacketGyro].id;
 	gyroMessage.length = PacketDescriptorList[PacketGyro].dlc;
@@ -79,7 +79,7 @@ void USART_setQuaternionsMessagePending(uint16_t qw, uint16_t qx, uint16_t qy, u
 	qx_.u = qx;
 	qy_.u = qy;
 	qz_.u = qz;
-	quaternionsMessage.packet = PacketQuaternions;
+	quaternionsMessage.packet = &PacketDescriptorList[PacketQuaternions];
 	quaternionsMessage.period = PacketDescriptorList[PacketQuaternions].period;
 	quaternionsMessage.id = PacketDescriptorList[PacketQuaternions].id;
 	quaternionsMessage.length = PacketDescriptorList[PacketQuaternions].dlc;

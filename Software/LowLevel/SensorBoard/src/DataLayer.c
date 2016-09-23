@@ -16,12 +16,39 @@ static Bool priv_validFlags[DLNumberOfParams];
 static void setDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 static void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 static void markNewAsyncMessageReadyForSending(DLParam param);
+static void clearPacketsToDefault();
 
 void DL_init()
 {
 	int i = 0;
 	for (; i < DLNumberOfParams; ++i)
 		priv_validFlags[i] = FALSE;
+	clearPacketsToDefault();
+}
+
+void clearPacketsToDefault()
+{
+	int i;
+	for (i = 0; i < NumberOfInterfaces; ++i)
+	{
+		NodeInterfaceDescriptor interfaceDesc = InterfaceList[i];
+		int j;
+		for (j = 0; j < interfaceDesc.transmitPacketCount; j++)
+		{
+			InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[j];
+			if (transmitPacket->period > 0)
+				transmitPacket->elapsed = transmitPacket->period;
+			else
+				transmitPacket->period = PACKET_WAITING;
+		}
+		for (j = 0; j < interfaceDesc.receivePacketCount; j++)
+		{
+			const InterfaceReceivePacket* receivePacket = &interfaceDesc.receivePacketList[j];
+			PacketDescriptor* packetDesc = receivePacket->packet;
+			if (packetDesc->period < 0)
+				packetDesc->period = PACKET_WAITING;
+		}
+	}
 }
 
 /*Decrease periodic transmit packet elapse time, if reached to 0 then it is notification

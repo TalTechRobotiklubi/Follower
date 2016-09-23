@@ -76,7 +76,7 @@ TEST(quaterionsDataIsSentOutPeriodicallyViaCan)
 	TaskHandler_run();
 
 	uint8_t cnt = CAN_sentMessageCount();
-	CHECK_EQUAL(1, cnt);
+	CHECK_EQUAL(2, cnt);  // as distance sensor is also periodic message with same period then it is also sent
 
 	InterfaceMessage msg = CAN_sentMessages()[cnt - 1];
 	CHECK_EQUAL(242, msg.id);

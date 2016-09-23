@@ -250,4 +250,3 @@ void initalizeInterfaceMessage(InterfaceMessage* message, PacketDescriptor* pack
 		message->data[i] = 0;
 	}
 }
-
