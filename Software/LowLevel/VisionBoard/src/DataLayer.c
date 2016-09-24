@@ -16,12 +16,38 @@ static Bool priv_validFlags[DLNumberOfParams];
 static void setDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 static void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
 static void markNewAsyncMessageReadyForSending(DLParam param);
+static void clearPacketsToDefault();
 
 void DL_init()
 {
 	int i = 0;
 	for (; i < DLNumberOfParams; ++i)
 		priv_validFlags[i] = FALSE;
+	clearPacketsToDefault();
+}
+
+void clearPacketsToDefault()
+{
+	int i;
+	for (i = 0; i < NumberOfInterfaces; ++i)
+	{
+		NodeInterfaceDescriptor interfaceDesc = InterfaceList[i];
+		int j;
+		for (j = 0; j < interfaceDesc.transmitPacketCount; j++)
+		{
+			InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[j];
+			if (transmitPacket->period > 0)
+				transmitPacket->elapsed = transmitPacket->period;
+			else
+				transmitPacket->period = PACKET_WAITING;
+		}
+		for (j = 0; j < interfaceDesc.receivePacketCount; j++)
+		{
+			InterfaceReceivePacket* receivePacket = &interfaceDesc.receivePacketList[j];
+			if (receivePacket->period < 0)
+				receivePacket->period = PACKET_WAITING;
+		}
+	}
 }
 
 /*Decrease periodic transmit packet elapse time, if reached to 0 then it is notification
@@ -51,12 +77,10 @@ void DL_task(void)
 		}
 		for (j = 0; j < interfaceDesc.receivePacketCount; j++)
 		{
-			const InterfaceReceivePacket* receivePacket = &interfaceDesc.receivePacketList[j];
-			PacketDescriptor* packetDesc = receivePacket->packet;
-			Bool allInvalid = FALSE;
+			InterfaceReceivePacket* receivePacket = &interfaceDesc.receivePacketList[j];
 
 			// only new async receive packets
-			if (packetDesc->period < 0 && packetDesc->period == PACKET_NEW)
+			if (receivePacket->period == PACKET_NEW)
 			{
 				int k;
 				// update with new flag same package in all Tx interfaces
@@ -71,23 +95,9 @@ void DL_task(void)
 							transmitPacket->period = PACKET_NEW;
 					}
 				}
-
-				for (k = 0; k < packetDesc->parameterCount; k++)
-					allInvalid |= priv_validFlags[(packetDesc->parameterList + k)->param];
-				if (!allInvalid)
-					packetDesc->period = PACKET_WAITING;
+				receivePacket->period = PACKET_WAITING;
 			}
 		}
-	}
-}
-
-void DL_setDataInAsyncPacketInvalid(PacketDescriptor* packetDesc)
-{
-	if (packetDesc->period < 0)
-	{
-		int j;
-		for (j = 0; j < packetDesc->parameterCount; j++)
-			priv_validFlags[(packetDesc->parameterList + j)->param] = FALSE;
 	}
 }
 
@@ -119,59 +129,29 @@ void checkTimeouts(uint8_t numOfPackets, PacketWithIndex *packet)
 
 
 // ----------------------------------------------------------------------------
-// Use this function in logic layer to get data from DL.
+// Use this function in logic layer to get data from DL. Sets data invalid after read, so
+// it should be done only once per tasks. Validity should affect only received parameters.
 // Param as parameter
 // pValue as pointer to place where data will be stored from DL
-// Returns if the value is valid or not. Validity of the value is determined in
-// two ways: in case of periodic packet
+// Returns if the value is valid or not.
 // ----------------------------------------------------------------------------
 Boolean DL_getData(DLParam param, DLValuePointer pValue)
 {
-	uint8_t i, j;
 	Bool retVal = FALSE;
-
 	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
-
-	/*check if parameter is part of any async packets*/
-	for (i = 0; i < NumberOfPackets; i++)
-	{
-		PacketDescriptor *packet = &PacketDescriptorList[i];
-		if (packet->period < 0)
-		{
-			for (j = 0; j < packet->parameterCount; j++)
-			{
-				if ((packet->parameterList + j)->param == param)
-				{
-					retVal = priv_validFlags[param];
-					if (priv_validFlags[param] == TRUE)
-						priv_validFlags[param] = FALSE;
-					return retVal;
-				}
-			}
-		}
-	}
-    return priv_validFlags[param];
+	retVal = priv_validFlags[param];
+	priv_validFlags[param] = FALSE;
+    return retVal;
 }
 // ----------------------------------------------------------------------------
-// Use this function in logic layer to peek data from DL. Peeking does not affect the
-// status of the data.
+// Use this function to peek data from DL. Peeking does not affect the
+// status of validity.
 // Param as parameter
 // pValue as pointer to place where data will be stored from DL
 // ----------------------------------------------------------------------------
 void DL_peekData(DLParam param, DLValuePointer pValue)
 {
 	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
-}
-
-/*Use this function in COMM driver layer (CAN, UART etc.) to get data from DL.
- *Param as parameter
- *pValue as pointer to place where data will be stored from DL
- *Returns if the value is valid or not*/
-Boolean DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer pValue)
-{
-	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
-
-	return priv_validFlags[param];
 }
 
 /*Use this function in logic layer to set data to DL. Handles status for asynchronous data
@@ -213,14 +193,16 @@ void DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value)
 	priv_validFlags[param] = TRUE;
 }
 
+void DL_setDataInvalid(PacketDescriptor* packetDesc)
+{
+	int j;
+	for (j = 0; j < packetDesc->parameterCount; j++)
+		priv_validFlags[(packetDesc->parameterList + j)->param] = FALSE;
+}
+
 Type DL_getDataType(DLParam param)
 {
 	return psDLParamDescriptorList[param].eType;
-}
-
-void DL_setDataValidity(DLParam param, Boolean validity)
-{
-	priv_validFlags[param] = validity;
 }
 
 void DL_setDataWithForcedAsyncSend(DLParam param, DLValuePointer value)

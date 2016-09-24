@@ -22,8 +22,9 @@ typedef enum
 	PacketQuaternions,     // 2
 	PacketMotorSpeeds,     // 3
 	PacketRobotControl,    // 4
-	PacketCameraControl,   // 5
-	// Count of items is 6
+	PacketPidSetup,        // 5
+	PacketCameraControl,   // 6
+	// Count of items is 7
 	NumberOfPackets
 }
 Packet;
@@ -42,7 +43,6 @@ PacketParameter;
 typedef struct
 {
 	uint16_t id;
-	int16_t  period;
 	PacketParameter const * parameterList;
 	uint16_t parameterCount;
 	uint16_t dlc;

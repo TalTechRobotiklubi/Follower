@@ -14,8 +14,8 @@ TEST(dataIsStoredInBigEndianFormat_int16)
 	qw.i = 1110;
 
 	InterfaceMessage msg;
+	msg.interface = InterfaceUART_IMU;
 	msg.packet = &PacketDescriptorList[PacketQuaternions];
-	msg.period = PacketDescriptorList[PacketQuaternions].period;
 	msg.id = PacketDescriptorList[PacketQuaternions].id;
 	msg.length = PacketDescriptorList[PacketQuaternions].dlc;
 	msg.data[0] = qw.d[1];

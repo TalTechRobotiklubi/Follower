@@ -12,24 +12,26 @@
 // ----------------------------------------------------------------------------
 // Interface tables
 // ----------------------------------------------------------------------------
-const InterfaceReceivePacket nodeInterfaceCANReceivePacketList[3] = 
+InterfaceReceivePacket nodeInterfaceCANReceivePacketList[3] = 
 {
 	{ &PacketDescriptorList[PacketRobotFeedback],   -1 },
 	{ &PacketDescriptorList[PacketDistanceSensors], -1 },
 	{ &PacketDescriptorList[PacketQuaternions],     -1 }
 };
 
-InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[2] = 
+InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[3] = 
 {
 	{ &PacketDescriptorList[PacketMotorSpeeds],  -1, -1 },
-	{ &PacketDescriptorList[PacketRobotControl], -1, -1 }
+	{ &PacketDescriptorList[PacketRobotControl], -1, -1 },
+	{ &PacketDescriptorList[PacketPidSetup],     -1, -1 }
 };
 
-const InterfaceReceivePacket nodeInterfaceUSBReceivePacketList[3] = 
+InterfaceReceivePacket nodeInterfaceUSBReceivePacketList[4] = 
 {
 	{ &PacketDescriptorList[PacketMotorSpeeds],   -1 },
 	{ &PacketDescriptorList[PacketCameraControl], -1 },
-	{ &PacketDescriptorList[PacketRobotControl],  -1 }
+	{ &PacketDescriptorList[PacketRobotControl],  -1 },
+	{ &PacketDescriptorList[PacketPidSetup],      -1 }
 };
 
 InterfaceTransmitPacket nodeInterfaceUSBTransmitPacketList[3] = 
@@ -41,7 +43,7 @@ InterfaceTransmitPacket nodeInterfaceUSBTransmitPacketList[3] =
 
 NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
 {
-	/* CAN */ { nodeInterfaceCANReceivePacketList, 3, nodeInterfaceCANTransmitPacketList, 2 },
-	/* USB */ { nodeInterfaceUSBReceivePacketList, 3, nodeInterfaceUSBTransmitPacketList, 3 }
+	/* CAN */ { nodeInterfaceCANReceivePacketList, 3, nodeInterfaceCANTransmitPacketList, 3 },
+	/* USB */ { nodeInterfaceUSBReceivePacketList, 4, nodeInterfaceUSBTransmitPacketList, 3 }
 };
 

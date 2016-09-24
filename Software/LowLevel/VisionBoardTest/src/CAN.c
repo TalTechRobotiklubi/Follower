@@ -42,8 +42,8 @@ void sendCANmessage(InterfaceMessage* msg)
 
 void CAN_setDistanceMessagePending(uint8_t dist1, uint8_t dist2)
 {
+	distanceMessage.interface = InterfaceCAN;
 	distanceMessage.packet = &PacketDescriptorList[PacketDistanceSensors];
-	distanceMessage.period = PacketDescriptorList[PacketDistanceSensors].period;
 	distanceMessage.id = PacketDescriptorList[PacketDistanceSensors].id;
 	distanceMessage.length = PacketDescriptorList[PacketDistanceSensors].dlc;
 	distanceMessage.data[0] = dist1;

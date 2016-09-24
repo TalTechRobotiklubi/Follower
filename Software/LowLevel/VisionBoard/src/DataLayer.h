@@ -22,12 +22,10 @@ void DL_init();
 void DL_task();
 Boolean DL_getData(DLParam param, DLValuePointer value);
 void DL_peekData(DLParam param, DLValuePointer pValue);
-Boolean DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer value);
 void DL_setData(DLParam param, DLValuePointer value);
 void DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value);
+void DL_setDataInvalid(PacketDescriptor* packetDesc);
 Type DL_getDataType(DLParam param);
-void DL_setDataValidity(DLParam, Boolean validity);
-void DL_setDataInAsyncPacketInvalid(PacketDescriptor* packetDesc);
 void DL_setDataWithForcedAsyncSend(DLParam param, DLValuePointer value);
 
 #endif

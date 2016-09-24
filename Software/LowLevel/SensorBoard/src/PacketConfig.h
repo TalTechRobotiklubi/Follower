@@ -20,11 +20,11 @@ typedef enum
 	PacketMotor1Status,    // 0
 	PacketMotor2Status,    // 1
 	PacketRobotControl,    // 2
-	PacketMotorSpeeds,     // 3
-	PacketDistanceSensors, // 4
-	PacketRobotFeedback,   // 5
-	PacketQuaternions,     // 6
-	PacketPidSetup,        // 7
+	PacketPidSetup,        // 3
+	PacketMotorSpeeds,     // 4
+	PacketDistanceSensors, // 5
+	PacketRobotFeedback,   // 6
+	PacketQuaternions,     // 7
 	PacketGyro,            // 8
 	// Count of items is 9
 	NumberOfPackets
@@ -45,7 +45,6 @@ PacketParameter;
 typedef struct
 {
 	uint16_t id;
-	int16_t  period;
 	PacketParameter const * parameterList;
 	uint16_t parameterCount;
 	uint16_t dlc;

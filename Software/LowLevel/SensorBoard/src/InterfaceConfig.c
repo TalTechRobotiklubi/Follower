@@ -12,11 +12,12 @@
 // ----------------------------------------------------------------------------
 // Interface tables
 // ----------------------------------------------------------------------------
-const InterfaceReceivePacket nodeInterfaceCANReceivePacketList[3] = 
+InterfaceReceivePacket nodeInterfaceCANReceivePacketList[4] = 
 {
 	{ &PacketDescriptorList[PacketMotor1Status], -1 },
 	{ &PacketDescriptorList[PacketMotor2Status], -1 },
-	{ &PacketDescriptorList[PacketRobotControl], -1 }
+	{ &PacketDescriptorList[PacketRobotControl], -1 },
+	{ &PacketDescriptorList[PacketPidSetup],     -1 }
 };
 
 InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[4] = 
@@ -27,7 +28,7 @@ InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[4] =
 	{ &PacketDescriptorList[PacketQuaternions],     100, 100 }
 };
 
-const InterfaceReceivePacket nodeInterfaceUART_RemoteReceivePacketList[3] = 
+InterfaceReceivePacket nodeInterfaceUART_RemoteReceivePacketList[3] = 
 {
 	{ &PacketDescriptorList[PacketMotorSpeeds],  -1 },
 	{ &PacketDescriptorList[PacketRobotControl], -1 },
@@ -41,7 +42,7 @@ InterfaceTransmitPacket nodeInterfaceUART_RemoteTransmitPacketList[3] =
 	{ &PacketDescriptorList[PacketQuaternions],     100, 100 }
 };
 
-const InterfaceReceivePacket nodeInterfaceUART_IMUReceivePacketList[2] = 
+InterfaceReceivePacket nodeInterfaceUART_IMUReceivePacketList[2] = 
 {
 	{ &PacketDescriptorList[PacketQuaternions], -1 },
 	{ &PacketDescriptorList[PacketGyro],        -1 }
@@ -49,7 +50,7 @@ const InterfaceReceivePacket nodeInterfaceUART_IMUReceivePacketList[2] =
 
 NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
 {
-	/* CAN         */ { nodeInterfaceCANReceivePacketList,         3, nodeInterfaceCANTransmitPacketList,         4 },
+	/* CAN         */ { nodeInterfaceCANReceivePacketList,         4, nodeInterfaceCANTransmitPacketList,         4 },
 	/* UART_Remote */ { nodeInterfaceUART_RemoteReceivePacketList, 3, nodeInterfaceUART_RemoteTransmitPacketList, 3 },
 	/* UART_IMU    */ { nodeInterfaceUART_IMUReceivePacketList,    2, 0,                                          0 }
 };

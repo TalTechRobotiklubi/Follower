@@ -14,6 +14,7 @@
 
 typedef struct
 {
+	Interface interface;
 	uint16_t id;
 	uint16_t length;
 	uint8_t data[INTERFACE_MSG_SIZE];
@@ -22,7 +23,7 @@ typedef struct
 } InterfaceMessage;
 
 void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(InterfaceMessage* msg));
-Bool InterfaceHandler_checkIfReceivedMessageExists(Interface interface, InterfaceMessage* msg);
+Bool InterfaceHandler_checkIfReceivedMessageExists(InterfaceMessage* msg);
 void InterfaceHandler_storeReceivedData(InterfaceMessage* msg);
 
 #endif /* INTERFACEHANDLER_H_ */

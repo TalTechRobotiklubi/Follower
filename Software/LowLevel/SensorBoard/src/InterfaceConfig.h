@@ -45,7 +45,7 @@ InterfaceTransmitPacket;
 
 typedef struct
 {
-	InterfaceReceivePacket const * receivePacketList;
+	InterfaceReceivePacket* receivePacketList;
 	uint32_t receivePacketCount;
 	InterfaceTransmitPacket* transmitPacketList;
 	uint32_t transmitPacketCount;

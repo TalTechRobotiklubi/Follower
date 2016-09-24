@@ -36,9 +36,12 @@ typedef enum
 	DLParamMotor2RequestSpeed,      // 17
 	DLParamRequestTranslationSpeed, // 18
 	DLParamRequestRotationSpeed,    // 19
-	DLParamCameraRequestXDegree,    // 20
-	DLParamCameraRequestZDegree,    // 21
-	// Count of items is 22
+	DLParamPidParameter,            // 20
+	DLParamPidValue,                // 21
+	DLParamPidUpdating,             // 22
+	DLParamCameraRequestXDegree,    // 23
+	DLParamCameraRequestZDegree,    // 24
+	// Count of items is 25
 	DLNumberOfParams
 }
 DLParam;

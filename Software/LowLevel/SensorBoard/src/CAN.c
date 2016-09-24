@@ -167,8 +167,9 @@ void CAN1_RX0_IRQHandler(void)
 	InterfaceMessage msg;
 	msg.id = receiveMsg.StdId;
 	msg.length = receiveMsg.DLC;
+	msg.interface = InterfaceCAN;
 
-	if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceCAN, &msg))
+	if (InterfaceHandler_checkIfReceivedMessageExists(&msg))
 	{
 		storeReceivedDataToMessageBox(&msg, &receiveMsg);
 	}

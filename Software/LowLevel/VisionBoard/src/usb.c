@@ -110,8 +110,9 @@ void parseMessages(uint8_t* buffer, uint16_t size)
 			break;
 		case idOK:
 			message.length = buffer[i];
+			message.interface = InterfaceUSB;
 			__disable_irq();
-			if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceUSB, &message))
+			if (InterfaceHandler_checkIfReceivedMessageExists(&message))
 			{
 				calcCrc += message.length;
 				length = message.length;

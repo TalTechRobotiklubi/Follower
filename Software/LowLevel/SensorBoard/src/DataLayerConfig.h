@@ -30,27 +30,27 @@ typedef enum
 	DLParamMotor2BridgeBFault,      // 11
 	DLParamRequestTranslationSpeed, // 12
 	DLParamRequestRotationSpeed,    // 13
-	DLParamMotor1RequestSpeed,      // 14
-	DLParamMotor2RequestSpeed,      // 15
-	DLParamDistanceSensor1,         // 16
-	DLParamDistanceSensor2,         // 17
-	DLParamDistanceSensor3,         // 18
-	DLParamDistanceSensor4,         // 19
-	DLParamDistanceSensor5,         // 20
-	DLParamDistanceSensor6,         // 21
-	DLParamDistanceSensor7,         // 22
-	DLParamDistanceSensor8,         // 23
-	DLParamRobotFeedback1,          // 24
-	DLParamRobotFeedback2,          // 25
-	DLParamRobotFeedback3,          // 26
-	DLParamRobotFeedback4,          // 27
-	DLParamQw,                      // 28
-	DLParamQx,                      // 29
-	DLParamQy,                      // 30
-	DLParamQz,                      // 31
-	DLParamPidParameter,            // 32
-	DLParamPidValue,                // 33
-	DLParamPidUpdating,             // 34
+	DLParamPidParameter,            // 14
+	DLParamPidValue,                // 15
+	DLParamPidUpdating,             // 16
+	DLParamMotor1RequestSpeed,      // 17
+	DLParamMotor2RequestSpeed,      // 18
+	DLParamDistanceSensor1,         // 19
+	DLParamDistanceSensor2,         // 20
+	DLParamDistanceSensor3,         // 21
+	DLParamDistanceSensor4,         // 22
+	DLParamDistanceSensor5,         // 23
+	DLParamDistanceSensor6,         // 24
+	DLParamDistanceSensor7,         // 25
+	DLParamDistanceSensor8,         // 26
+	DLParamRobotFeedback1,          // 27
+	DLParamRobotFeedback2,          // 28
+	DLParamRobotFeedback3,          // 29
+	DLParamRobotFeedback4,          // 30
+	DLParamQw,                      // 31
+	DLParamQx,                      // 32
+	DLParamQy,                      // 33
+	DLParamQz,                      // 34
 	DLParamGyroX,                   // 35
 	DLParamGyroY,                   // 36
 	DLParamGyroZ,                   // 37

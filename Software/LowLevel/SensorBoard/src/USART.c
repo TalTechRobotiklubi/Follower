@@ -340,8 +340,9 @@ void handleReceivedData(USART_TypeDef* activeUART, uint8_t* rxBuffer, ReceivingD
 				break;
 			case idOK:
 				rxState->message.length = rxBuffer[tempTail];
+				rxState->message.interface = findInterface(activeUART);
 				__disable_irq();
-				if (InterfaceHandler_checkIfReceivedMessageExists(findInterface(activeUART), &rxState->message))
+				if (InterfaceHandler_checkIfReceivedMessageExists(&rxState->message))
 				{
 					rxState->calcCrc += rxState->message.length;
 					rxState->length = rxState->message.length;

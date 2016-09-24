@@ -46,8 +46,8 @@ void USB_setRobotConstrolMessagePending(int16_t translationSpeed, int16_t rotati
 	tSpeed.i = translationSpeed;
 	SplitInt16 wSpeed;
 	wSpeed.i = rotationSpeed;
+	robotControlMessage.interface = InterfaceUSB;
 	robotControlMessage.packet = &PacketDescriptorList[PacketRobotControl];
-	robotControlMessage.period = PacketDescriptorList[PacketRobotControl].period;
 	robotControlMessage.id = PacketDescriptorList[PacketRobotControl].id;
 	robotControlMessage.length = PacketDescriptorList[PacketRobotControl].dlc;
 	robotControlMessage.data[0] = tSpeed.d[1];

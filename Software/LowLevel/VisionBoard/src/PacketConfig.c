@@ -65,6 +65,16 @@ const PacketParameter packetRobotControlParameterList[2] =
 };
 
 // ----------------------------------------------------------------------------
+// Packet "PidSetup" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter packetPidSetupParameterList[3] = 
+{
+	{ DLParamPidParameter,  0,  8 },
+	{ DLParamPidValue,      8, 32 },
+	{ DLParamPidUpdating,  40,  1 }
+};
+
+// ----------------------------------------------------------------------------
 // Packet "CameraControl" parameters table
 // ----------------------------------------------------------------------------
 const PacketParameter packetCameraControlParameterList[2] = 
@@ -78,11 +88,12 @@ const PacketParameter packetCameraControlParameterList[2] =
 // ----------------------------------------------------------------------------
 PacketDescriptor PacketDescriptorList[NumberOfPackets] = 
 {
-	/* RobotFeedback   */ { 0xD4, -1, packetRobotFeedbackParameterList,   8, 16 },
-	/* DistanceSensors */ { 0xF0, -1, packetDistanceSensorsParameterList, 8,  8 },
-	/* Quaternions     */ { 0xF2, -1, packetQuaternionsParameterList,     4,  8 },
-	/* MotorSpeeds     */ { 0xD0, -1, packetMotorSpeedsParameterList,     2,  4 },
-	/* RobotControl    */ { 0xD3, -1, packetRobotControlParameterList,    2,  4 },
-	/* CameraControl   */ { 0xE0, -1, packetCameraControlParameterList,   2,  2 }
+	/* RobotFeedback   */ { 0xD4, packetRobotFeedbackParameterList,   4, 8 },
+	/* DistanceSensors */ { 0xF0, packetDistanceSensorsParameterList, 8, 8 },
+	/* Quaternions     */ { 0xF2, packetQuaternionsParameterList,     4, 8 },
+	/* MotorSpeeds     */ { 0xD0, packetMotorSpeedsParameterList,     2, 4 },
+	/* RobotControl    */ { 0xD3, packetRobotControlParameterList,    2, 4 },
+	/* PidSetup        */ { 0xD5, packetPidSetupParameterList,        3, 6 },
+	/* CameraControl   */ { 0xE0, packetCameraControlParameterList,   2, 2 }
 };
 

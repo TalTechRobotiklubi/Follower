@@ -31,7 +31,7 @@ void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(Int
 			{
 				initalizeInterfaceMessage(&message, transmitPacket->packet);
 				sendDataLayerDataToInterface(transmitPacket->packet, &message, funcToDriver);
-				DL_setDataInAsyncPacketInvalid(transmitPacket->packet);
+				DL_setDataInvalid(transmitPacket->packet);
 				transmitPacket->period = PACKET_WAITING;
 			}
 		}
@@ -39,11 +39,11 @@ void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(Int
 }
 
 /* NB! May be called from interrupt!!! Function not re-entrant, so disable interrupt(s) when calling it from main*/
-Bool InterfaceHandler_checkIfReceivedMessageExists(Interface interface, InterfaceMessage* msg)
+Bool InterfaceHandler_checkIfReceivedMessageExists(InterfaceMessage* msg)
 {
 	uint8_t i;
 
-	NodeInterfaceDescriptor interfaceDesc = InterfaceList[interface];
+	NodeInterfaceDescriptor interfaceDesc = InterfaceList[msg->interface];
 	for (i = 0; i < interfaceDesc.receivePacketCount; i++)
 	{
 		const InterfaceReceivePacket* receivePacket = &interfaceDesc.receivePacketList[i];
@@ -140,10 +140,16 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 	}
 	if (dataLayerOk == packetDesc->parameterCount)
 	{
-		if (msg->period >= 0)
-			packetDesc->period = 0;
-		else
-			packetDesc->period = PACKET_NEW;
+		NodeInterfaceDescriptor* interface = &InterfaceList[msg->interface];
+		for (j = 0; j < interface->receivePacketCount; j++)
+		{
+			InterfaceReceivePacket* receivePacket = &interface->receivePacketList[j];
+			if (receivePacket->packet == packetDesc)
+			{
+				if (receivePacket->period < 0)
+					receivePacket->period = PACKET_NEW;
+			}
+		}
 	}
 }
 
@@ -177,13 +183,13 @@ void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage
 			case TypeS8:
 				/*involves only one byte */
 				bitmask = getBitmaskForMessage(bitPosition, length);
-				DL_getDataWithoutAffectingStatus((packetDesc->parameterList + j)->param, &data);
+				DL_peekData((packetDesc->parameterList + j)->param, &data);
 				message->data[byteIndex] |= (((((uint8_t)data) & 0xFF) << (8 - length - bitPosition)) & bitmask);
 				break;
 			case TypeU16:
 			case TypeS16:
 				/*involves two bytes */
-				DL_getDataWithoutAffectingStatus((packetDesc->parameterList + j)->param, &data);
+				DL_peekData((packetDesc->parameterList + j)->param, &data);
 				/*first byte, bit position is assumed to be 0 and the byte is fully for this parameter*/
 				message->data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
 				/*second byte, bit position is still 0*/
@@ -194,7 +200,7 @@ void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage
 			case TypeS32:
 			case TypeFloat:
 				/*involves four bytes */
-				DL_getDataWithoutAffectingStatus((packetDesc->parameterList + j)->param, &data);
+				DL_peekData((packetDesc->parameterList + j)->param, &data);
 				/*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
 				message->data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
 				message->data[byteIndex + 1] |= (uint8_t)((data >> (length - 16)) & 0xFF);
@@ -250,3 +256,4 @@ void initalizeInterfaceMessage(InterfaceMessage* message, PacketDescriptor* pack
 		message->data[i] = 0;
 	}
 }
+

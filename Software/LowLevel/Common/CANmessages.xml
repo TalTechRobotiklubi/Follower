@@ -178,7 +178,7 @@
       </Description>
     </Parameter>
     <Parameter>
-      <Name>GyroYaw</Name>
+      <Name>GyroX</Name>
       <Type>S16</Type>
       <Unit>
       </Unit>
@@ -186,7 +186,7 @@
       </Description>
     </Parameter>
     <Parameter>
-      <Name>GyroPitch</Name>
+      <Name>GyroY</Name>
       <Type>S16</Type>
       <Unit>
       </Unit>
@@ -194,7 +194,7 @@
       </Description>
     </Parameter>
     <Parameter>
-      <Name>GyroRoll</Name>
+      <Name>GyroZ</Name>
       <Type>S16</Type>
       <Unit>
       </Unit>
@@ -455,13 +455,13 @@
       <NominalPeriod>0</NominalPeriod>
       <PacketParameters>
         <PacketParameter>
-          <Parameter>GyroYaw</Parameter>
+          <Parameter>GyroX</Parameter>
         </PacketParameter>
         <PacketParameter>
-          <Parameter>GyroPitch</Parameter>
+          <Parameter>GyroY</Parameter>
         </PacketParameter>
         <PacketParameter>
-          <Parameter>GyroRoll</Parameter>
+          <Parameter>GyroZ</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
@@ -614,6 +614,11 @@
             </ReceivePacket>
             <ReceivePacket>
               <Packet>RobotControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>PidSetup</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
@@ -801,6 +806,11 @@
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </TransmitPacket>
+            <TransmitPacket>
+              <Packet>PidSetup</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </TransmitPacket>
           </TransmitPackets>
         </Interface>
         <Interface>
@@ -818,6 +828,11 @@
             </ReceivePacket>
             <ReceivePacket>
               <Packet>RobotControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>PidSetup</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
@@ -847,6 +862,6 @@
   <OutputParameters />
   <Cases />
   <Config>
-    <OutputPath>..\..\LowLevel\Common</OutputPath>
+    <OutputPath>..\..\..\..\Follower\Software\LowLevel\Common</OutputPath>
   </Config>
 </CaseCatcher>
