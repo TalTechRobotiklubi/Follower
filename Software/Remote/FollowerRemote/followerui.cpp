@@ -20,6 +20,7 @@ FollowerUi::FollowerUi(Follower *robot)
   : QMainWindow()
 {
   ui.setupUi(this);
+  settings_ = robot->getSettings();
   workerThread_ = robot->getWorkerThread();
   workerObject_ = robot->getWorkerObject();
   dataLayer_ = robot->getWorkerObject()->getDataLayer();
@@ -44,7 +45,7 @@ FollowerUi::FollowerUi(Follower *robot)
   // Do not close until program exit or emergency.
   workerThread_->start();
 
-  robotgui_ = new TRobot();
+  robotgui_ = new TRobot(settings_);
   scene_ = new QGraphicsScene(this);
   scene_->setBackgroundBrush(QBrush(Qt::black));
   ui.graphicsView->setScene(scene_);
@@ -300,7 +301,7 @@ void FollowerUi::UpdatePortList()
 
 void FollowerUi::on_pushButton_clicked()
 {
-  Configure conf;
+  Configure conf(settings_);
   connect(&conf, &Configure::sendParameter,
           [=](uint8_t param, float value){
     uint8_t update = 0;

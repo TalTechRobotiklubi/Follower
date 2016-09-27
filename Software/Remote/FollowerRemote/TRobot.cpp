@@ -6,8 +6,9 @@
 #include <QtCore/QFile>
 
 
-TRobot::TRobot(void)
+TRobot::TRobot(QSettings *settings)
 {
+    settings_ = settings;
 
 	int sidelen = int (80/2.42);
 
@@ -326,42 +327,51 @@ int TRobot::GetAngle(int x1,int y1,int x2,int y2)
 
 void TRobot::SaveToFile(void)
 {
+    settings_->beginGroup("trobot");
+    settings_->beginWriteArray("sensor");
 
-	QFile file("robot.txt");
-    if (file.open(QIODevice::WriteOnly))
-	{
-		QDataStream out(&file); 
+    for (int i = 0; i < 8; i++)
+    {
+        settings_->setArrayIndex(i);
+        settings_->setValue("id", QString(sensor[i].id));
+        settings_->setValue("x", sensor[i].x);
+        settings_->setValue("y", sensor[i].y);
+        settings_->setValue("deg", sensor[i].deg);
+    }
 
-		for (int i = 0; i< 8; i++)
-		{
-			out << sensor[i].x<<sensor[i].y<<sensor[i].deg; 
-		}
-		file.close();
-	}
+    settings_->endArray();
+    settings_->endGroup();
 }
 
 int TRobot::LoadFromFile(void)
 {
+    int size;
 
-	QFile file("robot.txt");
-    if (file.open(QIODevice::ReadOnly))
+    settings_->beginGroup("trobot");
+    size = settings_->beginReadArray("sensor");
+
+    if (!size)
     {
-		QDataStream in(&file); 
+        settings_->endArray();
+        settings_->endGroup();
 
-		for (int i = 0; i< 8; i++)
-		{
-			in >> sensor[i].x; 
-			in >> sensor[i].y; 
-			in >> sensor[i].deg; 
-            sensor[i].id = '1'+i;
-			sensor[i].sonarlen = -1;
-			sensor[i].state = 0;
-		}
+        return 0;
+    }
 
-		file.close();
-		return 1;
-	}
-	return 0;
+    for (int i = 0; i < size; i++)
+    {
+        settings_->setArrayIndex(i);
+
+        sensor[i].id = settings_->value("id").toChar().toLatin1();
+        sensor[i].x = settings_->value("x").toInt();
+        sensor[i].y = settings_->value("y").toInt();
+        sensor[i].deg = settings_->value("deg").toInt();
+    }
+
+    settings_->endArray();
+    settings_->endGroup();
+
+    return 1;
 }
 
 double TRobot::GetSpeedAngle(double s1,double s2)

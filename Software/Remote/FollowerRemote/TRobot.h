@@ -2,7 +2,7 @@
 #include <QPainter>
 #include <QtWidgets/QGraphicsItem>
 #include <QtWidgets/QGraphicsScene>
-
+#include <QSettings>
 
 
 class TRobot : public QGraphicsItem
@@ -11,7 +11,7 @@ class TRobot : public QGraphicsItem
 
 
 public:
-	TRobot(void);
+    TRobot(QSettings *settings);
 	~TRobot(void);
 	double zoom; 
 	int m1speed;
@@ -44,5 +44,6 @@ protected:
     double GetSpeedAngle(double s1,double s2);
     void PaintAngledArrow(int x1,int y1,int len,int angle,QPainter *painter,double size);
 	
+    QSettings* settings_;
 };
 

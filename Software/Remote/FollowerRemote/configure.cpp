@@ -2,15 +2,17 @@
 #include "ui_configure.h"
 
 #include <QDir>
+#include <QSettings>
 #include <QDebug>
 
-Configure::Configure(QWidget *parent)
+Configure::Configure(QSettings *settings, QWidget *parent)
   : QDialog(parent)
   , ui(new Ui::Configure)
   , isSending_(false)
   , sendCount_(0)
   , fileStream_(0)
 {
+  settings_ = settings;
   ui->setupUi(this);
   initTable();
   connect(&timer_, &QTimer::timeout, this, &Configure::send);
@@ -45,26 +47,34 @@ void Configure::on_button_send_clicked()
     if (activeFile_.isOpen())
       activeFile_.close();
 
+    savePidParameters();
+
     activeFile_.setFileName(createFilePath());
     if (activeFile_.open(QFile::ReadWrite))
       writePidParametersToFile();
     else
-      qDebug() << "Measuremnt file open failed!";
+      qDebug() << "Measurement file open failed!";
+
     timer_.start(50);
   }
 }
 
 void Configure::initTable()
 {
-  ui->tableParams->setRowCount(6);
   ui->tableParams->setColumnCount(2);
 
-  addParameterToTable("Px", 0, 0.2f);
-  addParameterToTable("Ix", 1, 0.0f);
-  addParameterToTable("Dx", 2, 0.0f);
-  addParameterToTable("Pw", 3, 0.0f);
-  addParameterToTable("Iw", 4, 0.0f);
-  addParameterToTable("Dw", 5, 0.0f);
+  if (!loadPidParameters())
+  {
+    ui->tableParams->setRowCount(6);
+    addParameterToTable("Px", 0, 0.2f);
+    addParameterToTable("Ix", 1, 0.0f);
+    addParameterToTable("Dx", 2, 0.0f);
+    addParameterToTable("Pw", 3, 0.0f);
+    addParameterToTable("Iw", 4, 0.0f);
+    addParameterToTable("Dw", 5, 0.0f);
+  }
+
+  ui->tableParams->insertRow(ui->tableParams->rowCount());
 }
 
 void Configure::addParameterToTable(const QString& param, int row, float value)
@@ -79,9 +89,11 @@ void Configure::send()
 {
   if (ui->tableParams->rowCount() > 0 && sendCount_ <= ui->tableParams->rowCount())
   {
-    QTableWidgetItem *item = ui->tableParams->item(sendCount_, 1);
-    float value = item->text().toFloat();
-    emit sendParameter(item->row(),value);
+    if (QTableWidgetItem *item = ui->tableParams->item(sendCount_, 1))
+    {
+        float value = item->text().toFloat();
+        emit sendParameter(item->row(),value);
+    }
     sendCount_++;
   } 
   if (sendCount_ == ui->tableParams->rowCount())
@@ -97,6 +109,13 @@ QString Configure::createFilePath()
   const QString fileStart = "measure";
   QStringList nameFilter("*.csv");
   QDir directory(QDir::currentPath().append(QDir::separator()).append("measurements"));
+
+  // Make the directory if none exists.
+  if (!directory.exists())
+  {
+    directory.mkdir(directory.absolutePath());
+  }
+
   QStringList files = directory.entryList(nameFilter);
   QString newFile = fileStart;
   if (files.size() == 0)
@@ -126,10 +145,63 @@ void Configure::writePidParametersToFile()
   for(int i = 0; i < ui->tableParams->rowCount(); ++i)
   {
     for (int j = 0; j < ui->tableParams->columnCount(); ++j)
-      *fileStream_ << ui->tableParams->item(i, j)->text().append(" ").toLatin1();
+      if (QTableWidgetItem *item = ui->tableParams->item(i, j))
+        *fileStream_ << item->text().append(" ").toLatin1();
     *fileStream_ << "\r\n";
   }
   *fileStream_ << "\r\n";
   *fileStream_ << "Measurements\r\n";
   *fileStream_ << "----------\r\n";
+}
+
+void Configure::savePidParameters()
+{
+  settings_->beginGroup("pidParams");
+  settings_->beginWriteArray("parameter");
+
+  for (int i = 0; i < ui->tableParams->rowCount(); i++)
+  {
+    QTableWidgetItem *itemKey = ui->tableParams->item(i, 0);
+    QTableWidgetItem *itemValue = ui->tableParams->item(i, 1);
+
+    if (itemKey && itemValue)
+    {
+        settings_->setArrayIndex(i);
+        settings_->setValue("key", itemKey->text());
+        settings_->setValue("value", itemValue->text());
+    }
+  }
+
+  settings_->endArray();
+  settings_->endGroup();
+}
+
+int Configure::loadPidParameters()
+{
+  int size;
+
+  settings_->beginGroup("pidParams");
+  size = settings_->beginReadArray("parameter");
+
+  if (!size)
+  {
+    settings_->endArray();
+    settings_->endGroup();
+
+    return 0;
+  }
+
+  ui->tableParams->setRowCount(size);
+
+  for (int i = 0; i < size; i++)
+  {
+    settings_->setArrayIndex(i);
+
+    addParameterToTable(settings_->value("key").toString(), i, settings_->value("value").toFloat());
+  }
+
+  settings_->endArray();
+  settings_->endGroup();
+
+  return 1;
 }

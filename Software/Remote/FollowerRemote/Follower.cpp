@@ -5,8 +5,11 @@
 #include "DataLayerCAN.h"
 #include "Kinematics.h"
 
+#include <QSettings>
+
 Follower::Follower(void)
 {
+    settings_ = new QSettings("robot.ini", QSettings::IniFormat);
     workerThread_ = new CANWorkerThread();
     workerObject_ = new WorkerObjectCAN();
     workerObject_->moveToThread(workerThread_);
@@ -24,4 +27,5 @@ Follower::~Follower(void)
   workerThread_->exit();
   workerThread_->wait();
   delete workerThread_;
+  delete settings_;
 }

@@ -55,6 +55,7 @@ private:
   Kinematics* kinematics_;
   TRobot* robotgui_;
   QGraphicsScene* scene_;
+  QSettings* settings_;
 
 
 

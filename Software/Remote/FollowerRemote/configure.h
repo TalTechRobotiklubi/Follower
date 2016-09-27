@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QFile>
 #include <QTextStream>
+#include <QSettings>
 
 namespace Ui {
 class Configure;
@@ -17,7 +18,7 @@ class Configure : public QDialog
   Q_OBJECT
 
 public:
-  explicit Configure(QWidget *parent = 0);
+  explicit Configure(QSettings *settings, QWidget *parent = 0);
   ~Configure();
 
 signals:
@@ -36,6 +37,8 @@ private:
   void send();
   QString createFilePath();
   void writePidParametersToFile();
+  void savePidParameters();
+  int loadPidParameters();
 
   Ui::Configure *ui;
   QTimer timer_;
@@ -43,6 +46,7 @@ private:
   int sendCount_;
   QFile activeFile_;
   QTextStream* fileStream_;
+  QSettings* settings_;
 };
 
 #endif // CONFIGURE_H
