@@ -5,6 +5,7 @@
 
 struct kinect_null_frame_source : kinect_frame_source {
   const kinect_frame* get_frame() override { return NULL; }
+  void fill_frame(kinect_frame*) override {}
 };
 
 #endif

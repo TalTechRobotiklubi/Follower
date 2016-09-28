@@ -80,6 +80,8 @@ set(FOLLOWER_SOURCES
 
   ui/cam_window.cpp
   ui/main_window.cpp
+
+  kinect_frame.cpp
 )
 
 if (KINECT_ENABLED)
@@ -95,6 +97,38 @@ add_executable(
   follower
   main.cpp
   ${FOLLOWER_SOURCES}
+)
+
+set(CORE_SOURCES
+  core.cpp
+  core_opt.cpp
+
+  fl_sqlite_source.cpp
+
+  kinect_frame.cpp
+
+  parg/parg.c
+)
+
+if (KINECT_ENABLED)
+  list(APPEND CORE_SOURCES kinect_live_source.cpp)
+endif()
+
+add_executable(
+  follower_core
+  ${CORE_SOURCES}
+)
+
+target_link_libraries(
+  follower_core
+  ${Boost_LIBRARIES}
+  ${KINECTV2_LIBRARY}
+  yuv
+  follower_common
+  sqlite3
+  floatfann
+  ${CMAKE_DL_LIBS}
+  ${CMAKE_THREAD_LIBS_INIT}
 )
 
 add_executable(

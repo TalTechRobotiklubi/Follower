@@ -1,6 +1,4 @@
-#ifndef KINECT_FRAME_H
-#define KINECT_FRAME_H
-
+#pragma once
 #include <stdint.h>
 
 struct kinect_frame {
@@ -13,4 +11,4 @@ struct kinect_frame {
   uint8_t* rgba_data = nullptr;
 };
 
-#endif
+void copy_frame(const kinect_frame* src, kinect_frame* dst);

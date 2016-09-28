@@ -53,9 +53,10 @@ const kinect_frame* fl_sqlite_source::get_frame() {
 
 void fl_sqlite_source::advance() {
   sqlite3_reset(frame_query);
-  sqlite3_bind_int(frame_query, 1, current_frame);
+  sqlite3_bind_int(frame_query, 1, current_frame_num);
   int res;
 
+  std::lock_guard<std::mutex> lock(frame_lock);
   while ((res = sqlite3_step(frame_query)) == SQLITE_ROW) {
     const void* blob = sqlite3_column_blob(frame_query, 1);
     int bytes = sqlite3_column_bytes(frame_query, 1);
@@ -67,11 +68,16 @@ void fl_sqlite_source::advance() {
     kframe.depth_data = depth_data;
     kframe.depth_length = depth_data_len;
 
-    current_frame++;
-    if (current_frame > total_frames) current_frame = 1;
+    current_frame_num++;
+    if (current_frame_num > total_frames) current_frame_num = 1;
   }
 
   if (res != SQLITE_DONE) {
     printf("failed to query frame: %s\n", sqlite3_errmsg(db));
   }
+}
+
+void fl_sqlite_source::fill_frame(kinect_frame* dst) {
+  std::lock_guard<std::mutex> lock(frame_lock);
+  copy_frame(&kframe, dst);
 }

@@ -4,6 +4,7 @@
 #include "kinect_frame_source.h"
 #include "kinect_frame.h"
 #include <vector>
+#include <mutex>
 #include <cstdint>
 
 struct IKinectSensor;
@@ -28,6 +29,7 @@ struct kinect_live_source : kinect_frame_source {
   size_t kinect_rgba_buf_len = 0;
 
   kinect_frame current_frame;
+  std::mutex frame_lock;
 };
 
 #endif
