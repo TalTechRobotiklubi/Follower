@@ -18,3 +18,6 @@ Software/Tracker/bin
 Software/Tracker/build
 
 Hardware
+
+syntax: glob
+*.swp

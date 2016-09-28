@@ -26,6 +26,7 @@ add_subdirectory("third_party/libyuv")
 add_subdirectory("third_party/glfw-3.1.1")
 add_subdirectory("third_party/bgfx")
 add_subdirectory("third_party/fann")
+add_subdirectory("third_party/enet-1.3.13")
 
 option(KINECT_ENABLED "Enable using Kinect SDK" OFF)
 
@@ -54,6 +55,7 @@ INCLUDE_DIRECTORIES(SYSTEM
   "third_party/bgfx/include"
   "third_party/eigen"
   "third_party/fann/src/include"
+  "third_party/enet-1.3.13/include"
 )
 
 add_subdirectory(src)

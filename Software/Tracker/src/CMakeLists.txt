@@ -107,6 +107,8 @@ set(CORE_SOURCES
 
   kinect_frame.cpp
 
+  UdpHost.cpp
+
   parg/parg.c
 )
 
@@ -127,6 +129,7 @@ target_link_libraries(
   follower_common
   sqlite3
   floatfann
+  enet
   ${CMAKE_DL_LIBS}
   ${CMAKE_THREAD_LIBS_INIT}
 )

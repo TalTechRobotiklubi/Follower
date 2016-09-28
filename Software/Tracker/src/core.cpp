@@ -4,6 +4,7 @@
 #include "kinect_frame.h"
 #include "kinect_frame_source.h"
 #include "core_opt.h"
+#include "UdpHost.h"
 
 void kinect_loop(core* c) {
   while (c->running) {
@@ -13,6 +14,13 @@ void kinect_loop(core* c) {
 }
 
 void core_start(core* c) {
+  c->udp = UdpHostCreate("127.0.0.1", 9001);
+
+  if (!c->udp) {
+    fprintf(stderr, "Failed to create UDP host.\n");
+    abort();
+  }
+
   c->kinect_frame_thread = std::thread(kinect_loop, c); 
 }
 
@@ -33,6 +41,8 @@ int main(int argc, char** argv) {
   while (c.running) {
     c.frame_source->fill_frame(c.current_frame);
     printf("Frame: %d\n", c.current_frame->depth_length);
+
+    UdpHostPoll(c.udp);
   }
 
   return 0;
