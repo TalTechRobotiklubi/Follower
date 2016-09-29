@@ -17,18 +17,22 @@ find_package(Boost 1.55 COMPONENTS
 
 find_package(Threads)
 
-set(bx_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/third_party/bx/include")
-if (WIN32)
-  include_directories("${bx_INCLUDE_DIR}/compat/msvc")
-endif()
+option(KINECT_ENABLED "Enable Kinect SDK" OFF)
 
+add_subdirectory("third_party/sqlite")
+add_subdirectory("third_party/glew-1.13.0/build/cmake")
+add_subdirectory("third_party/glfw-3.1.2")
+
+INCLUDE_DIRECTORIES(SYSTEM
+  "third_party/sqlite"
+  "third_party/glfw-3.1.2/include"
+  "third_party/glew-1.13.0/include"
+)
+
+add_subdirectory("third_party/imgui")
 add_subdirectory("third_party/libyuv")
-add_subdirectory("third_party/glfw-3.1.1")
-add_subdirectory("third_party/bgfx")
-add_subdirectory("third_party/fann")
 add_subdirectory("third_party/enet-1.3.13")
-
-option(KINECT_ENABLED "Enable using Kinect SDK" OFF)
+add_subdirectory("third_party/FastHumanDetection")
 
 if (WIN32)
   add_definitions(
@@ -51,10 +55,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 INCLUDE_DIRECTORIES(SYSTEM
   "third_party/libyuv/include"
-  "third_party/glfw-3.1.1/include"
-  "third_party/bgfx/include"
-  "third_party/eigen"
-  "third_party/fann/src/include"
   "third_party/enet-1.3.13/include"
 )
 

@@ -17,6 +17,10 @@ int parse_opt(core* c, int argc, char** argv) {
         c->frame_source = new fl_sqlite_source(args.optarg);
         printf("frame source: database\n");
         break;
+      case 's':
+        c->serial.start(args.optarg, 115200);
+        printf("serial %s\n", args.optarg);
+        break;
       default: break;
     }
   }
