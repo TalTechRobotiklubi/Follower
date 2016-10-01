@@ -56,13 +56,13 @@ set(CORE_SOURCES
   core.cpp
   core_opt.cpp
 
-  comm/DataLayer.cpp
+  comm/datalayer.cpp
   comm/DataLayerConfig.cpp
   comm/InterfaceConfig.cpp
   comm/InterfaceHandler.cpp
   comm/PacketConfig.cpp
   comm/serial_comm.cpp
-  comm/Typedef.cpp
+  comm/typedef.cpp
 
   fl_sqlite_source.cpp
 

@@ -1,5 +1,5 @@
 #include "InterfaceHandler.h"
-#include "DataLayer.h"
+#include "datalayer.h"
 
 void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage* msg, void (*funcToDriver)(InterfaceMessage* msg));
 uint8_t getBitmaskForMessage(uint8_t bitPosition, int16_t length);

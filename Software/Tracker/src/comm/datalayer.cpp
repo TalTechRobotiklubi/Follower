@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
-#include "DataLayer.h"
+#include "datalayer.h"
 #include "DataLayerConfig.h"
 #include "InterfaceConfig.h"
 
