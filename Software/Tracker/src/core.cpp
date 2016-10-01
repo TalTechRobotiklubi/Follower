@@ -9,6 +9,9 @@
 #include "timer.h"
 #include "algorithm/algorithm_runner.h"
 
+typedef std::chrono::milliseconds msec;
+static int loopTimeMs = 30;
+
 void kinect_loop(core* c) {
   while (c->running) {
     c->frame_source->get_frame();
@@ -31,6 +34,16 @@ core::~core() {
   kinect_frame_thread.join();
 }
 
+void waitTillLoopTimeElapses()
+{
+  static auto loop_time = std::chrono::system_clock::now();
+
+  while (std::chrono::duration_cast<msec>(
+           std::chrono::system_clock::now() - loop_time).count() < loopTimeMs)
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  loop_time = std::chrono::system_clock::now();
+}
+
 int main(int argc, char** argv) {
 
   core c;
@@ -42,15 +55,7 @@ int main(int argc, char** argv) {
 
   core_start(&c);
 
-  int64_t current_time = hp_counter();
-  int64_t prev_time = current_time;
   while (c.running) {
-    prev_time = current_time;
-    current_time = hp_counter();
-    const int64_t frame_time = current_time - prev_time;
-    const double freq = double(hp_freq());
-    const double dt = double(frame_time) * 1000.0 / freq;  // ms
-    const double dt_seconds = dt / 1000.0f;
     c.frame_source->fill_frame(c.current_frame);
     printf("Frame: %d\n", c.current_frame->depth_length);
 
@@ -58,8 +63,9 @@ int main(int argc, char** argv) {
 
     c.serial.receive(&c.in_data);
     AlgorithmRunner::run(0, c.in_data, &c.out_data);
-    DataHandler_TASK(dt);
+    DataHandler_TASK(loopTimeMs);
     c.serial.send(c.out_data);
+    waitTillLoopTimeElapses();
   }
 
   return 0;
