@@ -25,8 +25,6 @@ void DL_init()
 // ----------------------------------------------------------------------------
 bool DL_getData(DLParam param, DLValuePointer pValue)
 {
-	uint8_t i, j;
-
 	GetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 
 #ifdef ENABLE_ASYNC

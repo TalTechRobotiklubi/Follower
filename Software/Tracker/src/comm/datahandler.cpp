@@ -9,25 +9,25 @@
  *period as DataHandler_TASK. */
 void DataHandler_TASK(uint16_t elapsedMs)
 {
-	int i;
-	for (i = 0; i < NumberOfInterfaces; ++i)
-	{
-		NodeInterfaceDescriptor interfaceDesc = psInterfaceList[i];
-		unsigned int j;
-		for (j = 0; j < interfaceDesc.uiTransmitPacketCount; j++)
-		{
-			InterfaceTransmitPacket transmitPacket = interfaceDesc.psTransmitPacketList[j];
-			PacketDescriptor* packetDesc = &psPacketDescriptorList[transmitPacket.ePacket];
+  int i;
+  for (i = 0; i < NumberOfInterfaces; ++i)
+  {
+    NodeInterfaceDescriptor interfaceDesc = psInterfaceList[i];
+    unsigned int j;
+    for (j = 0; j < interfaceDesc.uiTransmitPacketCount; j++)
+    {
+      InterfaceTransmitPacket transmitPacket = interfaceDesc.psTransmitPacketList[j];
+      PacketDescriptor* packetDesc = &psPacketDescriptorList[transmitPacket.ePacket];
 
-			// only periodic packets
-			if (transmitPacket.ulPeriod > 0 && packetDesc->iPeriod >= 0)
-			{
-				packetDesc->iPeriod += elapsedMs;
-				if (uint32_t(packetDesc->iPeriod) > transmitPacket.ulPeriod)
-					packetDesc->iPeriod = elapsedMs;
-			}
-		}
-	}
+      // only periodic packets
+      if (transmitPacket.ulPeriod > 0 && packetDesc->iPeriod >= 0)
+      {
+        packetDesc->iPeriod += elapsedMs;
+        if (int32_t(packetDesc->iPeriod) > transmitPacket.ulPeriod)
+          packetDesc->iPeriod = elapsedMs;
+      }
+    }
+  }
 }
 
 
