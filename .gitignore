@@ -9,11 +9,10 @@ Software/LowLevel/Documents/datasheets
 Software/LowLevel/Documents/stm32f4_dsp_stdperiph_lib
 Software/LowLevel/Documents/stsw-stm32068
 
-Software/Remote/FollowerRemote/Debug
-Software/Remote/FollowerRemote/GeneratedFiles
-Software/Remote/FollowerRemoteTests
+Software/Remote/build*
 
 Software/Tracker/bin
 Software/Tracker/build
+Software/build*
 
 Hardware
