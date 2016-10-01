@@ -16,3 +16,6 @@ Software/Tracker/build
 Software/build*
 
 Hardware
+
+*.swp
+build
