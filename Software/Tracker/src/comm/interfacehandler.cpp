@@ -1,94 +1,68 @@
-#include "interfacehandler.h"
-#include "datalayer.h"
+#include "InterfaceHandler.h"
+#include "DataLayer.h"
 
 void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage* msg, void (*funcToDriver)(InterfaceMessage* msg));
 uint8_t getBitmaskForMessage(uint8_t bitPosition, int16_t length);
 void initalizeInterfaceMessage(InterfaceMessage *message, PacketDescriptor* packetDesc);
 
-void InterfaceHandler_transmitData(Interface interf, void (*funcToDriver)(InterfaceMessage* msg))
+void InterfaceHandler_transmitData(Interface interface, void (*funcToDriver)(InterfaceMessage* msg))
 {
 	uint8_t i;
 	InterfaceMessage message;
 
-	NodeInterfaceDescriptor interfaceDesc = psInterfaceList[interf];
-	for (i = 0; i < interfaceDesc.uiTransmitPacketCount; i++)
+	NodeInterfaceDescriptor interfaceDesc = InterfaceList[interface];
+	for (i = 0; i < interfaceDesc.transmitPacketCount; i++)
 	{
-		InterfaceTransmitPacket transmitPacket = interfaceDesc.psTransmitPacketList[i];
-		PacketDescriptor *packetDesc = &psPacketDescriptorList[transmitPacket.ePacket];
+		InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[i];
 
 		// periodic packets
-		if (transmitPacket.ulPeriod >= 0)
+		if (transmitPacket->period >= 0)
 		{
-			if (packetDesc->iPeriod == transmitPacket.ulPeriod)
+			if (transmitPacket->elapsed == 0)
 			{
-				message.packet = transmitPacket.ePacket;
-				initalizeInterfaceMessage(&message, packetDesc);
-				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
+				initalizeInterfaceMessage(&message, transmitPacket->packet);
+				sendDataLayerDataToInterface(transmitPacket->packet, &message, funcToDriver);
+				transmitPacket->elapsed = transmitPacket->period;
 			}
 		}
 		else // aperiodic packets
 		{
-			if (packetDesc->iPeriod == PACKET_READY_TO_SEND)
+			if (transmitPacket->period == PACKET_NEW)
 			{
-				initalizeInterfaceMessage(&message, packetDesc);
-				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
-				packetDesc->iPeriod = PACKET_WAITING;
-			}
-		}
-	}
-}
-
-/*peeks async data and transmits it if needed. Does not affect the status*/
-void InterfaceHandler_transmitAsyncDataWithoutAffectingStatus(Interface interf, void (*funcToDriver)(InterfaceMessage* msg))
-{
-	uint8_t i;
-	InterfaceMessage message;
-
-	NodeInterfaceDescriptor interfaceDesc = psInterfaceList[interf];
-	for (i = 0; i < interfaceDesc.uiTransmitPacketCount; i++)
-	{
-		InterfaceTransmitPacket transmitPacket = interfaceDesc.psTransmitPacketList[i];
-		PacketDescriptor *packetDesc = &psPacketDescriptorList[transmitPacket.ePacket];
-
-		if (transmitPacket.ulPeriod < 0) // aperiodic packets
-		{
-			if (packetDesc->iPeriod == PACKET_READY_TO_SEND)
-			{
-				initalizeInterfaceMessage(&message, packetDesc);
-				sendDataLayerDataToInterface(packetDesc, &message, funcToDriver);
+				initalizeInterfaceMessage(&message, transmitPacket->packet);
+				sendDataLayerDataToInterface(transmitPacket->packet, &message, funcToDriver);
+				DL_setDataInvalid(transmitPacket->packet);
+				transmitPacket->period = PACKET_WAITING;
 			}
 		}
 	}
 }
 
 /* NB! May be called from interrupt!!! Function not re-entrant, so disable interrupt(s) when calling it from main*/
-U8 InterfaceHandler_checkIfReceivedMessageExists(Interface interf, InterfaceMessage* msg)
+U8 InterfaceHandler_checkIfReceivedMessageExists(InterfaceMessage* msg)
 {
-	U8 result = 0;
 	uint8_t i;
 
-	NodeInterfaceDescriptor interfaceDesc = psInterfaceList[interf];
-	for (i = 0; i < interfaceDesc.uiReceivePacketCount; i++)
+	NodeInterfaceDescriptor interfaceDesc = InterfaceList[msg->interface];
+	for (i = 0; i < interfaceDesc.receivePacketCount; i++)
 	{
-		InterfaceReceivePacket receivePacket = interfaceDesc.psReceivePacketList[i];
-		PacketDescriptor* packetDesc = &psPacketDescriptorList[receivePacket.ePacket];
+		const InterfaceReceivePacket* receivePacket = &interfaceDesc.receivePacketList[i];
+		PacketDescriptor* packetDesc = receivePacket->packet;
 
-		if (packetDesc->uiID == msg->id && packetDesc->uiDLC == msg->length)
+		if (packetDesc->id == msg->id && packetDesc->dlc == msg->length)
 		{
-			result = 1;
-			msg->packet = receivePacket.ePacket;
-			msg->period = receivePacket.ulPeriod;
-			break;
+			msg->packet = receivePacket->packet;
+			msg->period = receivePacket->period;
+      return true;
 		}
 	}
-	return result;
+  return false;
 }
-
 
 /* expects that InterfaceHandler_checkIfReceivedMessageExists is called first*/
 void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 {
-	PacketDescriptor* packetDesc = &psPacketDescriptorList[msg->packet];
+	PacketDescriptor* packetDesc = msg->packet;
 	uint8_t byteIndex, bitPosition, j, type;
 	int16_t length;
 	uint8_t dataLayerOk;
@@ -97,14 +71,14 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 	dataLayerOk = 0;
 
 	/*go through all the parameters in the message and store them into data layer*/
-	for (j = 0; j < packetDesc->uiParameterCount; j++)
+	for (j = 0; j < packetDesc->parameterCount; j++)
 	{
-		byteIndex = ((packetDesc->psParameterList + j)->uiStartBit / 8);
-		bitPosition = ((packetDesc->psParameterList + j)->uiStartBit % 8);
-		length = (int16_t)((packetDesc->psParameterList + j)->uiLengthBits);
+		byteIndex = ((packetDesc->parameterList + j)->startBit / 8);
+		bitPosition = ((packetDesc->parameterList + j)->startBit % 8);
+		length = (int16_t)((packetDesc->parameterList + j)->lengthBits);
 
 		/*get parameter type from data layer*/
-		type = DL_getDataType((packetDesc->psParameterList + j)->eParam);
+		type = DL_getDataType((packetDesc->parameterList + j)->param);
 
 		switch(type)
 		{
@@ -121,7 +95,7 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 					data = msg->data[byteIndex];
 					/*sanity check*/
 					data = (data >> (8 - bitPosition - length)) & (0xFF >> (8 - length));
-					DL_setDataWithoutAffectingStatus((packetDesc->psParameterList + j)->eParam, &data);
+					DL_setDataWithoutAffectingStatus((packetDesc->parameterList + j)->param, &data);
 					dataLayerOk++;
 				}
 				break;
@@ -137,12 +111,13 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 					/*second byte, bit position is still 0, shift if length is not full byte*/
 					data |= (msg->data[byteIndex + 1] & 0xFF);
 					data = (uint16_t)(data >> (8 - length));
-					DL_setDataWithoutAffectingStatus((packetDesc->psParameterList + j)->eParam, &data);
+					DL_setDataWithoutAffectingStatus((packetDesc->parameterList + j)->param, &data);
 					dataLayerOk++;
 				}
 				break;
 			case TypeU32:
 			case TypeS32:
+			case TypeFloat:
 				/*sanity check*/
 				if ((length <= 32) && (length > 24))
 				{
@@ -155,7 +130,7 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 					/*fourth byte, bit position is still 0, shift if length is not full byte*/
 					data |= (msg->data[byteIndex + 3] & 0xFF);
 					data = (uint32_t)(data >> (8 - length));
-					DL_setDataWithoutAffectingStatus((packetDesc->psParameterList + j)->eParam, &data);
+					DL_setDataWithoutAffectingStatus((packetDesc->parameterList + j)->param, &data);
 					dataLayerOk++;
 				}
 				break;
@@ -163,15 +138,17 @@ void InterfaceHandler_storeReceivedData(InterfaceMessage* msg)
 				break;
 		}
 	}
-	if (dataLayerOk == packetDesc->uiParameterCount)
+	if (dataLayerOk == packetDesc->parameterCount)
 	{
-		if (msg->period >= 0)
+		NodeInterfaceDescriptor* interface = &InterfaceList[msg->interface];
+		for (j = 0; j < interface->receivePacketCount; j++)
 		{
-			packetDesc->iPeriod = 0;
-		}
-		else
-		{
-			packetDesc->iPeriod = PACKET_READY_TO_SEND;
+			InterfaceReceivePacket* receivePacket = &interface->receivePacketList[j];
+			if (receivePacket->packet == packetDesc)
+			{
+				if (receivePacket->period < 0)
+					receivePacket->period = PACKET_NEW;
+			}
 		}
 	}
 }
@@ -187,13 +164,13 @@ void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage
 	Type type;
 	uint32_t data;
 
-	for (j = 0; j < packetDesc->uiParameterCount; j++)
+	for (j = 0; j < packetDesc->parameterCount; j++)
 	{
-		byteIndex = ((packetDesc->psParameterList + j)->uiStartBit / 8);
-		bitPosition = ((packetDesc->psParameterList + j)->uiStartBit % 8);
-		length = (int16_t)((packetDesc->psParameterList + j)->uiLengthBits);
+		byteIndex = ((packetDesc->parameterList + j)->startBit / 8);
+		bitPosition = ((packetDesc->parameterList + j)->startBit % 8);
+		length = (int16_t)((packetDesc->parameterList + j)->lengthBits);
 		/*get parameter type from data layer*/
-		type = DL_getDataType((packetDesc->psParameterList + j)->eParam);
+		type = DL_getDataType((packetDesc->parameterList + j)->param);
 
 		switch(type)
 		{
@@ -206,13 +183,13 @@ void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage
 			case TypeS8:
 				/*involves only one byte */
 				bitmask = getBitmaskForMessage(bitPosition, length);
-				DL_getDataWithoutAffectingStatus((packetDesc->psParameterList + j)->eParam, &data);
+				DL_peekData((packetDesc->parameterList + j)->param, &data);
 				message->data[byteIndex] |= (((((uint8_t)data) & 0xFF) << (8 - length - bitPosition)) & bitmask);
 				break;
 			case TypeU16:
 			case TypeS16:
 				/*involves two bytes */
-				DL_getDataWithoutAffectingStatus((packetDesc->psParameterList + j)->eParam, &data);
+				DL_peekData((packetDesc->parameterList + j)->param, &data);
 				/*first byte, bit position is assumed to be 0 and the byte is fully for this parameter*/
 				message->data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
 				/*second byte, bit position is still 0*/
@@ -221,8 +198,9 @@ void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage
 				break;
 			case TypeU32:
 			case TypeS32:
+			case TypeFloat:
 				/*involves four bytes */
-				DL_getDataWithoutAffectingStatus((packetDesc->psParameterList + j)->eParam, &data);
+				DL_peekData((packetDesc->parameterList + j)->param, &data);
 				/*first 3 bytes, bit position is assumed to be 0 and the bytes are fully for this parameter*/
 				message->data[byteIndex] |= (uint8_t)((data >> (length - 8)) & 0xFF);
 				message->data[byteIndex + 1] |= (uint8_t)((data >> (length - 16)) & 0xFF);
@@ -269,8 +247,8 @@ uint8_t getBitmaskForMessage(uint8_t bitPosition, int16_t length)
 
 void initalizeInterfaceMessage(InterfaceMessage* message, PacketDescriptor* packetDesc)
 {
-	message->id = uint8_t(packetDesc->uiID);
-	message->length = packetDesc->uiDLC;
+	message->id = packetDesc->id;
+	message->length = packetDesc->dlc;
 
 	int i;
 	for (i = 0; i < message->length; i++)

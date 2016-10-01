@@ -7,27 +7,27 @@
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
-#include "interfaceconfig.h"
+#include "InterfaceConfig.h"
 
 // ----------------------------------------------------------------------------
 // Interface tables
 // ----------------------------------------------------------------------------
-const InterfaceReceivePacket psNodeInterfaceUARTReceivePacketList[4] = 
+InterfaceReceivePacket nodeInterfaceUSBReceivePacketList[3] = 
 {
-	{ PacketMotor1Status,    -1 },
-	{ PacketMotor2Status,    -1 },
-	{ PacketDistanceSensors, -1 },
-	{ PacketAcceleration,    -1 }
+	{ &PacketDescriptorList[PacketRobotFeedback],   -1 },
+	{ &PacketDescriptorList[PacketDistanceSensors], -1 },
+	{ &PacketDescriptorList[PacketQuaternions],     -1 }
 };
 
-const InterfaceTransmitPacket psNodeInterfaceUARTTransmitPacketList[2] = 
+InterfaceTransmitPacket nodeInterfaceUSBTransmitPacketList[3] = 
 {
-	{ PacketMotorSpeeds,   20 },
-	{ PacketCameraControl, 20 }
+	{ &PacketDescriptorList[PacketMotorSpeeds],   20, 20 },
+	{ &PacketDescriptorList[PacketCameraControl], 20, 20 },
+	{ &PacketDescriptorList[PacketRobotControl],  20, 20 }
 };
 
-const NodeInterfaceDescriptor psInterfaceList[NumberOfInterfaces] = 
+NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
 {
-	/* UART */ { psNodeInterfaceUARTReceivePacketList, 4, psNodeInterfaceUARTTransmitPacketList, 2 }
+	/* USB */ { nodeInterfaceUSBReceivePacketList, 3, nodeInterfaceUSBTransmitPacketList, 3 }
 };
 

@@ -9,15 +9,15 @@
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
-#include "typedef.h"
-#include "packetconfig.h"
+#include "Typedef.h"
+#include "PacketConfig.h"
 
 // ----------------------------------------------------------------------------
 // Interfaces
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	InterfaceUART,
+	InterfaceUSB,
 	// Count of items is 1
 	NumberOfInterfaces
 }
@@ -28,31 +28,32 @@ Interface;
 // ----------------------------------------------------------------------------
 typedef struct
 {
-	Packet ePacket;
-	int32_t ulPeriod;
+	PacketDescriptor* packet;
+	int16_t period;
 }
 InterfaceReceivePacket;
 
 typedef struct
 {
-	Packet ePacket;
-	int32_t ulPeriod;
+	PacketDescriptor* packet;
+	int16_t period;
+	int16_t elapsed;
 }
 InterfaceTransmitPacket;
 
 typedef struct
 {
-	InterfaceReceivePacket const * psReceivePacketList;
-	uint32_t uiReceivePacketCount;
-	InterfaceTransmitPacket const * psTransmitPacketList;
-	uint32_t uiTransmitPacketCount;
+	InterfaceReceivePacket* receivePacketList;
+	uint32_t receivePacketCount;
+	InterfaceTransmitPacket* transmitPacketList;
+	uint32_t transmitPacketCount;
 }
 NodeInterfaceDescriptor;
 
 // ----------------------------------------------------------------------------
 // Export interface descriptors
 // ----------------------------------------------------------------------------
-extern const NodeInterfaceDescriptor psInterfaceList[NumberOfInterfaces];
+extern NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces];
 
 #endif
 

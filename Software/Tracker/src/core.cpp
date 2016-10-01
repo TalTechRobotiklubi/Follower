@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "core.h"
-#include "comm/datahandler.h"
+#include "comm/DataLayer.h"
 #include "kinect_frame.h"
 #include "kinect_frame_source.h"
 #include "core_opt.h"
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 
     c.serial.receive(&c.in_data);
     AlgorithmRunner::run(0, c.in_data, &c.out_data);
-    DataHandler_TASK(loopTimeMs);
+    DL_task(loopTimeMs);
     c.serial.send(c.out_data);
     waitTillLoopTimeElapses();
   }

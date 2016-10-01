@@ -1,19 +1,31 @@
-#pragma once
+// ----------------------------------------------------------------------------
+//
+// Datalayer header file
+//
+// ----------------------------------------------------------------------------
+#ifndef _DATALAYER_H_
+#define _DATALAYER_H_
 
-#include "datalayerconfig.h"
+#include "DataLayerConfig.h"
+#include "PacketConfig.h"
 
-enum AperiodicPacketStatus
+enum APERIODIC_PACKET_STATUS
 {
 	PACKET_WAITING = -1,
-	PACKET_READY_TO_SEND = -2
+	PACKET_NEW = -2
 };
 
+// ----------------------------------------------------------------------------
+// Function declarations
+// ----------------------------------------------------------------------------
 void DL_init();
+void DL_task(int16_t elapsedMs);
 bool DL_getData(DLParam param, DLValuePointer value);
 void DL_peekData(DLParam param, DLValuePointer pValue);
-bool DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer value);
 void DL_setData(DLParam param, DLValuePointer value);
 void DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value);
+void DL_setDataInvalid(PacketDescriptor* packetDesc);
 Type DL_getDataType(DLParam param);
-void DL_setDataValidity(DLParam, bool validity);
+void DL_setDataWithForcedAsyncSend(DLParam param, DLValuePointer value);
 
+#endif

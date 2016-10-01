@@ -1,78 +1,156 @@
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
-#include "datalayer.h"
-#include "datalayerconfig.h"
-#include "packetconfig.h"
+#include "DataLayer.h"
+#include "DataLayerConfig.h"
+#include "InterfaceConfig.h"
 
-static void SetDataAccordingToType(DLParam param, DLValuePointer value, Type type);
-static void GetDataAccordingToType(DLParam param, DLValuePointer value, Type type);
-
-static bool pbValidFlags_[DLNumberOfParams];
+// ----------------------------------------------------------------------------
+// Variables
+// ----------------------------------------------------------------------------
+static bool priv_validFlags[DLNumberOfParams];
+// ----------------------------------------------------------------------------
+// Function prototypes
+// ----------------------------------------------------------------------------
+static void setDataAccordingToType(DLParam param, DLValuePointer value, Type type);
+static void getDataAccordingToType(DLParam param, DLValuePointer value, Type type);
+static void markNewAsyncMessageReadyForSending(DLParam param);
+static void clearPacketsToDefault();
 
 void DL_init()
 {
-    for (int i = 0; i < DLNumberOfParams; ++i)
-        pbValidFlags_[i] = false;
+	int i = 0;
+	for (; i < DLNumberOfParams; ++i)
+    priv_validFlags[i] = false;
+	clearPacketsToDefault();
 }
 
-// ----------------------------------------------------------------------------
-// Use this function in logic layer to get data from DL. Handle also status for asynchronous data,
-// so that after reading async data the status changes to WAITING.
-// Param as parameter
-// pValue as pointer to place where data will be stored from DL
-// Returns if the value is valid or not
-// ----------------------------------------------------------------------------
-bool DL_getData(DLParam param, DLValuePointer pValue)
+void clearPacketsToDefault()
 {
-	GetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
-
-#ifdef ENABLE_ASYNC
-	/*check if parameter is part of any async packets*/
-	for (i = 0; i < NumberOfPackets; i++)
+	int i;
+	for (i = 0; i < NumberOfInterfaces; ++i)
 	{
-		PacketDescriptor *packet = &psPacketDescriptorList[i];
-		if (packet->iPeriod < 0)
+		NodeInterfaceDescriptor interfaceDesc = InterfaceList[i];
+    uint32_t j;
+		for (j = 0; j < interfaceDesc.transmitPacketCount; j++)
 		{
-			for (j = 0; j < packet->uiParameterCount; j++)
+			InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[j];
+			if (transmitPacket->period > 0)
+				transmitPacket->elapsed = transmitPacket->period;
+			else
+				transmitPacket->period = PACKET_WAITING;
+		}
+		for (j = 0; j < interfaceDesc.receivePacketCount; j++)
+		{
+			InterfaceReceivePacket* receivePacket = &interfaceDesc.receivePacketList[j];
+			if (receivePacket->period < 0)
+				receivePacket->period = PACKET_WAITING;
+		}
+	}
+}
+
+/*Decrease periodic transmit packet elapse time, if reached to 0 then it is notification
+ *for interface modules (UART, CAN) to send packets out and update the elapsed time to initial value.
+ *
+ *In case of async packet it is set to PACKET_WAITING if all parameters in the packet are invalid.
+ */
+void DL_task(int16_t elapsedMs)
+{
+  int i;
+	for (i = 0; i < NumberOfInterfaces; ++i)
+	{
+		NodeInterfaceDescriptor interfaceDesc = InterfaceList[i];
+    uint32_t j;
+		for (j = 0; j < interfaceDesc.transmitPacketCount; j++)
+		{
+			InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[j];
+
+			// only periodic packets
+			if (transmitPacket->period > 0)
 			{
-				if ((packet->psParameterList + j)->eParam == param)
+        uint16_t elapsedTime = elapsedMs;
+				transmitPacket->elapsed -= elapsedTime;
+				if (transmitPacket->elapsed < 0)
+					transmitPacket->elapsed = 0;
+			}
+		}
+		for (j = 0; j < interfaceDesc.receivePacketCount; j++)
+		{
+			InterfaceReceivePacket* receivePacket = &interfaceDesc.receivePacketList[j];
+
+			// only new async receive packets
+			if (receivePacket->period == PACKET_NEW)
+			{
+				int k;
+				// update with new flag same package in all Tx interfaces
+				for (k = 0; k < NumberOfInterfaces; ++k)
 				{
-					if (packet->iPeriod != PACKET_WAITING)
+					NodeInterfaceDescriptor interfaceDesc = InterfaceList[k];
+          uint32_t l;
+					for (l = 0; l < interfaceDesc.transmitPacketCount; l++)
 					{
-						packet->iPeriod = PACKET_WAITING;
-                        pbValidFlags_[param] = true;
+						InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[l];
+						if (transmitPacket->packet == receivePacket->packet)
+							transmitPacket->period = PACKET_NEW;
 					}
-                    else
-                        pbValidFlags_[param] = false;
-                    break;
+				}
+				receivePacket->period = PACKET_WAITING;
+			}
+		}
+	}
+}
+
+#if 0
+/*checks if any received data is timed out*/
+void checkTimeouts(uint8_t numOfPackets, PacketWithIndex *packet)
+{
+	uint8_t i, j;
+
+	for (i = 0; i < numOfPackets; i++)
+	{
+		/*only periodic packets*/
+		if( ((packet[i].iperiod >= 0)) && (Packet_getMessagePeriod(packet[i].index >= 0)) )
+		{
+			/*increase timeout counter and check if it is exceeded 10 times its normal period*/
+			packet[i].iperiod += TaskHandler_tableOfTasks[TASK_DATA].period;
+			if (packet[i].iperiod >= (Packet_getMessagePeriod(packet[i].index) * 10))
+			{
+				/*set all packet parameter values as invalid*/
+				for (j = 0; j < Packet_getMessageParameterCount(packet[i].index); j++)
+				{
+					DL_setDataValidity((Packet_getMessageParameterList(packet[i].index) + j)->eParam, FALSE);
 				}
 			}
 		}
 	}
+}
 #endif
-  return pbValidFlags_[param];
+
+
+// ----------------------------------------------------------------------------
+// Use this function in logic layer to get data from DL. Sets data invalid after read, so
+// it should be done only once per tasks. Validity should affect only received parameters.
+// Param as parameter
+// pValue as pointer to place where data will be stored from DL
+// Returns if the value is valid or not.
+// ----------------------------------------------------------------------------
+bool DL_getData(DLParam param, DLValuePointer pValue)
+{
+  bool retVal = false;
+	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
+	retVal = priv_validFlags[param];
+  priv_validFlags[param] = false;
+    return retVal;
 }
 // ----------------------------------------------------------------------------
-// Use this function in logic layer to peek data from DL. Peeking does not affect the
-// status of the data.
+// Use this function to peek data from DL. Peeking does not affect the
+// status of validity.
 // Param as parameter
 // pValue as pointer to place where data will be stored from DL
 // ----------------------------------------------------------------------------
 void DL_peekData(DLParam param, DLValuePointer pValue)
 {
-	GetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
-}
-
-/*Use this function in COMM driver layer (CAN, UART etc.) to get data from DL.
- *Param as parameter
- *pValue as pointer to place where data will be stored from DL
- *Returns if the value is valid or not*/
-bool DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer pValue)
-{
-	GetDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
-
-	return pbValidFlags_[param];
+	getDataAccordingToType(param, pValue, psDLParamDescriptorList[param].eType);
 }
 
 /*Use this function in logic layer to set data to DL. Handles status for asynchronous data
@@ -80,17 +158,16 @@ bool DL_getDataWithoutAffectingStatus(DLParam param, DLValuePointer pValue)
  *pValue as pointer to place where data will be stored from DL*/
 void DL_setData(DLParam param, DLValuePointer pValue)
 {
-	uint32_t tempData;
-	uint32_t newValue;
-    uint32_t mask = 0;
+	uint32_t tempData, newValue;
+	uint32_t mask = 0;
+	uint8_t i;
+	Type type;
 	uint32_t size;
-	uint8_t i, j;
-    Type type;
 
     /*format data so they are comparable*/
 	type = psDLParamDescriptorList[param].eType;
-	GetDataAccordingToType(param, &tempData, type);
-	size = psTypeSize[type];
+	getDataAccordingToType(param, &tempData, type);
+  size = psTypeSize[type];
 	for (i = 0; i < size; i++)
 	{
 		mask |= (1 << i);
@@ -100,24 +177,8 @@ void DL_setData(DLParam param, DLValuePointer pValue)
 	/*check if data has changed*/
     if (tempData != newValue )
 	{
-		SetDataAccordingToType(param, pValue, type);
-
-		/*check if parameter is part of any async packets*/
-		for (i = 0; i < NumberOfPackets; i++)
-		{
-			PacketDescriptor* packet = &psPacketDescriptorList[i];
-			if (packet->iPeriod < 0)
-			{
-				for (j = 0; j < packet->uiParameterCount; j++)
-				{
-					if ((packet->psParameterList + j)->eParam == param)
-					{
-						packet->iPeriod = PACKET_READY_TO_SEND;
-						break;
-					}
-				}
-			}
-		}
+		setDataAccordingToType(param, pValue, type);
+		markNewAsyncMessageReadyForSending(param);
 	}
 }
 
@@ -127,9 +188,15 @@ void DL_setData(DLParam param, DLValuePointer pValue)
  *pValue as pointer to data for storing to DL*/
 void DL_setDataWithoutAffectingStatus(DLParam param, DLValuePointer value)
 {
-	SetDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
-	
-	pbValidFlags_[param] = true;
+	setDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
+  priv_validFlags[param] = true;
+}
+
+void DL_setDataInvalid(PacketDescriptor* packetDesc)
+{
+	int j;
+	for (j = 0; j < packetDesc->parameterCount; j++)
+    priv_validFlags[(packetDesc->parameterList + j)->param] = false;
 }
 
 Type DL_getDataType(DLParam param)
@@ -137,21 +204,54 @@ Type DL_getDataType(DLParam param)
 	return psDLParamDescriptorList[param].eType;
 }
 
-void DL_setDataValidity(DLParam param, bool validity)
+void DL_setDataWithForcedAsyncSend(DLParam param, DLValuePointer value)
 {
-	pbValidFlags_[param] = validity;
+	setDataAccordingToType(param, value, psDLParamDescriptorList[param].eType);
+	markNewAsyncMessageReadyForSending(param);
+}
+
+void markNewAsyncMessageReadyForSending(DLParam param)
+{
+	int i;
+	for (i = 0; i < NumberOfInterfaces; ++i)
+	{
+		NodeInterfaceDescriptor interfaceDesc = InterfaceList[i];
+    uint32_t j;
+		for (j = 0; j < interfaceDesc.transmitPacketCount; j++)
+		{
+			InterfaceTransmitPacket* transmitPacket = &interfaceDesc.transmitPacketList[j];
+			uint8_t packetFound = 0;
+
+			// only async packets
+			if (transmitPacket->period < 0)
+			{
+				PacketDescriptor* packet = transmitPacket->packet;
+				int k;
+				for (k = 0; k < packet->parameterCount; k++)
+				{
+					if ((packet->parameterList + j)->param == param)
+					{
+						transmitPacket->period = PACKET_NEW;
+						packetFound = 1;
+					}
+				}
+			}
+			if (packetFound)
+				break;
+		}
+	}
 }
 
 /*gets data from data layer*/
-void GetDataAccordingToType(DLParam param, DLValuePointer value, Type type)
+void getDataAccordingToType(DLParam param, DLValuePointer value, Type type)
 {
 	#define GETCASE(type) case Type ## type: *((type *)value) = *((type *)psDLParamDescriptorList[param].pValue); break;
 
 	switch(type)
 	{
-		case TypeBool:
-            *((U8 *)value) = *((U8 *)psDLParamDescriptorList[param].pValue);
-            break;
+    case TypeBool:
+      *((U8 *)value) = *((U8 *)psDLParamDescriptorList[param].pValue);
+      break;
 		GETCASE(U2)
 		GETCASE(S2)
 		GETCASE(U4)
@@ -169,15 +269,15 @@ void GetDataAccordingToType(DLParam param, DLValuePointer value, Type type)
 }
 
 /*sets data to data layer*/
-void SetDataAccordingToType(DLParam param, DLValuePointer value, Type type)
+void setDataAccordingToType(DLParam param, DLValuePointer value, Type type)
 {
 	#define SETCASE(type) case Type ## type: *((type *)psDLParamDescriptorList[param].pValue) = *((type *)value); break;
 
 	switch (type)
 	{
-		case TypeBool:
-            *((U8 *)psDLParamDescriptorList[param].pValue) = *((U8 *)value);
-            break;
+    case TypeBool:
+      *((U8 *)psDLParamDescriptorList[param].pValue) = *((U8 *)value);
+      break;
 		SETCASE(U2)
 		SETCASE(S2)
 		SETCASE(U4)
@@ -192,14 +292,4 @@ void SetDataAccordingToType(DLParam param, DLValuePointer value, Type type)
 		default:
 			break;
 	}
-}
-
-/*give default values for all parameters in data layer. Currently set them all just 0.*/
-void DL_setDefaultValuesForParameters(void)
-{
-    int defaultVal = 0;
-    for (int i = 0; i < DLNumberOfParams; i++)
-    {
-        SetDataAccordingToType((DLParam)i, &defaultVal, psDLParamDescriptorList[((DLParam)i)].eType);
-    }
 }

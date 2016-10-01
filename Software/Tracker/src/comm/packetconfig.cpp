@@ -7,38 +7,23 @@
 // ----------------------------------------------------------------------------
 // Includes
 // ----------------------------------------------------------------------------
-#include "packetconfig.h"
+#include "PacketConfig.h"
 
 // ----------------------------------------------------------------------------
-// Packet "Motor1Status" parameters table
+// Packet "RobotFeedback" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter psPacketMotor1StatusParameterList[6] = 
+const PacketParameter packetRobotFeedbackParameterList[4] = 
 {
-	{ DLParamMotor1ActualSpeed,    0, 16 },
-	{ DLParamMotor1EncoderClicks, 16, 16 },
-	{ DLParamMotor1CurrentDraw,   32,  8 },
-	{ DLParamMotor1DriverTemp,    40,  8 },
-	{ DLParamMotor1BridgeAFault,  48,  1 },
-	{ DLParamMotor1BridgeBFault,  49,  1 }
-};
-
-// ----------------------------------------------------------------------------
-// Packet "Motor2Status" parameters table
-// ----------------------------------------------------------------------------
-const PacketParameter psPacketMotor2StatusParameterList[6] = 
-{
-	{ DLParamMotor2ActualSpeed,    0, 16 },
-	{ DLParamMotor2EncoderClicks, 16, 16 },
-	{ DLParamMotor2CurrentDraw,   32,  8 },
-	{ DLParamMotor2DriverTemp,    40,  8 },
-	{ DLParamMotor2BridgeAFault,  48,  1 },
-	{ DLParamMotor2BridgeBFault,  49,  1 }
+	{ DLParamRobotFeedback1,  0, 16 },
+	{ DLParamRobotFeedback2, 16, 16 },
+	{ DLParamRobotFeedback3, 32, 16 },
+	{ DLParamRobotFeedback4, 48, 16 }
 };
 
 // ----------------------------------------------------------------------------
 // Packet "DistanceSensors" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter psPacketDistanceSensorsParameterList[8] = 
+const PacketParameter packetDistanceSensorsParameterList[8] = 
 {
 	{ DLParamDistanceSensor1,  0, 8 },
 	{ DLParamDistanceSensor2,  8, 8 },
@@ -51,19 +36,20 @@ const PacketParameter psPacketDistanceSensorsParameterList[8] =
 };
 
 // ----------------------------------------------------------------------------
-// Packet "Acceleration" parameters table
+// Packet "Quaternions" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter psPacketAccelerationParameterList[3] = 
+const PacketParameter packetQuaternionsParameterList[4] = 
 {
-	{ DLParamAccelerationX,  0, 8 },
-	{ DLParamAccelerationY,  8, 8 },
-	{ DLParamAccelerationZ, 16, 8 }
+	{ DLParamQw,  0, 16 },
+	{ DLParamQx, 16, 16 },
+	{ DLParamQy, 32, 16 },
+	{ DLParamQz, 48, 16 }
 };
 
 // ----------------------------------------------------------------------------
 // Packet "MotorSpeeds" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter psPacketMotorSpeedsParameterList[2] = 
+const PacketParameter packetMotorSpeedsParameterList[2] = 
 {
 	{ DLParamMotor1RequestSpeed,  0, 16 },
 	{ DLParamMotor2RequestSpeed, 16, 16 }
@@ -72,22 +58,31 @@ const PacketParameter psPacketMotorSpeedsParameterList[2] =
 // ----------------------------------------------------------------------------
 // Packet "CameraControl" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter psPacketCameraControlParameterList[2] = 
+const PacketParameter packetCameraControlParameterList[2] = 
 {
 	{ DLParamCameraRequestXDegree, 0, 8 },
 	{ DLParamCameraRequestZDegree, 8, 8 }
 };
 
 // ----------------------------------------------------------------------------
+// Packet "RobotControl" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter packetRobotControlParameterList[2] = 
+{
+	{ DLParamRequestTranslationSpeed,  0, 16 },
+	{ DLParamRequestRotationSpeed,    16, 16 }
+};
+
+// ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
-PacketDescriptor psPacketDescriptorList[NumberOfPackets] = 
+PacketDescriptor PacketDescriptorList[NumberOfPackets] = 
 {
-	/* Motor1Status    */ { 0xD1, 0, psPacketMotor1StatusParameterList,    6, 7 },
-	/* Motor2Status    */ { 0xD2, 0, psPacketMotor2StatusParameterList,    6, 7 },
-	/* DistanceSensors */ { 0xF0, 0, psPacketDistanceSensorsParameterList, 8, 8 },
-	/* Acceleration    */ { 0xF1, 0, psPacketAccelerationParameterList,    3, 3 },
-	/* MotorSpeeds     */ { 0xD0, 0, psPacketMotorSpeedsParameterList,     2, 4 },
-	/* CameraControl   */ { 0xE0, 0, psPacketCameraControlParameterList,   2, 2 }
+	/* RobotFeedback   */ { 0xD4, packetRobotFeedbackParameterList,   4, 8 },
+	/* DistanceSensors */ { 0xF0, packetDistanceSensorsParameterList, 8, 8 },
+	/* Quaternions     */ { 0xF2, packetQuaternionsParameterList,     4, 8 },
+	/* MotorSpeeds     */ { 0xD0, packetMotorSpeedsParameterList,     2, 4 },
+	/* CameraControl   */ { 0xE0, packetCameraControlParameterList,   2, 2 },
+	/* RobotControl    */ { 0xD3, packetRobotControlParameterList,    2, 4 }
 };
 

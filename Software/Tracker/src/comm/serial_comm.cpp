@@ -72,7 +72,7 @@ bool SerialComm::isOpen() const {
 
 void SerialComm::serviceSend() {
   if (isOpen())
-    InterfaceHandler_transmitData(InterfaceUART, sendMessage);
+    InterfaceHandler_transmitData(InterfaceUSB, sendMessage);
 }
 
 void SerialComm::takeLock() {
@@ -87,18 +87,14 @@ void SerialComm::receive(CommInput* data)
 {
   if (isOpen()) {
     takeLock();
-    get(DLParamMotor1ActualSpeed, &data->left_motor_speed);
-    get(DLParamMotor1EncoderClicks, &data->left_motor_encoder);
-    get(DLParamMotor1ActualSpeed, &data->right_motor_speed);
-    get(DLParamMotor1EncoderClicks, &data->right_motor_encoder);
     get(DLParamDistanceSensor1, &data->distance_sensor1);
-    get(DLParamDistanceSensor1, &data->distance_sensor2);
-    get(DLParamDistanceSensor1, &data->distance_sensor3);
-    get(DLParamDistanceSensor1, &data->distance_sensor4);
-    get(DLParamDistanceSensor1, &data->distance_sensor5);
-    get(DLParamDistanceSensor1, &data->distance_sensor6);
-    get(DLParamDistanceSensor1, &data->distance_sensor7);
-    get(DLParamDistanceSensor1, &data->distance_sensor8);
+    get(DLParamDistanceSensor2, &data->distance_sensor2);
+    get(DLParamDistanceSensor3, &data->distance_sensor3);
+    get(DLParamDistanceSensor4, &data->distance_sensor4);
+    get(DLParamDistanceSensor5, &data->distance_sensor5);
+    get(DLParamDistanceSensor6, &data->distance_sensor6);
+    get(DLParamDistanceSensor7, &data->distance_sensor7);
+    get(DLParamDistanceSensor8, &data->distance_sensor8);
     releaseLock();
   }
 }
@@ -109,10 +105,10 @@ void SerialComm::send(const CommOutput& data) {
     int8_t z = (int8_t)data.camera_degrees.y;
     set(DLParamCameraRequestXDegree, &x);
     set(DLParamCameraRequestZDegree, &z);
-    int16_t left = data.left_speed;
-    int16_t right = data.right_speed;
-    set(DLParamMotor1RequestSpeed, &left);
-    set(DLParamMotor2RequestSpeed, &right);
+    int16_t t_speed = data.translation_speed;
+    int16_t w_speed = data.rotation_speed;
+    set(DLParamRequestTranslationSpeed, &t_speed);
+    set(DLParamRequestRotationSpeed, &w_speed);
     serviceSend();
   }
 }
@@ -156,7 +152,8 @@ void SerialComm::parseMessages(const char* buffer, size_t size) {
       break;
     case idOK:
       message.length = (uint8_t)buffer[i];
-      if (InterfaceHandler_checkIfReceivedMessageExists(InterfaceUART, &message)) {
+      message.interface = InterfaceUSB;
+      if (InterfaceHandler_checkIfReceivedMessageExists(&message)) {
         calcCrc += message.length;
         length = message.length;
         analyseState = lengthOK;
