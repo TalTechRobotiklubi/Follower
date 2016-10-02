@@ -5,6 +5,7 @@
 #include <vpx/vp8cx.h>
 #include <vpx/vpx_codec.h>
 #include <vpx/vpx_encoder.h>
+#include <assert.h>
 #include "Clock.h"
 
 struct Encoder {
@@ -97,11 +98,11 @@ IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, uint8_t* activeMap) {
                      img->stride[VPX_PLANE_V], encoder->frameWidth,
                      encoder->frameHeight);
 
-  assert(encoder->w % 16 == 0 && encoder->h % 16 == 0);
+  assert(encoder->frameWidth % 16 == 0 && encoder->frameHeight % 16 == 0);
 
   vpx_active_map_t amap;
-  amap.rows = encoder->h / 16;
-  amap.cols = encoder->w / 16;
+  amap.rows = encoder->frameHeight / 16;
+  amap.cols = encoder->frameWidth / 16;
   amap.active_map = activeMap;
 
   if (vpx_codec_control(&encoder->codec, VP8E_SET_ACTIVEMAP, &amap)) {
