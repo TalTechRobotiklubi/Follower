@@ -89,6 +89,7 @@ int main(int argc, char** argv) {
     printf("ms: %f\n", frame_time);
 
     UdpHostPoll(c.udp);
+    UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize());
 
     c.serial.receive(&c.in_data);
     AlgorithmRunner::run(0, c.in_data, &c.out_data);

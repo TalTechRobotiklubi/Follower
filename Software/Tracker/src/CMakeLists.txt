@@ -88,6 +88,16 @@ add_executable(
   ${CORE_SOURCES}
 )
 
+add_executable(
+  follower_client
+  client.cpp
+)
+
+target_link_libraries(
+  follower_client
+  enet
+)
+
 target_link_libraries(
   follower_core
   ${Boost_LIBRARIES}

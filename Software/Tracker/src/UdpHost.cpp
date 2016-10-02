@@ -27,8 +27,8 @@ UdpHost* UdpHostCreate(const char* hostAddress, int port) {
   return udp;
 }
 
-void UdpHostBroadcast(UdpHost* udp, const IoVec* buf) {
-  ENetPacket* packet = enet_packet_create(buf->data, buf->len, 0);
+void UdpHostBroadcast(UdpHost* udp, const uint8_t* data, int len) {
+  ENetPacket* packet = enet_packet_create(data, len, 0);
   enet_host_broadcast(udp->host, 0, packet);
   enet_host_flush(udp->host);
 }
