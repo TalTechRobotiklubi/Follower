@@ -70,6 +70,8 @@ set(CORE_SOURCES
 
   fl_sqlite_source.cpp
 
+  image.cpp
+
   kinect_frame.cpp
 
   UdpHost.cpp

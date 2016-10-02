@@ -1,13 +1,15 @@
+#include "core.h"
 #include <stdio.h>
 #include <string.h>
-#include "core.h"
+#include "Clock.h"
+#include "Encode.h"
+#include "UdpHost.h"
+#include "algorithm/algorithm_runner.h"
 #include "comm/datalayer.h"
+#include "core_opt.h"
+#include "fl_constants.h"
 #include "kinect_frame.h"
 #include "kinect_frame_source.h"
-#include "core_opt.h"
-#include "UdpHost.h"
-#include "Clock.h"
-#include "algorithm/algorithm_runner.h"
 
 typedef std::chrono::milliseconds msec;
 static int loopTimeMs = 30;
@@ -15,7 +17,6 @@ static int loopTimeMs = 30;
 void kinect_loop(core* c) {
   while (c->running) {
     c->frame_source->get_frame();
-    printf("New frame\n");
   }
 }
 
@@ -27,27 +28,30 @@ void core_start(core* c) {
     abort();
   }
 
-  c->kinect_frame_thread = std::thread(kinect_loop, c); 
+  c->kinect_frame_thread = std::thread(kinect_loop, c);
 }
 
-core::~core() {
-  kinect_frame_thread.join();
-}
+core::~core() { kinect_frame_thread.join(); }
 
-void waitTillLoopTimeElapses()
-{
+void waitTillLoopTimeElapses() {
   static auto loop_time = std::chrono::system_clock::now();
 
-  while (std::chrono::duration_cast<msec>(
-           std::chrono::system_clock::now() - loop_time).count() < loopTimeMs)
+  while (std::chrono::duration_cast<msec>(std::chrono::system_clock::now() -
+                                          loop_time)
+             .count() < loopTimeMs)
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   loop_time = std::chrono::system_clock::now();
 }
 
 int main(int argc, char** argv) {
-
   core c;
-  c.current_frame = (kinect_frame*)calloc(1, sizeof(kinect_frame));
+  c.current_frame.depth_data = (uint16_t*)calloc(kDepthWidth * kDeptHeight, 2);
+  c.current_frame.depth_length = kDepthWidth * kDeptHeight;
+  rgba_image_init(&c.rgba_depth, kDepthWidth, kDeptHeight);
+  rgba_image_init(&c.prev_rgba_depth, kDepthWidth, kDeptHeight);
+  ActiveMapReset(&c.rgba_depth_diff, kDepthWidth, kDeptHeight);
+
+  c.encoder = EncoderCreate(kDepthWidth, kDeptHeight);
 
   if (!parse_opt(&c, argc, argv)) {
     return 1;
@@ -61,9 +65,17 @@ int main(int argc, char** argv) {
     prev_time = current_time;
     current_time = ms_now();
     const double frame_time = current_time - prev_time;
-    
-    c.frame_source->fill_frame(c.current_frame);
-    printf("Frame: %d\n", c.current_frame->depth_length);
+
+    c.frame_source->fill_frame(&c.current_frame);
+    memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
+    depth_to_rgba(c.current_frame.depth_data, c.current_frame.depth_length,
+                  &c.rgba_depth);
+    BlockDiff(c.prev_rgba_depth.data, c.rgba_depth.data, kDepthWidth,
+              kDeptHeight, &c.rgba_depth_diff);
+    IoVec encoded_img =
+        EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
+
+    printf("Frame: %d\n", c.current_frame.depth_length);
     printf("ms: %f\n", frame_time);
 
     UdpHostPoll(c.udp);

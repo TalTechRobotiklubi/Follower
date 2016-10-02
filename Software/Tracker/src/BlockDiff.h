@@ -9,5 +9,5 @@ struct ActiveMap {
   IoVec buf;
 };
 
-void ActiveMapReset(ActiveMap* map, int width, int height);
+void ActiveMapReset(ActiveMap* map, int image_width, int imageheight);
 void BlockDiff(const uint8_t* prev, const uint8_t* next, int width, int height, ActiveMap* map);

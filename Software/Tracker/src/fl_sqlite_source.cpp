@@ -76,5 +76,7 @@ void fl_sqlite_source::advance() {
 
 void fl_sqlite_source::fill_frame(kinect_frame* dst) {
   std::lock_guard<std::mutex> lock(frame_lock);
-  copy_frame(&kframe, dst);
+  if (kframe.depth_data) {
+    copy_frame(&kframe, dst);
+  }
 }

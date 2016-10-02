@@ -6,10 +6,10 @@
 
 static const int kActiveMapBlockSize = 16;
 
-void ActiveMapReset(ActiveMap* map, int width, int height) {
+void ActiveMapReset(ActiveMap* map, int image_width, int image_height) {
   const double blockSize = double(kActiveMapBlockSize);
-  const int newWidth = int(ceil(double(width) / blockSize));
-  const int newHeight = int(ceil(double(height) / blockSize));
+  const int newWidth = int(ceil(double(image_width) / blockSize));
+  const int newHeight = int(ceil(double(image_height) / blockSize));
 
   if (newWidth != map->width || newHeight != map->height) {
     if (map->buf.data) {
@@ -26,8 +26,6 @@ void ActiveMapReset(ActiveMap* map, int width, int height) {
 
 void BlockDiff(const uint8_t* prev, const uint8_t* next, int width, int height,
                ActiveMap* map) {
-  assert(width % kActiveMapBlockSize == 0 && height % kActiveMapBlockSize == 0);
-
   ActiveMapReset(map, width, height);
 
   const int stride = width * 4;

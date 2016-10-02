@@ -1,11 +1,12 @@
 #include "Encode.h"
+#include <assert.h>
 #include <libyuv/convert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vpx/vp8cx.h>
 #include <vpx/vpx_codec.h>
 #include <vpx/vpx_encoder.h>
-#include <assert.h>
+#include "BlockDiff.h"
 #include "Clock.h"
 
 struct Encoder {
@@ -85,8 +86,7 @@ Encoder* EncoderCreate(int w, int h) {
   return e;
 }
 
-IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, uint8_t* activeMap) {
-  // TimeReport tr("encode");
+IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, const ActiveMap* map) {
   vpx_image_t* img = &encoder->rawImage;
 
   // img->x_chroma_shift = 1;
@@ -98,15 +98,13 @@ IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, uint8_t* activeMap) {
                      img->stride[VPX_PLANE_V], encoder->frameWidth,
                      encoder->frameHeight);
 
-  assert(encoder->frameWidth % 16 == 0 && encoder->frameHeight % 16 == 0);
-
   vpx_active_map_t amap;
-  amap.rows = encoder->frameHeight / 16;
-  amap.cols = encoder->frameWidth / 16;
-  amap.active_map = activeMap;
+  amap.rows = map->height;
+  amap.cols = map->width;
+  amap.active_map = map->buf.data;
 
   if (vpx_codec_control(&encoder->codec, VP8E_SET_ACTIVEMAP, &amap)) {
-    printf("set active map failed\n");
+    printf("encode: set active map failed\n");
   }
 
   const vpx_codec_err_t res =
@@ -128,7 +126,7 @@ IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, uint8_t* activeMap) {
     if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
       result.data = (uint8_t*)pkt->data.frame.buf;
       result.len = int(pkt->data.frame.sz);
-      // printf("%.4f kB\n", double(result.len) / 1000.0);
+      printf("%.4f kB\n", double(result.len) / 1000.0);
       break;
     }
   }
