@@ -7,6 +7,7 @@
 #include "kinect_frame.h"
 #include "image.h"
 #include "BlockDiff.h"
+#include "proto/flatbuffers/flatbuffers.h"
 
 struct core {
   CommInput in_data;
@@ -22,6 +23,9 @@ struct core {
   rgba_image prev_rgba_depth;
   ActiveMap rgba_depth_diff;
   struct Encoder* encoder;
+  IoVec encoded_depth;
+
+  flatbuffers::FlatBufferBuilder builder;
 
   core() { running = ATOMIC_VAR_INIT(true); }
   ~core();

@@ -10,6 +10,7 @@
 #include "fl_constants.h"
 #include "kinect_frame.h"
 #include "kinect_frame_source.h"
+#include "proto/frame_generated.h"
 
 typedef std::chrono::milliseconds msec;
 static int loopTimeMs = 30;
@@ -29,6 +30,13 @@ void core_start(core* c) {
   }
 
   c->kinect_frame_thread = std::thread(kinect_loop, c);
+}
+
+void core_serialize(core* c) {
+  c->builder.Clear();
+  auto depth = c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len);
+  auto frame = proto::CreateFrame(c->builder, depth);
+  c->builder.Finish(frame);
 }
 
 core::~core() { kinect_frame_thread.join(); }
@@ -72,8 +80,10 @@ int main(int argc, char** argv) {
                   &c.rgba_depth);
     BlockDiff(c.prev_rgba_depth.data, c.rgba_depth.data, kDepthWidth,
               kDeptHeight, &c.rgba_depth_diff);
-    IoVec encoded_img =
+    c.encoded_depth =
         EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
+
+    core_serialize(&c);
 
     printf("Frame: %d\n", c.current_frame.depth_length);
     printf("ms: %f\n", frame_time);

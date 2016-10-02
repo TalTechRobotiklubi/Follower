@@ -1,0 +1,7 @@
+namespace proto;
+
+table Frame {
+  depth:[ubyte];
+}
+
+root_type Frame;
