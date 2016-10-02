@@ -16,6 +16,7 @@ find_package(Boost 1.55 COMPONENTS
   REQUIRED)
 
 find_package(Threads)
+find_package(vpx REQUIRED)
 
 option(KINECT_ENABLED "Enable Kinect SDK" OFF)
 

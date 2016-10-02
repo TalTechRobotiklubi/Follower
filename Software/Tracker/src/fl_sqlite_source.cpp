@@ -12,7 +12,7 @@ fl_sqlite_source::fl_sqlite_source(const char* database) {
     printf("failed to open %s: %s\n", database, sqlite3_errmsg(db));
   }
 
-  res = sqlite3_prepare(
+  res = sqlite3_prepare_v2(
       db, "SELECT rowid, data FROM depth_frames WHERE rowid = (?)", -1,
       &frame_query, NULL);
 
@@ -54,26 +54,23 @@ const kinect_frame* fl_sqlite_source::get_frame() {
 void fl_sqlite_source::advance() {
   sqlite3_reset(frame_query);
   sqlite3_bind_int(frame_query, 1, current_frame_num);
-  int res;
 
-  std::lock_guard<std::mutex> lock(frame_lock);
-  while ((res = sqlite3_step(frame_query)) == SQLITE_ROW) {
+  int res = sqlite3_step(frame_query);
+  if (res == SQLITE_ROW) {
     const void* blob = sqlite3_column_blob(frame_query, 1);
     int bytes = sqlite3_column_bytes(frame_query, 1);
     const int req_depth_bytes = depth_data_len * sizeof(uint16_t);
     assert(bytes == req_depth_bytes);
     int bytes_to_copy = bytes;
     if (bytes_to_copy > req_depth_bytes) bytes_to_copy = req_depth_bytes;
+
+    std::lock_guard<std::mutex> lock(frame_lock);
     memcpy(depth_data, blob, bytes_to_copy);
     kframe.depth_data = depth_data;
     kframe.depth_length = depth_data_len;
 
     current_frame_num++;
     if (current_frame_num > total_frames) current_frame_num = 1;
-  }
-
-  if (res != SQLITE_DONE) {
-    printf("failed to query frame: %s\n", sqlite3_errmsg(db));
   }
 }
 
