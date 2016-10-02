@@ -1,4 +1,4 @@
-#include "InterfaceHandler.h"
+#include "interfacehandler.h"
 #include "datalayer.h"
 
 void sendDataLayerDataToInterface(PacketDescriptor* packetDesc, InterfaceMessage* msg, void (*funcToDriver)(InterfaceMessage* msg));

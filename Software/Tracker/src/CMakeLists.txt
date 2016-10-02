@@ -1,7 +1,8 @@
-include_directories(
+include_directories(SYSTEM
   ${KINECTV2_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
   "${CMAKE_SOURCE_DIR}/src"
+  ${VPX_INCLUDE_DIR}
 )
 
 #add_library(follower_common
@@ -52,6 +53,7 @@ set(CORE_SOURCES
   algorithm/algorithm_runner.cpp
 
   AsyncSerial.cpp
+  BlockDiff.cpp
 
   core.cpp
   core_opt.cpp
@@ -59,10 +61,12 @@ set(CORE_SOURCES
   comm/datalayer.cpp
   comm/DataLayerConfig.cpp
   comm/InterfaceConfig.cpp
-  comm/InterfaceHandler.cpp
+  comm/interfacehandler.cpp
   comm/PacketConfig.cpp
   comm/serial_comm.cpp
   comm/typedef.cpp
+
+  Encode.cpp
 
   fl_sqlite_source.cpp
 
@@ -90,6 +94,7 @@ target_link_libraries(
   sqlite
   floatfann
   enet
+  vpx
   ${CMAKE_DL_LIBS}
   ${CMAKE_THREAD_LIBS_INIT}
 )

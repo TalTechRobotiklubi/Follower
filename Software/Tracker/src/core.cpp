@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "core.h"
-#include "comm/DataLayer.h"
+#include "comm/datalayer.h"
 #include "kinect_frame.h"
 #include "kinect_frame_source.h"
 #include "core_opt.h"
 #include "UdpHost.h"
-#include "timer.h"
+#include "Clock.h"
 #include "algorithm/algorithm_runner.h"
 
 typedef std::chrono::milliseconds msec;
@@ -55,9 +55,16 @@ int main(int argc, char** argv) {
 
   core_start(&c);
 
+  double current_time = ms_now();
+  double prev_time = current_time;
   while (c.running) {
+    prev_time = current_time;
+    current_time = ms_now();
+    const double frame_time = current_time - prev_time;
+    
     c.frame_source->fill_frame(c.current_frame);
     printf("Frame: %d\n", c.current_frame->depth_length);
+    printf("ms: %f\n", frame_time);
 
     UdpHostPoll(c.udp);
 
