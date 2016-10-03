@@ -6,7 +6,7 @@ void copy_frame(const kinect_frame* src, kinect_frame* dst) {
   assert(src->depth_length == dst->depth_length);
 
   if (src->depth_data)  {
-    memcpy(dst->depth_data, src->depth_data, src->depth_length);
+    memcpy(dst->depth_data, src->depth_data, src->depth_length * sizeof(uint16_t));
   }
 
   if (src->rgba_data) {

@@ -5,6 +5,10 @@ include_directories(SYSTEM
   ${VPX_INCLUDE_DIR}
 )
 
+add_library(gl3w
+  gl3w/GL/gl3w.c
+)
+
 #add_library(follower_common
 #  AABB.cpp
 #  fl_math.cpp
@@ -91,11 +95,21 @@ add_executable(
 add_executable(
   follower_client
   client.cpp
+  Decode.cpp
+  image.cpp
+  Texture.cpp
 )
 
 target_link_libraries(
   follower_client
   enet
+  imgui
+  glfw
+  gl3w
+  vpx
+  yuv
+  ${GLFW_LIBRARIES}
+  ${CMAKE_DL_LIBS}
 )
 
 target_link_libraries(

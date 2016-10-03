@@ -21,25 +21,14 @@ void rgba_image_init(rgba_image* img, int w, int h) {
 }
 
 void depth_to_rgba(const uint16_t* depth, int len, rgba_image* img) {
-  printf("%p\n", depth);
-  printf("%d %d %d\n", img->width, img->height, len);
   assert(img->width * img->height == len);
   for (int i = 0; i < len; i++) {
-    uint16_t reading = depth[i];
-    uint8_t normalized = depth_to_byte(reading, 500, 4500);
-
-    int idx = 4 * i;
-
+    const int idx = 4 * i;
     uint8_t* data = img->data;
-    if (reading >= 500 && reading <= 4500) {
-      data[idx] = normalized;
-      data[idx + 1] = 255 - normalized;
-      data[idx + 2] = 255 - normalized;
-    } else {
-      data[idx] = 0;
-      data[idx + 1] = 0;
-      data[idx + 2] = 0;
-    }
+    uint8_t v = depth_to_byte(depth[i], 500, 4500);
+    data[idx] = v;
+    data[idx + 1] = v;
+    data[idx + 2] = v;
     data[idx + 3] = 255;
   }
 }

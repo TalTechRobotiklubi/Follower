@@ -41,11 +41,11 @@ Encoder* EncoderCreate(int w, int h) {
     printf("%s\n", vpx_codec_iface_name(codecIface));
     e->encoderCfg.g_threads = 2;
     e->encoderCfg.g_lag_in_frames = 0;
-    e->encoderCfg.rc_target_bitrate = 20;
+    e->encoderCfg.rc_target_bitrate = 400;
     e->encoderCfg.g_w = e->dstWidth;
     e->encoderCfg.g_h = e->dstHeight;
-    e->encoderCfg.g_timebase.num = 1;
-    e->encoderCfg.g_timebase.den = 1000;
+    e->encoderCfg.g_timebase.num = 1000;
+    e->encoderCfg.g_timebase.den = 30000;
     e->encoderCfg.rc_min_quantizer = 20;
     e->encoderCfg.rc_max_quantizer = 30;
     e->encoderCfg.g_pass = VPX_RC_ONE_PASS;
@@ -89,9 +89,6 @@ Encoder* EncoderCreate(int w, int h) {
 IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, const ActiveMap* map) {
   vpx_image_t* img = &encoder->rawImage;
 
-  // img->x_chroma_shift = 1;
-  // img->y_chroma_shift = 1;
-
   libyuv::ARGBToI420(raw, encoder->frameWidth * 4, img->planes[VPX_PLANE_Y],
                      img->stride[VPX_PLANE_Y], img->planes[VPX_PLANE_U],
                      img->stride[VPX_PLANE_U], img->planes[VPX_PLANE_V],
@@ -109,7 +106,7 @@ IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, const ActiveMap* map) {
 
   const vpx_codec_err_t res =
       vpx_codec_encode(&encoder->codec, &encoder->rawImage,
-                       int64_t((encoder->tsMs - encoder->tsBegin) * 1000), 1, 0,
+                       int64_t((encoder->tsMs - encoder->tsBegin) / 1000.0), 1, 0,
                        VPX_DL_REALTIME);
   if (res != VPX_CODEC_OK) {
     printf("Failed to encode frame\n");

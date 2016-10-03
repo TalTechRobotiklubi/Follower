@@ -18,6 +18,7 @@ static int loopTimeMs = 30;
 void kinect_loop(core* c) {
   while (c->running) {
     c->frame_source->get_frame();
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
   }
 }
 
@@ -84,9 +85,6 @@ int main(int argc, char** argv) {
         EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
 
     core_serialize(&c);
-
-    printf("Frame: %d\n", c.current_frame.depth_length);
-    printf("ms: %f\n", frame_time);
 
     UdpHostPoll(c.udp);
     UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize());
