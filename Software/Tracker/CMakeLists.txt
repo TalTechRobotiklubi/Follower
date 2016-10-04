@@ -36,6 +36,7 @@ add_subdirectory("third_party/FastHumanDetection")
 
 if (WIN32)
   add_definitions(
+    -DNOMINMAX
     -D_WIN32_WINNT=0x0501
     -D_SCL_SECURE_NO_WARNINGS
     -D_CRT_SECURE_NO_WARNINGS

@@ -106,7 +106,7 @@ target_link_libraries(
   imgui
   glfw
   gl3w
-  vpx
+  ${VPX_LIBRARY}
   yuv
   ${GLFW_LIBRARIES}
   ${CMAKE_DL_LIBS}
@@ -120,7 +120,7 @@ target_link_libraries(
   sqlite
   floatfann
   enet
-  vpx
+  ${VPX_LIBRARY}
   ${CMAKE_DL_LIBS}
   ${CMAKE_THREAD_LIBS_INIT}
 )
