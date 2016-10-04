@@ -52,6 +52,8 @@ FollowerUi::FollowerUi(Follower *robot)
   ui.graphicsView->setRenderHint(QPainter::Antialiasing);
   scene_->addItem(robotgui_);
 
+  setup_pid_config();
+
   qDebug() << "Liikumine - WASD";
   qDebug() << "Algoritm start - 1,2,3";
   qDebug() << "Algoritm stop - P";
@@ -68,6 +70,7 @@ FollowerUi::~FollowerUi()
   scene_->clear();
   robotgui_ = NULL;
   delete scene_;
+  delete conf_;
 
 }
 
@@ -299,25 +302,6 @@ void FollowerUi::UpdatePortList()
   }
 }
 
-void FollowerUi::on_pushButton_clicked()
-{
-  Configure conf(settings_);
-  connect(&conf, &Configure::sendParameter,
-          [=](uint8_t param, float value){
-    uint8_t update = 0;
-    this->dataLayer_->DL_setData(DLParamPidParameter, &param);
-    this->dataLayer_->DL_setData(DLParamPidValue, &value);
-    this->dataLayer_->DL_setData(DLParamPidUpdating, &update);
-  });
-  connect(&conf, &Configure::parameterSendFinished,
-          [=]() {
-    uint8_t update = 1;
-    this->dataLayer_->DL_setData(DLParamPidUpdating, &update);
-  });
-  connect(this, &FollowerUi::feedbackReceived, &conf, &Configure::onNewFeedbackData);
-  conf.exec();
-}
-
 void FollowerUi::calcAndWriteEulerAnglesToUI(int16_t raw_qw, int16_t raw_qx,
                                              int16_t raw_qy, int16_t raw_qz)
 {
@@ -353,4 +337,26 @@ void FollowerUi::updateSmoothDriveConf(int p)
 
     kinematics_->updateFromUi(setSpeed,setAngularSpeed,ui.cb_smoothDrive->isChecked());
 
+}
+
+// Sets up the conf_ variable.
+// Called at object construction.
+void FollowerUi::setup_pid_config()
+{
+  conf_ = new Configure(settings_);
+  connect(conf_, &Configure::sendParameter,
+          [=](uint8_t param, float value){
+    uint8_t update = 0;
+    this->dataLayer_->DL_setData(DLParamPidParameter, &param);
+    this->dataLayer_->DL_setData(DLParamPidValue, &value);
+    this->dataLayer_->DL_setData(DLParamPidUpdating, &update);
+  });
+  connect(conf_, &Configure::parameterSendFinished,
+          [=]() {
+    uint8_t update = 1;
+    this->dataLayer_->DL_setData(DLParamPidUpdating, &update);
+  });
+  connect(this, &FollowerUi::feedbackReceived, conf_, &Configure::onNewFeedbackData);
+
+  ui.tabWidget->addTab(conf_, "PID Config");
 }

@@ -7,6 +7,7 @@
 #include "ui_followerui.h"
 #include "Follower.h"
 #include "TRobot.h"
+#include "configure.h"
 
 class DataLayerBase;
 class WorkerObjectBase;
@@ -42,10 +43,10 @@ public slots:
   void UpdatePortList();
 
 private slots:
-  void on_pushButton_clicked();
   void updateSmoothDriveConf(int p);
 
 private:
+  void setup_pid_config();
   void calcAndWriteEulerAnglesToUI(int16_t raw_qw, int16_t raw_qx, int16_t raw_qy, int16_t raw_qz);
 
   Ui::FollowerUiClass ui;
@@ -56,7 +57,7 @@ private:
   TRobot* robotgui_;
   QGraphicsScene* scene_;
   QSettings* settings_;
-
+  Configure* conf_;
 
 
 };
