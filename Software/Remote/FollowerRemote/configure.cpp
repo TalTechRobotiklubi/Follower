@@ -44,16 +44,8 @@ void Configure::on_button_send_clicked()
   if(!isSending_ && !timer_.isActive())
   {
     sendCount_ = 0;
-    if (activeFile_.isOpen())
-      activeFile_.close();
 
     savePidParameters();
-
-    activeFile_.setFileName(createFilePath());
-    if (activeFile_.open(QFile::ReadWrite))
-      writePidParametersToFile();
-    else
-      qDebug() << "Measurement file open failed!";
 
     timer_.start(50);
   }
@@ -133,12 +125,15 @@ QString Configure::createFilePath()
     lastNumStr.append(QString("%1").arg(lastNum));
     newFile.append(lastNumStr + ".csv");
   }
-  return QString(directory.path() + QDir::separator() + newFile);
+
+  QString filename(directory.path() + QDir::separator() + newFile);
+  ui->lbl_filename->setText(directory.relativeFilePath(filename));
+
+  return filename;
 }
 
 void Configure::writePidParametersToFile()
 {
-  delete fileStream_;
   fileStream_ = new QTextStream(&activeFile_);
   *fileStream_ << "Parameters\r\n";
   *fileStream_ << "----------\r\n";
@@ -204,4 +199,56 @@ int Configure::loadPidParameters()
   settings_->endGroup();
 
   return 1;
+}
+
+void Configure::on_button_log_clicked()
+{
+  if (ui->button_log->isChecked())
+  {
+    // Turn recording on.
+    if (startLogging())
+    {
+      ui->button_log->setText("Stop logging");
+    }
+    else
+    {
+      ui->button_log->setChecked(false);
+      qDebug() << "Error: Configure failed to start logging.";
+    }
+  }
+  else
+  {
+    // Turn recording off.
+    stopLogging();
+    ui->button_log->setText("Start logging");
+  }
+}
+
+// Starts logging feedback to a new file.
+int Configure::startLogging()
+{
+  savePidParameters();
+
+  if (activeFile_.isOpen())
+    activeFile_.close();
+
+  activeFile_.setFileName(createFilePath());
+  if (activeFile_.open(QFile::ReadWrite))
+  {
+    writePidParametersToFile();
+  }
+  else
+  {
+    return 0;
+  }
+
+  return 1;
+}
+
+// Stops the logging of feedback.
+void Configure::stopLogging()
+{
+  activeFile_.close();
+  delete fileStream_;
+  fileStream_ = nullptr;
 }

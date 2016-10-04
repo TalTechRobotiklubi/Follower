@@ -30,6 +30,7 @@ public slots:
 
 private slots:
   void on_button_send_clicked();
+  void on_button_log_clicked();
 
 private:
   void initTable();
@@ -39,6 +40,8 @@ private:
   void writePidParametersToFile();
   void savePidParameters();
   int loadPidParameters();
+  int startLogging();
+  void stopLogging();
 
   Ui::Configure *ui;
   QTimer timer_;
