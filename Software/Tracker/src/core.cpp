@@ -84,15 +84,16 @@ int main(int argc, char** argv) {
     c.encoded_depth =
         EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
 
+    c.serial.receive(&c.in_data);
+    AlgorithmRunner::run(0, c.in_data, &c.out_data);
+    DL_task(loopTimeMs);
+    c.serial.send(c.out_data);
+
     core_serialize(&c);
 
     UdpHostPoll(c.udp);
     UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize());
 
-    c.serial.receive(&c.in_data);
-    AlgorithmRunner::run(0, c.in_data, &c.out_data);
-    DL_task(loopTimeMs);
-    c.serial.send(c.out_data);
     waitTillLoopTimeElapses();
   }
 
