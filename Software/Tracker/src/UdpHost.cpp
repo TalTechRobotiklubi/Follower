@@ -4,6 +4,9 @@
 #include <enet/enet.h>
 #include <stdio.h>
 #include <string.h>
+#include <mutex>
+
+std::once_flag enetInit;
 
 struct UdpHost {
   ENetAddress address;
@@ -12,6 +15,7 @@ struct UdpHost {
 };
 
 UdpHost* UdpHostCreate(const char* hostAddress, int port) {
+  std::call_once(enetInit, enet_initialize);
   ENetAddress address;
   address.port = port;
   enet_address_set_host(&address, hostAddress);

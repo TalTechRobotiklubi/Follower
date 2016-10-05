@@ -100,6 +100,13 @@ add_executable(
   Texture.cpp
 )
 
+if (WIN32)
+  set(WINSOCK
+    wsock32
+    ws2_32
+  )
+endif()
+
 target_link_libraries(
   follower_client
   enet
@@ -110,6 +117,7 @@ target_link_libraries(
   yuv
   ${GLFW_LIBRARIES}
   ${CMAKE_DL_LIBS}
+  ${WINSOCK}
 )
 
 target_link_libraries(
@@ -123,6 +131,7 @@ target_link_libraries(
   ${VPX_LIBRARY}
   ${CMAKE_DL_LIBS}
   ${CMAKE_THREAD_LIBS_INIT}
+  ${WINSOCK}
 )
 
 #add_executable(

@@ -29,9 +29,17 @@ struct Client {
   ~Client();
 };
 
-Client::~Client() { enet_host_destroy(udpClient); }
+Client::~Client() {
+  enet_host_destroy(udpClient);
+  enet_deinitialize();
+}
 
 bool ClientStart(Client* c, const ClientOptions* opt) {
+  if (enet_initialize() != 0) {
+    printf("Failed to initialize enet\n");
+    return false;
+  }
+
   c->decoder = DecoderCreate();
 
   if (!c->decoder) {
@@ -122,7 +130,9 @@ int main(int argc, char** argv) {
 
   ClientOptions options;
   Client client;
-  ClientStart(&client, &options);
+  if (!ClientStart(&client, &options)) {
+    return 1;
+  }
 
   while (!glfwWindowShouldClose(window)) {
     ClientUpdate(&client);

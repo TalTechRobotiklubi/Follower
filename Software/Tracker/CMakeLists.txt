@@ -16,7 +16,6 @@ find_package(Boost 1.55 COMPONENTS
   REQUIRED)
 
 find_package(Threads)
-find_package(vpx REQUIRED)
 
 option(KINECT_ENABLED "Enable Kinect SDK" OFF)
 
@@ -48,7 +47,11 @@ if (WIN32)
       -DFL_KINECT_ENABLED=1
     )
   endif()
+
+  set(VPX_LIBRARY "${CMAKE_SOURCE_DIR}/third_party/vpx/lib/vpx.lib")
+  set(VPX_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/third_party/vpx/include")
 else()
+  find_package(vpx REQUIRED)
   add_definitions(-std=c++11 -Wall -Wextra -march=native)
 endif()
 
