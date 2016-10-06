@@ -16,6 +16,7 @@ find_package(Boost 1.55 COMPONENTS
   REQUIRED)
 
 find_package(Threads)
+find_package(OpenMP)
 
 option(KINECT_ENABLED "Enable Kinect SDK" OFF)
 
@@ -33,6 +34,7 @@ add_subdirectory("third_party/libyuv")
 add_subdirectory("third_party/enet-1.3.13")
 add_subdirectory("third_party/FastHumanDetection")
 
+set(CMAKE_CXX_STANDARD 11)
 if (WIN32)
   add_definitions(
     -DNOMINMAX
@@ -52,7 +54,7 @@ if (WIN32)
   set(VPX_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/third_party/vpx/include")
 else()
   find_package(vpx REQUIRED)
-  add_definitions(-std=c++11 -Wall -Wextra -march=native)
+  add_definitions(-Wall -Wextra -march=native)
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -61,6 +63,7 @@ INCLUDE_DIRECTORIES(SYSTEM
   "third_party/libyuv/include"
   "third_party/enet-1.3.13/include"
   "third_party/imgui"
+  "third_party/FastHumanDetection/src"
 )
 
 add_subdirectory(src)

@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "fl_math.h"
+#include <chrono>
+#include <thread>
 
 fl_sqlite_source::fl_sqlite_source(const char* database) {
   int res = sqlite3_open_v2(database, &db, SQLITE_OPEN_READONLY, NULL);
@@ -52,6 +54,7 @@ const kinect_frame* fl_sqlite_source::get_frame() {
 }
 
 void fl_sqlite_source::advance() {
+  std::this_thread::sleep_for(std::chrono::milliseconds(30));
   sqlite3_reset(frame_query);
   sqlite3_bind_int(frame_query, 1, current_frame_num);
 

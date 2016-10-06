@@ -25,6 +25,8 @@ struct core {
   struct Encoder* encoder;
   IoVec encoded_depth;
 
+  struct fhd_context* fhd = nullptr;
+
   flatbuffers::FlatBufferBuilder builder;
 
   core() { running = ATOMIC_VAR_INIT(true); }

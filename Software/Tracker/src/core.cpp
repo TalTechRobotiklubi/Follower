@@ -11,6 +11,7 @@
 #include "kinect_frame.h"
 #include "kinect_frame_source.h"
 #include "proto/frame_generated.h"
+#include <fhd.h>
 
 typedef std::chrono::milliseconds msec;
 static int loopTimeMs = 30;
@@ -18,7 +19,6 @@ static int loopTimeMs = 30;
 void kinect_loop(core* c) {
   while (c->running) {
     c->frame_source->get_frame();
-    std::this_thread::sleep_for(std::chrono::milliseconds(30));
   }
 }
 

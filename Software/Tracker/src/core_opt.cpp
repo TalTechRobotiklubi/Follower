@@ -1,19 +1,22 @@
 #include "core_opt.h"
-#include "core.h"
-#include "parg/parg.h"
+#include <fhd.h>
+#include <fhd_classifier.h>
 #include <stdio.h>
+#include "core.h"
+#include "fl_constants.h"
 #include "fl_sqlite_source.h"
-#include "kinect_null_frame_source.h"
 #include "kinect_live_source.h"
+#include "kinect_null_frame_source.h"
+#include "parg/parg.h"
 
 int parse_opt(core* c, int argc, char** argv) {
   parg_state args;
   parg_init(&args);
 
   int res = -1;
-  while ((res = parg_getopt(&args, argc, argv, "d:h")) != -1) {
+  while ((res = parg_getopt(&args, argc, argv, "c:d:h")) != -1) {
     switch (res) {
-      case 'd': 
+      case 'd':
         c->frame_source = new fl_sqlite_source(args.optarg);
         printf("frame source: database\n");
         break;
@@ -21,7 +24,20 @@ int parse_opt(core* c, int argc, char** argv) {
         c->serial.start(args.optarg, 115200);
         printf("serial %s\n", args.optarg);
         break;
-      default: break;
+      case 'c': {
+        fhd_classifier* classifier = fhd_classifier_create(args.optarg);
+        if (classifier) {
+          c->fhd = (fhd_context*)calloc(1, sizeof(fhd_context));
+          fhd_context_init(c->fhd, kDepthWidth, kDeptHeight, 8, 8);
+          c->fhd->classifier = classifier;
+          printf("using classifier - %s\n", args.optarg);
+        } else {
+          printf("could not open classifier: %s\n", args.optarg);
+        }
+        break;
+      }
+      default:
+        break;
     }
   }
 

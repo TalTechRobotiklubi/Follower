@@ -9,48 +9,10 @@ add_library(gl3w
   gl3w/GL/gl3w.c
 )
 
-#add_library(follower_common
-#  AABB.cpp
-#  fl_math.cpp
-#vec2.cpp
-#  vec3.cpp
-#)
-
-#set(FOLLOWER_SOURCES
-#  AsyncSerial.cpp
-#  crc.cpp
-#  msgpack.cpp
-#  follower_ctx.cpp
-
-#  fl_sqlite_source.cpp
-#  fl_sqlite_writer.cpp
-#  fl_yuy2_convert.cpp
-
-#  algorithm/algorithm_move.cpp
-#  algorithm/algorithm_runner.cpp
-
-#  comm/datahandler.cpp
-#  comm/datalayer.cpp
-#  comm/datalayerconfig.cpp
-#  comm/interfaceconfig.cpp
-#  comm/interfacehandler.cpp
-#  comm/packetconfig.cpp
-#  comm/serial_comm.cpp
-#  comm/typedef.cpp
-
-#  ui/cam_window.cpp
-#  ui/main_window.cpp
-
-#  kinect_frame.cpp
-#)
-
-#if (KINECT_ENABLED)
-#  list(APPEND FOLLOWER_SOURCES kinect_live_source.cpp)
-#endif()
-
-#add_library(imgui
-#${IMGUI_SOURCES}
-#)
+if (OPENMP_FOUND)
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
 set(CORE_SOURCES
   algorithm/algorithm_move.cpp
@@ -126,8 +88,9 @@ target_link_libraries(
   ${KINECTV2_LIBRARY}
   yuv
   sqlite
-  floatfann
   enet
+  fhd
+  floatfann
   ${VPX_LIBRARY}
   ${CMAKE_DL_LIBS}
   ${CMAKE_THREAD_LIBS_INIT}
