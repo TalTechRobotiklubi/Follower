@@ -24,6 +24,7 @@ public:
 signals:
   void sendParameter(uint8_t param, float value);
   void parameterSendFinished();
+  void routineStatus(bool running);
 
 public slots:
   void onNewFeedbackData(const QList<uint8_t>& list);

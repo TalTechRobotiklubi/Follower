@@ -25,6 +25,7 @@ FollowerUi::FollowerUi(Follower *robot)
   workerObject_ = robot->getWorkerObject();
   dataLayer_ = robot->getWorkerObject()->getDataLayer();
   kinematics_ = robot->getKinematics();
+  keyboardOff_ = false;
 
   workerObject_->moveToThread(workerThread_);
   connect(this, SIGNAL(startCommunication(QString)), workerObject_, SLOT(startCommunication(QString)));
@@ -33,13 +34,7 @@ FollowerUi::FollowerUi(Follower *robot)
   connect(this, SIGNAL(stopCommunication()), workerObject_, SLOT(stopCommunication()));
   connect(workerObject_, SIGNAL(stopStatus()), this, SLOT(stopCommStatus()));
   connect(ui.btnConnect, SIGNAL(clicked()), this, SLOT(connectSpine()));
-  connect(ui.BtnSeartchPorts, SIGNAL(clicked()), this, SLOT(UpdatePortList()));
-
-
-
-   connect(ui.sb_setAngularSpeed, SIGNAL(valueChanged(int)), this, SLOT(updateSmoothDriveConf(int)));
-   connect(ui.sb_setSpeed, SIGNAL(valueChanged(int)), this, SLOT(updateSmoothDriveConf(int)));
-   connect(ui.cb_smoothDrive, SIGNAL(stateChanged(int)), this, SLOT(updateSmoothDriveConf(int)));
+  connect(ui.BtnSeartchPorts, SIGNAL(clicked()), this, SLOT(updatePortList()));
 
   // Start the workerThread_ here.
   // Do not close until program exit or emergency.
@@ -52,7 +47,7 @@ FollowerUi::FollowerUi(Follower *robot)
   ui.graphicsView->setRenderHint(QPainter::Antialiasing);
   scene_->addItem(robotgui_);
 
-  setup_pid_config();
+  setupPidConfig();
 
   qDebug() << "Liikumine - WASD";
   qDebug() << "Algoritm start - 1,2,3";
@@ -60,15 +55,14 @@ FollowerUi::FollowerUi(Follower *robot)
   qDebug() << "Kiirus juurde - I";
   qDebug() << "Kiirus maha - O";
 
-  UpdatePortList();
-  updateSmoothDriveConf(0);
+  updatePortList();
 }
 
 FollowerUi::~FollowerUi()
 {
 
   scene_->clear();
-  robotgui_ = NULL;
+  robotgui_ = nullptr;
   delete scene_;
   delete conf_;
 
@@ -115,7 +109,6 @@ void FollowerUi::startCommStatus(bool status)
     // start timer in kinematics
     kinematics_->startTimer();
   }
-
 }
 
 void FollowerUi::stopCommStatus()
@@ -126,11 +119,9 @@ void FollowerUi::stopCommStatus()
   ui.btnConnect->setText(QString("Connect"));
 }
 
-
 void FollowerUi::newUiData() 
 {
   unsigned char sensors[8];
-
   dataLayer_->DL_getData(DLParamDistanceSensor1, sensors);
   dataLayer_->DL_getData(DLParamDistanceSensor2, sensors + 1);
   dataLayer_->DL_getData(DLParamDistanceSensor3, sensors + 2);
@@ -172,46 +163,37 @@ void FollowerUi::newUiData()
     emit feedbackReceived(data);
 }
 
-void FollowerUi::keyPressEvent ( QKeyEvent * event )
+void FollowerUi::keyPressEvent(QKeyEvent * event)
 {
-  //qDebug() << "press" << event->timestamp();
-
-  if(workerThread_ == NULL)
-  {
+  if(!workerThread_ || event->isAutoRepeat() || keyboardOff_)
     return;
-  }
 
   int key = event->key();
-  int setSpeed = ui.sb_setSpeed->value();
-  int setAngularSpeed = ui.sb_setAngularSpeed->value();
+  int tSpeed = ui.sb_setSpeed->value();
+  int wSpeed = ui.sb_setAngularSpeed->value();
 
   switch(key)
   {
-    case Qt::Key_A:
-      //sendCmd(-setSpeed, -setSpeed, 0);
-      kinematics_->left(-setAngularSpeed);
+    case Qt::Key_Left:
+      kinematics_->setSpeeds(tSpeed, -wSpeed);
       break;
-    case Qt::Key_D:
-      //sendCmd(setSpeed, setSpeed, 0);
-      kinematics_->right(setAngularSpeed);
+    case Qt::Key_Right:
+      kinematics_->setSpeeds(tSpeed, wSpeed);
       break;
-    case Qt::Key_W:
-      //sendCmd(-setSpeed, setSpeed, 0);
-      kinematics_->forward(setSpeed);
+    case Qt::Key_Up:
+      kinematics_->setSpeeds(tSpeed, wSpeed);
       break;
-    case Qt::Key_Z:
-      //sendCmd(setSpeed, -setSpeed, 0);
-      kinematics_->backward(-setSpeed);
+    case Qt::Key_Down:
+      kinematics_->setSpeeds(-tSpeed, wSpeed);
       break;
     case Qt::Key_S:
-      //sendCmd(0, 0, 0);
       kinematics_->stop();
       break;
     case Qt::Key_I:
-      ui.sb_setSpeed->setValue(setSpeed + 100);
+      ui.sb_setSpeed->setValue(tSpeed + 100);
       break;
     case Qt::Key_O:
-      ui.sb_setSpeed->setValue(setSpeed - 100);
+      ui.sb_setSpeed->setValue(tSpeed - 100);
       break;
     case Qt::Key_1:  // run
       kinematics_->startAlgorithm(1);
@@ -225,27 +207,45 @@ void FollowerUi::keyPressEvent ( QKeyEvent * event )
     case Qt::Key_P:  // stop
       kinematics_->stopAlgorithm();
       break;
-
     case Qt::Key_U:  // camera up
       kinematics_->cameraLook(0,+1);
       break;
-
     case Qt::Key_J: // camera down
       kinematics_->cameraLook(0,-1);
       break;
-
     case Qt::Key_H:
       kinematics_->cameraLook(+1,0);
       break;
-
     case Qt::Key_K:
       kinematics_->cameraLook(-1,0);
       break;
-
   }
 }
 
+void FollowerUi::keyReleaseEvent(QKeyEvent* event)
+{
+  if(!workerThread_ || event->isAutoRepeat() || keyboardOff_)
+    return;
 
+  int key = event->key();
+  switch(key)
+  {
+    case Qt::Key_Left:
+      kinematics_->setSpeeds(kinematics_->translationSpeed(), 0);
+      break;
+    case Qt::Key_Right:
+      kinematics_->setSpeeds(kinematics_->translationSpeed(), 0);
+      break;
+    case Qt::Key_Up:
+      kinematics_->setSpeeds(0, kinematics_->rotationSpeed());
+      break;
+    case Qt::Key_Down:
+      kinematics_->setSpeeds(0, kinematics_->rotationSpeed());
+      break;
+    default:
+      break;
+  }
+}
 
 void FollowerUi::wheelEvent (QWheelEvent* event)
 {
@@ -258,7 +258,6 @@ void FollowerUi::wheelEvent (QWheelEvent* event)
   scene_->update();
 }
 
-
 void FollowerUi::mousePressEvent(QMouseEvent *event)
 {
   if ((event->x() < ui.graphicsView->width()+12)&&(event->x()> 12))
@@ -270,6 +269,7 @@ void FollowerUi::mousePressEvent(QMouseEvent *event)
     }
   }
 }
+
 void FollowerUi::mouseMoveEvent(QMouseEvent*)
 {
   //ui.lbl_andur1->setText(QString("move %1 %2").arg(event->x()).arg(event->y()));
@@ -283,7 +283,7 @@ void FollowerUi::closeEvent(QCloseEvent* )
   }
 }
 
-void FollowerUi::UpdatePortList()
+void FollowerUi::updatePortList()
 {
 
   QList<QSerialPortInfo> list = QSerialPortInfo::availablePorts();
@@ -300,6 +300,11 @@ void FollowerUi::UpdatePortList()
       ui.CBPort->addItem(port.portName());
     }
   }
+}
+
+void FollowerUi::keyboardDisabled(bool disabled)
+{
+  keyboardOff_ = disabled;
 }
 
 void FollowerUi::calcAndWriteEulerAnglesToUI(int16_t raw_qw, int16_t raw_qx,
@@ -330,18 +335,9 @@ void FollowerUi::calcAndWriteEulerAnglesToUI(int16_t raw_qw, int16_t raw_qx,
   ui.lbl_roll->setText(QString("Roll: %1").arg(roll));
 }
 
-void FollowerUi::updateSmoothDriveConf(int p)
-{
-    int setSpeed = ui.sb_setSpeed->value();
-    int setAngularSpeed = ui.sb_setAngularSpeed->value();
-
-    kinematics_->updateFromUi(setSpeed,setAngularSpeed,ui.cb_smoothDrive->isChecked());
-
-}
-
 // Sets up the conf_ variable.
 // Called at object construction.
-void FollowerUi::setup_pid_config()
+void FollowerUi::setupPidConfig()
 {
   conf_ = new Configure(settings_);
   connect(conf_, &Configure::sendParameter,
@@ -357,6 +353,7 @@ void FollowerUi::setup_pid_config()
     this->dataLayer_->DL_setData(DLParamPidUpdating, &update);
   });
   connect(this, &FollowerUi::feedbackReceived, conf_, &Configure::onNewFeedbackData);
+  connect(conf_, &Configure::routineStatus, this, &FollowerUi::keyboardDisabled);
 
   ui.tabWidget->addTab(conf_, "PID Config");
 }

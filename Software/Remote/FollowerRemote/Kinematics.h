@@ -15,19 +15,18 @@ public:
 
     void startTimer();
     void stopTimer();
-    void forward(int speed);
-    void backward(int speed);
-    void right(int speed);
-    void left(int speed);
+    int translationSpeed();
+    int rotationSpeed();
     void stop();
     void startAlgorithm(int algorithmNum);
     void stopAlgorithm();
 
     void cameraLook(int x, int z);
-    void updateFromUi(int translationSpeed,int rotationSpeed, bool smcon);
+    void setSpeeds(int translationSpeed,int rotationSpeed);
 
 public slots:
     void timerUpdate();
+
 private:
     void setMotorSpeeds(int speedleft,int speedright);
     void calculateAndSetSpeeds();
@@ -36,10 +35,6 @@ private:
 
     static const int ACCELER_RATE = 75;
 
-    int             requestM1_;
-    int             requestM2_;
-    int             currentM1_;
-    int             currentM2_;
     DataLayerBase*  dataLayer_;
     QTimer          timer_;
     bool            running_;
@@ -51,8 +46,7 @@ private:
     char            currentCamSpeedX;
     char            currentCamspeedZ;
 
-    bool            smoothControl;
-    int             k_translationSpeed;
-    int             k_rotationSpeed;
+    int             translationSpeed_;
+    int             rotationSpeed_;
 };
 
