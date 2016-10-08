@@ -53,23 +53,23 @@ Encoder* EncoderCreate(int w, int h) {
     e->encoderCfg.g_profile = 2;
   }
 
-  printf("g_threads: %d\n", e->encoderCfg.g_threads);
+  printf("vp8 encoder\n\tg_threads: %d\n", e->encoderCfg.g_threads);
 
   // Image width, height
-  printf("g_w: %d, g_h: %d\n", e->encoderCfg.g_w, e->encoderCfg.g_h);
-  printf("bit depth: %d\n", e->encoderCfg.g_bit_depth);
-  printf("input bit depth: %d\n", e->encoderCfg.g_input_bit_depth);
-  printf("multipass encoding: %d\n", e->encoderCfg.g_pass);
-  printf("lag in frames: %d\n", e->encoderCfg.g_lag_in_frames);
-  printf("rate control framedrop thresh: %d\n",
+  printf("\tg_w: %d, g_h: %d\n", e->encoderCfg.g_w, e->encoderCfg.g_h);
+  printf("\tbit depth: %d\n", e->encoderCfg.g_bit_depth);
+  printf("\tinput bit depth: %d\n", e->encoderCfg.g_input_bit_depth);
+  printf("\tmultipass encoding: %d\n", e->encoderCfg.g_pass);
+  printf("\tlag in frames: %d\n", e->encoderCfg.g_lag_in_frames);
+  printf("\trate control framedrop thresh: %d\n",
          e->encoderCfg.rc_dropframe_thresh);
-  printf("rate control algo: %d\n", e->encoderCfg.rc_end_usage);
-  printf("rate control target bitrate: %d kbit/s\n",
+  printf("\trate control algo: %d\n", e->encoderCfg.rc_end_usage);
+  printf("\trate control target bitrate: %d kbit/s\n",
          e->encoderCfg.rc_target_bitrate);
-  printf("kf control: %d\n", e->encoderCfg.kf_mode);
-  printf("min quant: %d, max quant: %d\n", e->encoderCfg.rc_min_quantizer,
+  printf("\tkf control: %d\n", e->encoderCfg.kf_mode);
+  printf("\tmin quant: %d, max quant: %d\n", e->encoderCfg.rc_min_quantizer,
          e->encoderCfg.rc_max_quantizer);
-  printf("g_profile: %d\n", e->encoderCfg.g_profile);
+  printf("\tg_profile: %d\n", e->encoderCfg.g_profile);
 
   if (vpx_codec_enc_init(&e->codec, e->codecIface, &e->encoderCfg, 0)) {
     printf("Failed to initialize codec\n");
@@ -109,8 +109,7 @@ IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, const ActiveMap* map) {
                        int64_t((encoder->tsMs - encoder->tsBegin) / 1000.0), 1, 0,
                        VPX_DL_REALTIME);
   if (res != VPX_CODEC_OK) {
-    printf("Failed to encode frame\n");
-    printf("%s\n", vpx_codec_err_to_string(res));
+    printf("failed to encode: %s\n", vpx_codec_err_to_string(res));
     printf("%s\n", vpx_codec_error_detail(&encoder->codec));
   }
 
@@ -123,7 +122,6 @@ IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, const ActiveMap* map) {
     if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
       result.data = (uint8_t*)pkt->data.frame.buf;
       result.len = int(pkt->data.frame.sz);
-      printf("%.4f kB\n", double(result.len) / 1000.0);
       break;
     }
   }

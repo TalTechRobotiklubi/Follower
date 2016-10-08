@@ -11,6 +11,7 @@
 #include "imgui_impl_glfw_gl3.h"
 #include "proto/frame_generated.h"
 #include "Decode.h"
+#include "AABB.h"
 
 struct ClientOptions {
   const char* host = "127.0.0.1";
@@ -25,6 +26,7 @@ struct Client {
   ENetHost* udpClient = nullptr;
   ENetPeer* peer = nullptr;
   Texture decodedDepth;
+  std::vector<AABB> detections;
 
   ~Client();
 };
@@ -85,6 +87,21 @@ void ClientUpdate(Client* c) {
         if (DecodeFrame(c->decoder, frame->depth()->Data(), frame->depth()->size(), 512, 424, &img)) {
           TextureUpdate(&c->decodedDepth, img.data, img.width, img.height);
         }
+
+        c->detections.clear();
+        auto detections = frame->detections();
+        for (size_t i = 0; i < detections->size(); i++) {
+          const proto::Detection* d = detections->Get(i);
+          if (d->weight() >= 1.f) {
+            AABB box;
+            box.top_left.x = float(d->x());
+            box.top_left.y = float(d->y());
+            box.bot_right.x = box.top_left.x + float(d->width());
+            box.bot_right.y = box.top_left.y + float(d->height());
+            c->detections.push_back(box);
+          }
+        }
+
         enet_packet_destroy(event.packet);
         break;
       }
@@ -165,8 +182,25 @@ int main(int argc, char** argv) {
 
     ImGui::Text("main");
 
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    ImVec2 p = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
                  ImVec2(client.decodedDepth.width, client.decodedDepth.height));
+
+    ImU32 rect_color = ImColor(240, 240, 20);
+    for (AABB& box : client.detections) {
+			const float x = p.x + box.top_left.x;
+			const float y = p.y + box.top_left.y;
+			const float w = box.bot_right.x - box.top_left.x;
+			const float h = box.bot_right.y - box.top_left.y;
+			ImVec2 points[4] = {
+				ImVec2(x, y),
+				ImVec2(x + w, y),
+				ImVec2(x + w, y + h),
+				ImVec2(x, y + h)
+			};
+			draw_list->AddPolyline(points, 4, rect_color, true, 4.f, true);
+    }
     ImGui::End();
 
     glViewport(0, 0, displayWidth, displayHeight);

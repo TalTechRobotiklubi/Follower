@@ -1,4 +1,5 @@
 #include "core.h"
+#include <fhd.h>
 #include <stdio.h>
 #include <string.h>
 #include "Clock.h"
@@ -11,7 +12,6 @@
 #include "kinect_frame.h"
 #include "kinect_frame_source.h"
 #include "proto/frame_generated.h"
-#include <fhd.h>
 
 typedef std::chrono::milliseconds msec;
 static int loopTimeMs = 30;
@@ -35,8 +35,23 @@ void core_start(core* c) {
 
 void core_serialize(core* c) {
   c->builder.Clear();
-  auto depth = c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len);
-  auto frame = proto::CreateFrame(c->builder, depth);
+  auto depth =
+      c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len);
+  std::vector<proto::Detection> detections;
+  if (c->fhd) {
+    detections.resize(c->fhd->candidates_len);
+    for (int i = 0; i < c->fhd->candidates_len; i++) {
+      const fhd_candidate* candidate = &c->fhd->candidates[i];
+      const fhd_image_region* region = &candidate->depth_position;
+      detections[i] = proto::Detection(region->x, region->y, region->width,
+                                       region->height, candidate->weight);
+    }
+  }
+  auto detectionOffsets = c->builder.CreateVectorOfStructs(detections);
+  proto::FrameBuilder frame_builder(c->builder);
+  frame_builder.add_depth(depth);
+  frame_builder.add_detections(detectionOffsets);
+  auto frame = frame_builder.Finish();
   c->builder.Finish(frame);
 }
 
@@ -77,6 +92,11 @@ int main(int argc, char** argv) {
 
     c.frame_source->fill_frame(&c.current_frame);
     memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
+
+    if (c.fhd) {
+      fhd_run_pass(c.fhd, c.current_frame.depth_data);
+    }
+
     depth_to_rgba(c.current_frame.depth_data, c.current_frame.depth_length,
                   &c.rgba_depth);
     BlockDiff(c.prev_rgba_depth.data, c.rgba_depth.data, kDepthWidth,

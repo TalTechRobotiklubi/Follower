@@ -35,11 +35,12 @@ bool DecodeFrame(Decoder* dc, const uint8_t* data, int len, int targetWidth,
   vpx_codec_err_t ret = vpx_codec_decode(codec, data, len, NULL, 0);
 
   if (ret != VPX_CODEC_OK) {
+#if 0
     const char* error = vpx_codec_error(codec);
     const char* detail = vpx_codec_error_detail(codec);
     printf("Failed to decode, %s: %s\n", (error ? error : "unknown"),
            (detail ? detail : "unknown"));
-
+#endif
     return false;
   }
 

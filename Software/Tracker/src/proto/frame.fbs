@@ -1,7 +1,16 @@
 namespace proto;
 
+struct Detection {
+  x:int;
+  y:int;
+  width:int;
+  height:int;
+  weight:float;
+}
+
 table Frame {
   depth:[ubyte];
+  detections:[Detection];
 }
 
 root_type Frame;
