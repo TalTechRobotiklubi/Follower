@@ -96,24 +96,3 @@ target_link_libraries(
   ${CMAKE_THREAD_LIBS_INIT}
   ${WINSOCK}
 )
-
-#add_executable(
-#  follower
-#  main.cpp
-#  ${FOLLOWER_SOURCES}
-#)
-#target_link_libraries(
-#  follower
-#  bgfx_nanovg
-#  imgui
-#  ${Boost_LIBRARIES}
-#  ${KINECTV2_LIBRARY}
-#  bgfx
-#  glfw
-#  ${GLFW_LIBRARIES}
-#  yuv
-#  follower_common
-#  sqlite3
-#  floatfann
-#  ${CMAKE_DL_LIBS}
-#)
