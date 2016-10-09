@@ -29,6 +29,7 @@ struct Client {
   ENetPeer* peer = nullptr;
   Texture decodedDepth;
   std::vector<AABB> detections;
+  double coreTimestamp = 0.0;
   bool connected = false;
   const ClientOptions* options;
 
@@ -98,7 +99,7 @@ void ClientUpdate(Client* c) {
         break;
       case ENET_EVENT_TYPE_RECEIVE: {
         const proto::Frame* frame = proto::GetFrame(event.packet->data);
-
+        c->coreTimestamp = frame->timestamp(); 
         rgba_image img;
         if (DecodeFrame(c->decoder, frame->depth()->Data(),
                         frame->depth()->size(), kDepthWidth, kDeptHeight, &img)) {
@@ -191,6 +192,8 @@ int main(int argc, char** argv) {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
     ImGui::Text(client.connected ? "connected" : "disconnected");
+    ImGui::SameLine();
+    ImGui::Text("| core time: %.2f", client.coreTimestamp / 1000.0);
     cursor = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
                  ImVec2(client.decodedDepth.width, client.decodedDepth.height));

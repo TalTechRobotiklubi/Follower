@@ -49,6 +49,7 @@ void core_serialize(core* c) {
   }
   auto detectionOffsets = c->builder.CreateVectorOfStructs(detections);
   proto::FrameBuilder frame_builder(c->builder);
+  frame_builder.add_timestamp(c->timestamp);
   frame_builder.add_depth(depth);
   frame_builder.add_detections(detectionOffsets);
   auto frame = frame_builder.Finish();
@@ -89,6 +90,7 @@ int main(int argc, char** argv) {
     prev_time = current_time;
     current_time = ms_now();
     const double frame_time = current_time - prev_time;
+    c.timestamp += frame_time;
 
     c.frame_source->fill_frame(&c.current_frame);
     memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);

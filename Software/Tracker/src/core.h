@@ -10,6 +10,7 @@
 #include "proto/flatbuffers/flatbuffers.h"
 
 struct core {
+  double timestamp = 0.0;
   CommInput in_data;
   CommOutput out_data;
   SerialComm serial;
