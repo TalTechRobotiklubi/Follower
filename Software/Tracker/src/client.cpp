@@ -6,12 +6,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "AABB.h"
+#include "Decode.h"
 #include "Texture.h"
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
+#include "fl_constants.h"
 #include "proto/frame_generated.h"
-#include "Decode.h"
-#include "AABB.h"
 
 struct ClientOptions {
   const char* host = "127.0.0.1";
@@ -27,6 +28,8 @@ struct Client {
   ENetPeer* peer = nullptr;
   Texture decodedDepth;
   std::vector<AABB> detections;
+  bool connected = false;
+  const ClientOptions* options;
 
   ~Client();
 };
@@ -36,7 +39,26 @@ Client::~Client() {
   enet_deinitialize();
 }
 
+bool ClientStartConnection(Client* c) {
+  ENetAddress address;
+  enet_address_set_host(&address, c->options->host);
+  address.port = c->options->port;
+
+  c->peer = enet_host_connect(c->udpClient, &address, 1, 0);
+
+  if (!c->peer) {
+    printf("failed to initialize connection\n");
+    return false;
+  }
+
+  enet_peer_timeout(c->peer, 8, 500, 2000);
+
+  return true;
+}
+
 bool ClientStart(Client* c, const ClientOptions* opt) {
+  c->options = opt;
+
   if (enet_initialize() != 0) {
     printf("Failed to initialize enet\n");
     return false;
@@ -56,16 +78,7 @@ bool ClientStart(Client* c, const ClientOptions* opt) {
     return false;
   }
 
-  ENetAddress address;
-  enet_address_set_host(&address, opt->host);
-  address.port = opt->port;
-
-  c->peer = enet_host_connect(c->udpClient, &address, 1, 0);
-
-  if (!c->peer) {
-    printf("failed to initialize connection\n");
-    return false;
-  }
+  ClientStartConnection(c);
 
   return true;
 }
@@ -75,16 +88,19 @@ void ClientUpdate(Client* c) {
   if (enet_host_service(c->udpClient, &event, 0) > 0) {
     switch (event.type) {
       case ENET_EVENT_TYPE_CONNECT:
-        printf("connected\n");
+        c->connected = true;
         break;
       case ENET_EVENT_TYPE_DISCONNECT:
-        printf("disconnect\n");
+        enet_peer_reset(c->peer);
+        ClientStartConnection(c);
+        c->connected = false;
         break;
       case ENET_EVENT_TYPE_RECEIVE: {
         const proto::Frame* frame = proto::GetFrame(event.packet->data);
 
         rgba_image img;
-        if (DecodeFrame(c->decoder, frame->depth()->Data(), frame->depth()->size(), 512, 424, &img)) {
+        if (DecodeFrame(c->decoder, frame->depth()->Data(),
+                        frame->depth()->size(), kDepthWidth, kDeptHeight, &img)) {
           TextureUpdate(&c->decodedDepth, img.data, img.width, img.height);
         }
 
@@ -106,7 +122,6 @@ void ClientUpdate(Client* c) {
         break;
       }
       default:
-        printf("Enet unhandled\n");
         break;
     }
   }
@@ -171,35 +186,28 @@ int main(int argc, char** argv) {
                  ImVec2(float(displayWidth), float(displayHeight)), -1.f,
                  flags);
 
-    if (ImGui::BeginMenuBar()) {
-      if (ImGui::BeginMenu("File")) {
-        ImGui::MenuItem("DUMMY", NULL, false, false);
-        ImGui::EndMenu();
-      }
-
-      ImGui::EndMenuBar();
-    }
-
-    ImGui::Text("main");
+    ImVec2 window_size = ImGui::GetWindowSize();
+    ImVec2 cursor = ImGui::GetCursorScreenPos();
 
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
-    ImVec2 p = ImGui::GetCursorScreenPos();
+
+    ImGui::Dummy(ImVec2(window_size.x, 20.f));
+    draw_list->AddCircleFilled(cursor, 4.f, client.connected
+                                                ? ImColor(0, 255, 0)
+                                                : ImColor(255, 0, 0));
+
+    cursor = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
                  ImVec2(client.decodedDepth.width, client.decodedDepth.height));
 
-    ImU32 rect_color = ImColor(240, 240, 20);
     for (AABB& box : client.detections) {
-			const float x = p.x + box.top_left.x;
-			const float y = p.y + box.top_left.y;
-			const float w = box.bot_right.x - box.top_left.x;
-			const float h = box.bot_right.y - box.top_left.y;
-			ImVec2 points[4] = {
-				ImVec2(x, y),
-				ImVec2(x + w, y),
-				ImVec2(x + w, y + h),
-				ImVec2(x, y + h)
-			};
-			draw_list->AddPolyline(points, 4, rect_color, true, 4.f, true);
+      const float x = cursor.x + box.top_left.x;
+      const float y = cursor.y + box.top_left.y;
+      const float w = box.bot_right.x - box.top_left.x;
+      const float h = box.bot_right.y - box.top_left.y;
+      ImVec2 points[4] = {ImVec2(x, y), ImVec2(x + w, y), ImVec2(x + w, y + h),
+                          ImVec2(x, y + h)};
+      draw_list->AddPolyline(points, 4, ImColor(240, 240, 20), true, 4.f, true);
     }
     ImGui::End();
 
