@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Style.h"
 #include "AABB.h"
 #include "Decode.h"
 #include "Texture.h"
@@ -154,8 +155,7 @@ int main(int argc, char** argv) {
   }
 
   ImGui_ImplGlfwGL3_Init(window, true);
-
-  // ImGui::GetStyle() = loadStyle(ImGui::GetStyle());
+  ImGui::GetStyle() = Style::Bright();
 
   bool showWindow = true;
   ImVec4 bgColor = ImColor(218, 223, 225);
@@ -188,14 +188,9 @@ int main(int argc, char** argv) {
 
     ImVec2 window_size = ImGui::GetWindowSize();
     ImVec2 cursor = ImGui::GetCursorScreenPos();
-
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-    ImGui::Dummy(ImVec2(window_size.x, 20.f));
-    draw_list->AddCircleFilled(cursor, 4.f, client.connected
-                                                ? ImColor(0, 255, 0)
-                                                : ImColor(255, 0, 0));
-
+    ImGui::Text(client.connected ? "connected" : "disconnected");
     cursor = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
                  ImVec2(client.decodedDepth.width, client.decodedDepth.height));

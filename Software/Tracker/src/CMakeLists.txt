@@ -59,6 +59,7 @@ add_executable(
   client.cpp
   Decode.cpp
   image.cpp
+  Style.cpp
   Texture.cpp
 )
 
