@@ -52,7 +52,6 @@ const IoVec* UdpHostPoll(UdpHost* udp) {
         printf("Got data %lu\n", event->packet->dataLength);
         break;
       default:
-        printf("Enet unhandled\n");
         break;
     }
   }

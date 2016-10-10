@@ -6,14 +6,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Style.h"
 #include "AABB.h"
 #include "Decode.h"
+#include "Style.h"
 #include "Texture.h"
+#include "fl_constants.h"
+#include "fl_math.h"
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
-#include "fl_constants.h"
 #include "proto/frame_generated.h"
+#include "vec2.h"
+#include "vec3.h"
+
+struct CoreState {
+  vec2 camera;
+};
 
 struct ClientOptions {
   const char* host = "127.0.0.1";
@@ -23,12 +30,18 @@ struct ClientOptions {
   int screenHeight = 720;
 };
 
+struct Detection {
+  vec2 position;
+  vec3 metric;
+};
+
 struct Client {
+  CoreState state;
   Decoder* decoder = nullptr;
   ENetHost* udpClient = nullptr;
   ENetPeer* peer = nullptr;
   Texture decodedDepth;
-  std::vector<AABB> detections;
+  std::vector<Detection> detections;
   double coreTimestamp = 0.0;
   bool connected = false;
   const ClientOptions* options;
@@ -99,10 +112,16 @@ void ClientUpdate(Client* c) {
         break;
       case ENET_EVENT_TYPE_RECEIVE: {
         const proto::Frame* frame = proto::GetFrame(event.packet->data);
-        c->coreTimestamp = frame->timestamp(); 
+        const proto::Vec2* cam = frame->camera();
+        if (cam) {
+          c->state.camera.x = cam->x();
+          c->state.camera.y = cam->y();
+        }
+        c->coreTimestamp = frame->timestamp();
         rgba_image img;
         if (DecodeFrame(c->decoder, frame->depth()->Data(),
-                        frame->depth()->size(), kDepthWidth, kDeptHeight, &img)) {
+                        frame->depth()->size(), kDepthWidth, kDeptHeight,
+                        &img)) {
           TextureUpdate(&c->decodedDepth, img.data, img.width, img.height);
         }
 
@@ -111,12 +130,13 @@ void ClientUpdate(Client* c) {
         for (size_t i = 0; i < detections->size(); i++) {
           const proto::Detection* d = detections->Get(i);
           if (d->weight() >= 1.f) {
-            AABB box;
-            box.top_left.x = float(d->x());
-            box.top_left.y = float(d->y());
-            box.bot_right.x = box.top_left.x + float(d->width());
-            box.bot_right.y = box.top_left.y + float(d->height());
-            c->detections.push_back(box);
+            Detection local;
+            const proto::Vec2 position = d->position();
+            local.position.x = position.x();
+            local.position.y = position.y();
+            const proto::Vec3 metric = d->metricPosition();
+            local.metric = vec3(metric.x(), metric.y(), metric.z());
+            c->detections.push_back(local);
           }
         }
 
@@ -127,6 +147,38 @@ void ClientUpdate(Client* c) {
         break;
     }
   }
+}
+
+void RenderOverview(Client* client) {
+  const float w = float(kDepthWidth);
+  const float h = float(kDeptHeight);
+  ImDrawList* drawList = ImGui::GetWindowDrawList();
+  ImVec2 c = ImGui::GetCursorScreenPos();
+  ImVec2 end = ImVec2(c.x + w, c.y + h);
+  ImVec2 robot = ImVec2(c.x + w * 0.5f, c.y + h - 25.f);
+  float height = robot.y - c.y;
+  ImGui::Dummy(ImVec2(w, h));
+  drawList->PushClipRect(c, end);
+  drawList->AddRectFilled(c, end, ImColor(0x3E, 0x3E, 0x41));
+  drawList->AddCircle(robot, 20.f, ImColor(0x8E, 0x8A, 0x71), 9, 2.f);
+
+  // Camera position
+  const float camRotRad = deg_to_rad(client->state.camera.x);
+  const vec2 camTopLeft =
+      vec2_rotate(vec2{-12.f, 0.f}, camRotRad);
+  const vec2 camBotRight = vec2_rotate(vec2{12.f, 0.f}, camRotRad);
+  drawList->AddLine(ImVec2(camTopLeft.x + robot.x, camTopLeft.y + robot.y),
+                          ImVec2(camBotRight.x + robot.x, camBotRight.y + robot.y),
+                          ImColor(0xC6, 0xC7, 0xC5), 10.f);
+
+  for (const Detection& detection : client->detections) {
+    const float d = fl_map_range(detection.metric.z, 0.f, 4.5f, 0.f, height);
+    const float tx = detection.position.x / w;
+    drawList->AddCircleFilled(ImVec2(c.x + w * tx, robot.y - d), 16.f,
+                              ImColor(0x66, 0xA2, 0xC6), 32);
+  }
+
+  drawList->PopClipRect();
 }
 
 void glfwError(int error, const char* description) {
@@ -194,19 +246,22 @@ int main(int argc, char** argv) {
     ImGui::Text(client.connected ? "connected" : "disconnected");
     ImGui::SameLine();
     ImGui::Text("| core time: %.2f", client.coreTimestamp / 1000.0);
+    ImGui::SameLine();
+    ImGui::Text("| camera: (%.1f, %.1f)", client.state.camera.x,
+                client.state.camera.y);
     cursor = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
-                 ImVec2(client.decodedDepth.width, client.decodedDepth.height));
+                 ImVec2(kDepthWidth, kDeptHeight));
 
-    for (AABB& box : client.detections) {
-      const float x = cursor.x + box.top_left.x;
-      const float y = cursor.y + box.top_left.y;
-      const float w = box.bot_right.x - box.top_left.x;
-      const float h = box.bot_right.y - box.top_left.y;
-      ImVec2 points[4] = {ImVec2(x, y), ImVec2(x + w, y), ImVec2(x + w, y + h),
-                          ImVec2(x, y + h)};
-      draw_list->AddPolyline(points, 4, ImColor(240, 240, 20), true, 4.f, true);
+    for (Detection& d : client.detections) {
+      draw_list->AddCircleFilled(
+          ImVec2(cursor.x + d.position.x, cursor.y + d.position.y), 20.f,
+          ImColor(255, 0, 0));
     }
+
+    ImGui::SameLine();
+    RenderOverview(&client);
+
     ImGui::End();
 
     glViewport(0, 0, displayWidth, displayHeight);

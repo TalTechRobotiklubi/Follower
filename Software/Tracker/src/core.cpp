@@ -33,6 +33,32 @@ void core_start(core* c) {
   c->kinect_frame_thread = std::thread(kinect_loop, c);
 }
 
+void core_decide(core* c) {
+  const fhd_candidate* closest = nullptr;
+  for (int i = 0; i < c->fhd->candidates_len; i++) {
+    const fhd_candidate* candidate = &c->fhd->candidates[i];
+    if (candidate->weight >= 1.f) {
+      if (!closest ||
+          closest->metric_position.z > candidate->metric_position.z) {
+        closest = candidate;
+      }
+    }
+  }
+
+  if (closest) {
+    const float deg = (atan2(closest->kinect_position.y - 424.f,
+                             closest->kinect_position.x - 512.f * 0.5f) +
+                       F_PI_2) *
+                      180.f / F_PI;
+    c->state.camera.x = deg;
+  }
+}
+
+void core_serial_send(core* c) {
+  c->out_data.camera_degrees = c->state.camera;
+  c->serial.send(c->out_data);
+}
+
 void core_serialize(core* c) {
   c->builder.Clear();
   auto depth =
@@ -42,14 +68,20 @@ void core_serialize(core* c) {
     detections.resize(c->fhd->candidates_len);
     for (int i = 0; i < c->fhd->candidates_len; i++) {
       const fhd_candidate* candidate = &c->fhd->candidates[i];
-      const fhd_image_region* region = &candidate->depth_position;
-      detections[i] = proto::Detection(region->x, region->y, region->width,
-                                       region->height, candidate->weight);
+      detections[i] =
+          proto::Detection(proto::Vec2(candidate->kinect_position.x,
+                                       candidate->kinect_position.y),
+                           proto::Vec3(candidate->metric_position.x,
+                                       candidate->metric_position.y,
+                                       candidate->metric_position.z),
+                           candidate->weight);
     }
   }
   auto detectionOffsets = c->builder.CreateVectorOfStructs(detections);
+  proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
   proto::FrameBuilder frame_builder(c->builder);
   frame_builder.add_timestamp(c->timestamp);
+  frame_builder.add_camera(&camera);
   frame_builder.add_depth(depth);
   frame_builder.add_detections(detectionOffsets);
   auto frame = frame_builder.Finish();
@@ -107,10 +139,10 @@ int main(int argc, char** argv) {
         EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
 
     c.serial.receive(&c.in_data);
-    AlgorithmRunner::run(0, c.in_data, &c.out_data);
-    DL_task(loopTimeMs);
-    c.serial.send(c.out_data);
 
+    core_decide(&c);
+    DL_task(loopTimeMs);
+    core_serial_send(&c);
     core_serialize(&c);
 
     UdpHostPoll(c.udp);

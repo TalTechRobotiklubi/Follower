@@ -42,6 +42,8 @@ set(CORE_SOURCES
 
   UdpHost.cpp
 
+  vec2.cpp
+
   parg/parg.c
 )
 
@@ -56,11 +58,14 @@ add_executable(
 
 add_executable(
   follower_client
+  AABB.cpp
   client.cpp
   Decode.cpp
+  fl_math.cpp
   image.cpp
   Style.cpp
   Texture.cpp
+  vec2.cpp
 )
 
 if (WIN32)

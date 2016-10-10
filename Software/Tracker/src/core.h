@@ -9,7 +9,12 @@
 #include "BlockDiff.h"
 #include "proto/flatbuffers/flatbuffers.h"
 
+struct ControlState {
+  vec2 camera;
+};
+
 struct core {
+  ControlState state;
   double timestamp = 0.0;
   CommInput in_data;
   CommOutput out_data;

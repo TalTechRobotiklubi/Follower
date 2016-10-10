@@ -1,15 +1,25 @@
 namespace proto;
 
+struct Vec2 {
+  x:float;
+  y:float;
+}
+
+struct Vec3 {
+  x:float;
+  y:float;
+  z:float;
+}
+
 struct Detection {
-  x:int;
-  y:int;
-  width:int;
-  height:int;
+  position:Vec2;
+  metricPosition:Vec3;
   weight:float;
 }
 
 table Frame {
   timestamp:double;
+  camera:Vec2;
   depth:[ubyte];
   detections:[Detection];
 }

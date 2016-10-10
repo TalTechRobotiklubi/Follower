@@ -9,7 +9,7 @@ ImGuiStyle Bright() {
   style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
   style.TouchExtraPadding = ImVec2(5.0f, 5.0f);
   style.AntiAliasedLines = true;
-  style.AntiAliasedShapes = false;
+  style.AntiAliasedShapes = true;
   style.Colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
   style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
   style.Colors[ImGuiCol_WindowBg] = ImVec4(0.94f, 0.94f, 0.94f, 1.00f);
