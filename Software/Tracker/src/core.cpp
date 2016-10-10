@@ -34,6 +34,8 @@ void core_start(core* c) {
 }
 
 void core_decide(core* c) {
+  if (!c->fhd) return;
+
   const fhd_candidate* closest = nullptr;
   for (int i = 0; i < c->fhd->candidates_len; i++) {
     const fhd_candidate* candidate = &c->fhd->candidates[i];
@@ -138,9 +140,10 @@ int main(int argc, char** argv) {
     c.encoded_depth =
         EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
 
-    c.serial.receive(&c.in_data);
 
+    c.serial.receive(&c.in_data);
     core_decide(&c);
+
     DL_task(loopTimeMs);
     core_serial_send(&c);
     core_serialize(&c);

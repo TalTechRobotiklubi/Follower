@@ -17,6 +17,7 @@ struct kinect_live_source : kinect_frame_source {
   ~kinect_live_source();
 
   const kinect_frame* get_frame() override;
+  void fill_frame(kinect_frame* dst) override;
 
   IKinectSensor* kinect = nullptr;
   IDepthFrameReader* depth_reader = nullptr;

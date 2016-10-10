@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <float.h>
 #include "fl_yuy2_convert.h"
+#include "Clock.h"
 
 namespace {
 
@@ -74,7 +75,6 @@ namespace {
     }
 
     interface_release(frame);
-
     return got_data;
   }
 
@@ -138,4 +138,10 @@ const kinect_frame* kinect_live_source::get_frame() {
   }
 
   return nullptr;
+}
+
+void kinect_live_source::fill_frame(kinect_frame* dst) {
+  if (current_frame.depth_data) {
+    copy_frame(&current_frame, dst);
+  }
 }
