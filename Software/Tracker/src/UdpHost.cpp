@@ -49,7 +49,7 @@ const IoVec* UdpHostPoll(UdpHost* udp) {
   if (gotEvent) {
     switch (event->type) {
       case ENET_EVENT_TYPE_RECEIVE:
-        printf("Got data %lu\n", event->packet->dataLength);
+        printf("Got data %zu\n", event->packet->dataLength);
         break;
       default:
         break;

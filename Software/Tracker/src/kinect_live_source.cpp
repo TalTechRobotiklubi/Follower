@@ -128,11 +128,11 @@ const kinect_frame* kinect_live_source::get_frame() {
     read_rgb_data(this);
 
     current_frame.depth_data = depth_buffer.data();
-    current_frame.depth_length = depth_buffer.size();
+    current_frame.depth_length = int(depth_buffer.size());
     current_frame.rgba_width = 320;
     current_frame.rgba_height = 240;
     current_frame.rgba_data = kinect_rgba_buf;
-    current_frame.rgba_length = kinect_rgba_buf_len;
+    current_frame.rgba_length = int(kinect_rgba_buf_len);
 
     return &current_frame;
   }

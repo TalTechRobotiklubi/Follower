@@ -212,7 +212,7 @@ void SerialComm::clearMessageStorage(InterfaceMessage& message) {
 
 void sendMessage(InterfaceMessage* msg) {
   splitU16 crc;
-  char data = static_cast<char>(0xAA);
+  char data = 0xAA;
   serial_->write(&data, 1);
   crc.u16 = 0xAA;
   data = msg->id;
