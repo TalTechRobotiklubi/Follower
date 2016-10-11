@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>404</width>
-    <height>343</height>
+    <width>661</width>
+    <height>424</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,60 @@
     </widget>
    </item>
    <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_send">
+       <property name="text">
+        <string>Send</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="tableTest">
+     <column>
+      <property name="text">
+       <string>Translation spd (m/s)</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Rotation spd (m/s)</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Time (ms)</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item>
     <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QPushButton" name="button_test">
+       <property name="text">
+        <string>Start Test</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
      <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
@@ -85,13 +138,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="button_send">
-       <property name="text">
-        <string>Send</string>
-       </property>
-      </widget>
      </item>
     </layout>
    </item>

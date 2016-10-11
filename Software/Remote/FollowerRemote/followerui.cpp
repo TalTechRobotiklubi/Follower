@@ -339,7 +339,7 @@ void FollowerUi::calcAndWriteEulerAnglesToUI(int16_t raw_qw, int16_t raw_qx,
 // Called at object construction.
 void FollowerUi::setupPidConfig()
 {
-  conf_ = new Configure(settings_);
+  conf_ = new Configure(settings_, kinematics_);
   connect(conf_, &Configure::sendParameter,
           [=](uint8_t param, float value){
     uint8_t update = 0;
