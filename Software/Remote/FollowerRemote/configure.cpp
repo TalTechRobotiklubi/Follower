@@ -404,6 +404,7 @@ int Configure::startTesting()
   ui->tableTest->setEnabled(false);
   ui->button_log->setEnabled(false);
   ui->button_send->setEnabled(false);
+  ui->button_save_test->setEnabled(false);
 
   isTesting_ = true;
   emit routineStatus(isTesting_);
@@ -425,6 +426,7 @@ void Configure::stopTesting()
   ui->tableTest->setEnabled(true);
   ui->button_log->setEnabled(true);
   ui->button_send->setEnabled(true);
+  ui->button_save_test->setEnabled(true);
 
   ui->button_test->setText("Start Test");
   ui->button_test->setChecked(false);
@@ -462,4 +464,10 @@ int Configure::iterateTest()
   currentTestRow_++;
 
   return 1;
+}
+
+// Button to save testing parameters to the config.
+void Configure::on_button_save_test_clicked()
+{
+  saveTestingParameters();
 }

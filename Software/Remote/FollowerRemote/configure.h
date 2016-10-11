@@ -36,6 +36,7 @@ private slots:
   void on_button_log_clicked();
   void on_tableTest_cellChanged(int row);
   void on_button_test_clicked();
+  void on_button_save_test_clicked();
 
 private:
   void initTableParams();

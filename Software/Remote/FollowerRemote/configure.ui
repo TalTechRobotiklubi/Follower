@@ -84,6 +84,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="button_save_test">
+       <property name="text">
+        <string>Save Test</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
