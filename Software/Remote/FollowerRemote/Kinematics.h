@@ -15,22 +15,21 @@ public:
 
     void startTimer();
     void stopTimer();
-    int translationSpeed();
-    int rotationSpeed();
     void stop();
     void startAlgorithm(int algorithmNum);
     void stopAlgorithm();
 
     void cameraLook(int x, int z);
     void setSpeeds(int translationSpeed,int rotationSpeed);
+    int translationSpeed();
+    int rotationSpeed();
 
 public slots:
     void timerUpdate();
 
 private:
     void setMotorSpeeds(int speedleft,int speedright);
-    void calculateAndSetSpeeds();
-    int calculateNewSpeed(int currentSpeed, int requestedSpeed);
+    void calculateAndSendSpeeds();
     void runAlgorithm();
 
     static const int ACCELER_RATE = 75;
