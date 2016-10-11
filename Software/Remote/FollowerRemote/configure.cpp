@@ -1,25 +1,33 @@
 #include "configure.h"
 #include "ui_configure.h"
+#include "Kinematics.h"
 
 #include <QDir>
 #include <QSettings>
 #include <QDebug>
 
-Configure::Configure(QSettings *settings, QWidget *parent)
+Configure::Configure(QSettings *settings, Kinematics *kinematics, QWidget *parent)
   : QDialog(parent)
   , ui(new Ui::Configure)
   , isSending_(false)
   , sendCount_(0)
   , fileStream_(0)
+  , isTesting_(false)
 {
   settings_ = settings;
+  kinematics_ = kinematics;
   ui->setupUi(this);
-  initTable();
+  initTableParams();
+  initTableTesting();
   connect(&timer_, &QTimer::timeout, this, &Configure::send);
+  connect(&timerTesting_, &QTimer::timeout, this, &Configure::iterateTest);
 }
 
 Configure::~Configure()
 {
+  if (isTesting_)
+    stopTesting();
+
   if (activeFile_.isOpen())
     activeFile_.close();
   delete fileStream_;
@@ -35,6 +43,8 @@ void Configure::onNewFeedbackData(const QList<uint8_t>& list)
       *fileStream_ << d;
       *fileStream_ << ",";
     }
+    *fileStream_ << kinematics_->translationSpeed() << ",";
+    *fileStream_ << kinematics_->rotationSpeed() << ",";
     *fileStream_ << "\r\n";
   }
 }
@@ -51,7 +61,7 @@ void Configure::on_button_send_clicked()
   }
 }
 
-void Configure::initTable()
+void Configure::initTableParams()
 {
   ui->tableParams->setColumnCount(2);
 
@@ -144,6 +154,25 @@ void Configure::writePidParametersToFile()
         *fileStream_ << item->text().append(" ").toLatin1();
     *fileStream_ << "\r\n";
   }
+
+  if (isTesting_)
+  {
+    *fileStream_ << "\r\n";
+    *fileStream_ << "Testing Routine\r\n";
+    *fileStream_ << "----------\r\n";
+    for (int i = 0; i < ui->tableTest->rowCount(); ++i)
+    {
+      for (int j = 0; j < ui->tableTest->columnCount(); ++j)
+      {
+        if (QTableWidgetItem *item = ui->tableTest->item(i, j))
+        {
+          *fileStream_ << item->text().append(",");
+        }
+      }
+      *fileStream_ << "\r\n";
+    }
+  }
+
   *fileStream_ << "\r\n";
   *fileStream_ << "Measurements\r\n";
   *fileStream_ << "----------\r\n";
@@ -251,4 +280,186 @@ void Configure::stopLogging()
   activeFile_.close();
   delete fileStream_;
   fileStream_ = nullptr;
+}
+
+// Event for automagically adding a new row to the testing table.
+void Configure::on_tableTest_cellChanged(int row)
+{
+  if (row == ui->tableTest->rowCount() - 1)
+  {
+    ui->tableTest->insertRow(ui->tableTest->rowCount());
+  }
+}
+
+// Init function for the testing table.
+// Deals handles data loading calls for testing as well.
+void Configure::initTableTesting()
+{
+  if (!loadTestingParameters())
+  {
+    ui->tableTest->insertRow(ui->tableTest->rowCount());
+  }
+}
+
+// Load the last testing data, if we have any, from config.
+int Configure::loadTestingParameters()
+{
+  int size;
+
+  settings_->beginGroup("testingParams");
+  size = settings_->beginReadArray("parameter");
+
+  if (!size)
+  {
+    settings_->endArray();
+    settings_->endGroup();
+
+    return 0;
+  }
+
+  ui->tableTest->setRowCount(size);
+
+  for (int i = 0; i < size; i++)
+  {
+    settings_->setArrayIndex(i);
+
+    ui->tableTest->setItem(i, 0, new QTableWidgetItem(settings_->value("transSpeed").toString()));
+    ui->tableTest->setItem(i, 1, new QTableWidgetItem(settings_->value("rotSpeed").toString()));
+    ui->tableTest->setItem(i, 2, new QTableWidgetItem(settings_->value("time").toString()));
+  }
+
+  settings_->endArray();
+  settings_->endGroup();
+
+  return 1;
+}
+
+// Save the current testing data to the config.
+void Configure::saveTestingParameters()
+{
+  settings_->beginGroup("testingParams");
+  settings_->beginWriteArray("parameter");
+
+  for (int i = 0; i < ui->tableTest->rowCount(); i++)
+  {
+    QTableWidgetItem *transSpeed = ui->tableTest->item(i, 0);
+    QTableWidgetItem *rotSpeed = ui->tableTest->item(i, 1);
+    QTableWidgetItem *time = ui->tableTest->item(i, 2);
+
+    if (transSpeed && rotSpeed && time)
+    {
+      settings_->setArrayIndex(i);
+      settings_->setValue("transSpeed", transSpeed->text());
+      settings_->setValue("rotSpeed", rotSpeed->text());
+      settings_->setValue("time", time->text());
+    }
+  }
+
+  settings_->endArray();
+  settings_->endGroup();
+
+  return;
+}
+
+// Toggle the testing routine on and off.
+void Configure::on_button_test_clicked()
+{
+  if (ui->button_test->isChecked())
+  {
+    saveTestingParameters();
+
+    if (startTesting())
+    {
+      ui->button_test->setText("STOP TEST!");
+    }
+  }
+  else
+  {
+    stopTesting();
+  }
+}
+
+// Start a test routine.
+int Configure::startTesting()
+{
+  // This shouldn't happen.
+  if (isTesting_ || timerTesting_.isActive())
+  {
+    return 0;
+  }
+
+  if (activeFile_.isOpen())
+  {
+    stopLogging();
+  }
+
+  currentTestRow_ = 0;
+
+  if (!iterateTest())
+  {
+    return 0;
+  }
+
+  ui->tableParams->setEnabled(false);
+  ui->tableTest->setEnabled(false);
+  ui->button_log->setEnabled(false);
+  ui->button_send->setEnabled(false);
+
+  isTesting_ = true;
+  emit routineStatus(isTesting_);
+
+  startLogging();
+
+  qDebug() << "Starting test.";
+
+  return 1;
+}
+
+// Stop a test routine.
+void Configure::stopTesting()
+{
+  qDebug() << "Ending test.";
+  stopLogging();
+
+  ui->tableParams->setEnabled(true);
+  ui->tableTest->setEnabled(true);
+  ui->button_log->setEnabled(true);
+  ui->button_send->setEnabled(true);
+
+  ui->button_test->setText("Start Test");
+  ui->button_test->setChecked(false);
+
+  isTesting_ = false;
+  emit routineStatus(isTesting_);
+
+  timerTesting_.stop();
+  kinematics_->setSpeeds(0, 0);
+
+  return;
+}
+
+// Cycles to the next row in the testing table and sets the new speeds.
+// Also restarts the testing timer. If it detects an empty row, it'll stop the test.
+int Configure::iterateTest()
+{
+  QTableWidgetItem *transSpeed = ui->tableTest->item(currentTestRow_, 0);
+  QTableWidgetItem *rotSpeed = ui->tableTest->item(currentTestRow_, 1);
+  QTableWidgetItem *time = ui->tableTest->item(currentTestRow_, 2);
+
+  if (!transSpeed || !rotSpeed || !time)
+  {
+    if (isTesting_)
+    {
+      stopTesting();
+    }
+
+    return 0;
+  }
+
+  kinematics_->setSpeeds(transSpeed->text().toInt(), rotSpeed->text().toInt());
+  timerTesting_.start(time->text().toInt());
+
+  currentTestRow_++;
+
+  return 1;
 }
