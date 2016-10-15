@@ -21,7 +21,7 @@ InterfaceReceivePacket nodeInterfaceUSBReceivePacketList[3] =
 
 InterfaceTransmitPacket nodeInterfaceUSBTransmitPacketList[3] = 
 {
-	{ &PacketDescriptorList[PacketMotorSpeeds],   20, 20 },
+	{ &PacketDescriptorList[PacketMotorSpeeds],   -1, -1 },
 	{ &PacketDescriptorList[PacketCameraControl], 20, 20 },
 	{ &PacketDescriptorList[PacketRobotControl],  20, 20 }
 };

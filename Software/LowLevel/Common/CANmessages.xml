@@ -574,7 +574,7 @@
             <TransmitPacket>
               <Packet>MotorSpeeds</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>0</Period>
+              <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
               <Packet>RobotControl</Packet>
@@ -756,7 +756,7 @@
             <TransmitPacket>
               <Packet>MotorSpeeds</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
-              <Period>20</Period>
+              <Period>-1</Period>
             </TransmitPacket>
             <TransmitPacket>
               <Packet>CameraControl</Packet>
@@ -862,6 +862,6 @@
   <OutputParameters />
   <Cases />
   <Config>
-    <OutputPath>..\..\..\..\Follower\Software\LowLevel\Common</OutputPath>
+    <OutputPath>..\..\LowLevel\Common</OutputPath>
   </Config>
 </CaseCatcher>
