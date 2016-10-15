@@ -17,8 +17,12 @@ struct UdpHost {
 UdpHost* UdpHostCreate(const char* hostAddress, int port) {
   std::call_once(enetInit, enet_initialize);
   ENetAddress address;
+  if (hostAddress) {
+    enet_address_set_host(&address, hostAddress);
+  } else {
+    address.host = ENET_HOST_ANY;
+  }
   address.port = port;
-  enet_address_set_host(&address, hostAddress);
   ENetHost* host = enet_host_create(&address, 8, 1, 0, 0);
   if (host == NULL) {
     return NULL;

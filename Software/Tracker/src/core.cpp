@@ -23,13 +23,6 @@ void kinect_loop(core* c) {
 }
 
 void core_start(core* c) {
-  c->udp = UdpHostCreate("127.0.0.1", 9001);
-
-  if (!c->udp) {
-    fprintf(stderr, "Failed to create UDP host.\n");
-    abort();
-  }
-
   c->kinect_frame_thread = std::thread(kinect_loop, c);
 }
 

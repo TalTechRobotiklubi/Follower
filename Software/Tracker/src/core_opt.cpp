@@ -3,6 +3,7 @@
 #include <fhd_classifier.h>
 #include <stdio.h>
 #include "core.h"
+#include "UdpHost.h"
 #include "fl_constants.h"
 #include "fl_sqlite_source.h"
 #include "kinect_live_source.h"
@@ -14,7 +15,9 @@ int parse_opt(core* c, int argc, char** argv) {
   parg_init(&args);
 
   int res = -1;
-  while ((res = parg_getopt(&args, argc, argv, "c:d:h")) != -1) {
+  const char* host = "127.0.0.1";
+  uint16_t port = 9001;
+  while ((res = parg_getopt(&args, argc, argv, "c:d:h:p:")) != -1) {
     switch (res) {
       case 'd':
         c->frame_source = new fl_sqlite_source(args.optarg);
@@ -36,10 +39,20 @@ int parse_opt(core* c, int argc, char** argv) {
         }
         break;
       }
+      case 'h': { host = args.optarg; break; }
+      case 'p': { port = atoi(args.optarg); break; }
       default:
         break;
     }
   }
+
+  c->udp = UdpHostCreate(host, port);
+
+  if (!c->udp) {
+    fprintf(stderr, "Failed to create UDP host.\n");
+    abort();
+  }
+
 
   if (!c->frame_source) {
 #ifdef FL_KINECT_ENABLED
@@ -50,6 +63,8 @@ int parse_opt(core* c, int argc, char** argv) {
     c->frame_source = new kinect_null_frame_source();
 #endif
   }
+
+  printf("host %s:%u\n", host, port);
 
   return 1;
 }

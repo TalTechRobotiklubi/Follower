@@ -13,6 +13,7 @@
 #include "fl_math.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
+#include "parg/parg.h"
 #include "proto/frame_generated.h"
 #include "vec2.h"
 #include "vec3.h"
@@ -28,6 +29,28 @@ struct ClientOptions {
   int screenWidth = 1280;
   int screenHeight = 720;
 };
+
+ClientOptions ParseOptions(int argc, char** argv) {
+  ClientOptions opts;
+  parg_state args;
+  parg_init(&args);
+
+  int res = -1;
+  while ((res = parg_getopt(&args, argc, argv, "h:p:")) != -1) {
+    switch (res) {
+      case 'h':
+        opts.host = args.optarg;
+        break;
+      case 'p':
+        opts.port = atoi(args.optarg);
+        break;
+      default:
+        break;
+    }
+  }
+
+  return opts;
+}
 
 struct Detection {
   vec2 position;
@@ -163,12 +186,11 @@ void RenderOverview(Client* client) {
 
   // Camera position
   const float camRotRad = deg_to_rad(client->state.camera.x);
-  const vec2 camTopLeft =
-      vec2_rotate(vec2{-12.f, 0.f}, camRotRad);
+  const vec2 camTopLeft = vec2_rotate(vec2{-12.f, 0.f}, camRotRad);
   const vec2 camBotRight = vec2_rotate(vec2{12.f, 0.f}, camRotRad);
   drawList->AddLine(ImVec2(camTopLeft.x + robot.x, camTopLeft.y + robot.y),
-                          ImVec2(camBotRight.x + robot.x, camBotRight.y + robot.y),
-                          ImColor(0xC6, 0xC7, 0xC5), 10.f);
+                    ImVec2(camBotRight.x + robot.x, camBotRight.y + robot.y),
+                    ImColor(0xC6, 0xC7, 0xC5), 10.f);
 
   for (const Detection& detection : client->detections) {
     const float d = fl_map_range(detection.metric.z, 0.f, 4.5f, 0.f, height);
@@ -203,7 +225,7 @@ int main(int argc, char** argv) {
   bool showWindow = true;
   ImVec4 bgColor = ImColor(218, 223, 225);
 
-  ClientOptions options;
+  ClientOptions options = ParseOptions(argc, argv);
   Client client;
   if (!ClientStart(&client, &options)) {
     return 1;
@@ -233,7 +255,8 @@ int main(int argc, char** argv) {
     ImVec2 cursor = ImGui::GetCursorScreenPos();
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-    ImGui::Text(client.connected ? "connected" : "disconnected");
+    ImGui::Text("%s:%u - %s", options.host, options.port,
+                client.connected ? "connected" : "disconnected");
     ImGui::SameLine();
     ImGui::Text("| core time: %.2f", client.coreTimestamp / 1000.0);
     ImGui::SameLine();

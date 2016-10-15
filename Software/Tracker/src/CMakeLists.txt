@@ -63,6 +63,8 @@ add_executable(
   Style.cpp
   Texture.cpp
   vec2.cpp
+
+  parg/parg.c
 )
 
 if (WIN32)
