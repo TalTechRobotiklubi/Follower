@@ -1,7 +1,7 @@
 #pragma once
 
-#include <GL/gl3w.h>
 #include <stdint.h>
+#include <GLFW/glfw3.h>
 
 struct Texture {
   GLuint handle = 0;

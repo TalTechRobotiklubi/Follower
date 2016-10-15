@@ -1,6 +1,6 @@
 #include "Texture.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 Texture TextureAllocate(int width, int height) {
   Texture t;
@@ -31,7 +31,8 @@ void TextureUpdate(Texture* texture, const uint8_t* data, int width,
   if (texture->width != width || texture->height != height) {
     texture->width = width;
     texture->height = height;
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+    glTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height, 0, GL_BGRA,
+                 GL_UNSIGNED_BYTE, NULL);
 
   } else {
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA,

@@ -5,10 +5,6 @@ include_directories(SYSTEM
   ${VPX_INCLUDE_DIR}
 )
 
-add_library(gl3w
-  gl3w/GL/gl3w.c
-)
-
 if (OPENMP_FOUND)
   set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -81,7 +77,6 @@ target_link_libraries(
   enet
   imgui
   glfw
-  gl3w
   ${VPX_LIBRARY}
   yuv
   ${GLFW_LIBRARIES}

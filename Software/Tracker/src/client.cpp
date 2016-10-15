@@ -1,4 +1,3 @@
-#include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 #include <assert.h>
 #include <enet/enet.h>
@@ -13,7 +12,7 @@
 #include "fl_constants.h"
 #include "fl_math.h"
 #include "imgui.h"
-#include "imgui_impl_glfw_gl3.h"
+#include "imgui_impl_glfw.h"
 #include "proto/frame_generated.h"
 #include "vec2.h"
 #include "vec3.h"
@@ -190,10 +189,6 @@ int main(int argc, char** argv) {
 
   if (!glfwInit()) return 1;
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
   GLFWmonitor* monitor = glfwGetPrimaryMonitor();
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
@@ -202,12 +197,7 @@ int main(int argc, char** argv) {
 
   glfwMakeContextCurrent(window);
 
-  if (gl3wInit()) {
-    fprintf(stderr, "Failed to initialize OpenGL\n");
-    return 1;
-  }
-
-  ImGui_ImplGlfwGL3_Init(window, true);
+  ImGui_ImplGlfw_Init(window, true);
   ImGui::GetStyle() = Style::Bright();
 
   bool showWindow = true;
@@ -225,7 +215,7 @@ int main(int argc, char** argv) {
 
     if (ImGui::IsKeyPressed(GLFW_KEY_ESCAPE)) break;
 
-    ImGui_ImplGlfwGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
     int displayWidth, displayHeight;
     glfwGetFramebufferSize(window, &displayWidth, &displayHeight);
 
@@ -272,7 +262,7 @@ int main(int argc, char** argv) {
     glfwSwapBuffers(window);
   }
 
-  ImGui_ImplGlfwGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
   glfwTerminate();
 
   return 0;

@@ -26,7 +26,6 @@ add_subdirectory("third_party/glfw-3.1.2")
 INCLUDE_DIRECTORIES(SYSTEM
   "third_party/sqlite"
   "third_party/glfw-3.1.2/include"
-  "src/gl3w"
 )
 
 add_subdirectory("third_party/imgui")
