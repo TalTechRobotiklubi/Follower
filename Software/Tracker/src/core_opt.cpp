@@ -17,7 +17,7 @@ int parse_opt(core* c, int argc, char** argv) {
   int res = -1;
   const char* host = "127.0.0.1";
   uint16_t port = 9001;
-  while ((res = parg_getopt(&args, argc, argv, "c:d:h:p:")) != -1) {
+  while ((res = parg_getopt(&args, argc, argv, "c:d:h:p:s:")) != -1) {
     switch (res) {
       case 'd':
         c->frame_source = new fl_sqlite_source(args.optarg);
