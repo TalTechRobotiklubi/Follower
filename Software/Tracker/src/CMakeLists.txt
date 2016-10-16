@@ -10,6 +10,8 @@ if (OPENMP_FOUND)
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+add_definitions(-DGLFW_INCLUDE_GLEXT)
+
 set(CORE_SOURCES
   algorithm/algorithm_move.cpp
   algorithm/algorithm_runner.cpp
