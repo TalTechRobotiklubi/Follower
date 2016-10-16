@@ -49,7 +49,12 @@ if (WIN32)
     )
   endif()
 
-  set(VPX_LIBRARY "${CMAKE_SOURCE_DIR}/third_party/vpx/lib/vpx.lib")
+  if ("${MSVC_VERSION}" EQUAL "1900")
+    set(VPX_LIBRARY "${CMAKE_SOURCE_DIR}/third_party/vpx/lib/vpx_vs14_x64.lib")
+  else()
+    set(VPX_LIBRARY "${CMAKE_SOURCE_DIR}/third_party/vpx/lib/vpx.lib")
+  endif()
+  
   set(VPX_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/third_party/vpx/include")
 else()
   find_package(vpx REQUIRED)
