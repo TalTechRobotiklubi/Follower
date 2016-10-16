@@ -172,8 +172,9 @@ void ClientUpdate(Client* c) {
 }
 
 void RenderOverview(Client* client) {
-  const float w = float(kDepthWidth);
-  const float h = float(kDeptHeight);
+  const float s = 2.f;
+  const float w = float(kDepthWidth) * s;
+  const float h = float(kDeptHeight) * s;
   ImDrawList* drawList = ImGui::GetWindowDrawList();
   ImVec2 c = ImGui::GetCursorScreenPos();
   ImVec2 end = ImVec2(c.x + w, c.y + h);
@@ -194,7 +195,7 @@ void RenderOverview(Client* client) {
 
   for (const Detection& detection : client->detections) {
     const float d = fl_map_range(detection.metric.z, 0.f, 4.5f, 0.f, height);
-    const float tx = detection.position.x / w;
+    const float tx = s * detection.position.x / w;
     drawList->AddCircleFilled(ImVec2(c.x + w * tx, robot.y - d), 16.f,
                               ImColor(0x66, 0xA2, 0xC6), 32);
   }

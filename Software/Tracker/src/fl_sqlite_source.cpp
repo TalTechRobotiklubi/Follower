@@ -54,7 +54,7 @@ const kinect_frame* fl_sqlite_source::get_frame() {
 }
 
 void fl_sqlite_source::advance() {
-  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   sqlite3_reset(frame_query);
   sqlite3_bind_int(frame_query, 1, current_frame_num);
 

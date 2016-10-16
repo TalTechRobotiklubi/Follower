@@ -75,7 +75,7 @@ void core_serialize(core* c) {
   auto detectionOffsets = c->builder.CreateVectorOfStructs(detections);
   proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
   proto::FrameBuilder frame_builder(c->builder);
-  frame_builder.add_timestamp(c->timestamp);
+  frame_builder.add_timestamp(c->state.timestamp);
   frame_builder.add_camera(&camera);
   frame_builder.add_depth(depth);
   frame_builder.add_detections(detectionOffsets);
@@ -90,8 +90,9 @@ void waitTillLoopTimeElapses() {
 
   while (std::chrono::duration_cast<msec>(std::chrono::system_clock::now() -
                                           loop_time)
-             .count() < loopTimeMs)
+             .count() < loopTimeMs) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
   loop_time = std::chrono::system_clock::now();
 }
 
@@ -117,7 +118,7 @@ int main(int argc, char** argv) {
     prev_time = current_time;
     current_time = ms_now();
     const double frame_time = current_time - prev_time;
-    c.timestamp += frame_time;
+    c.state.timestamp += frame_time;
 
     c.frame_source->fill_frame(&c.current_frame);
     memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
