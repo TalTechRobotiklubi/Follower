@@ -178,12 +178,12 @@ void SerialComm::parseMessages(const char* buffer, size_t size) {
       break;
     case crcFirstbyte:
       // store crc first byte
-      messageCrc.u8.byteHigh = (uint8_t)buffer[i];
+      messageCrc.u8.byteLow = (uint8_t)buffer[i];
       analyseState = crcCheck;
       break;
     case crcCheck:
       // store 2nd byte
-      messageCrc.u8.byteLow = (uint8_t)buffer[i];
+      messageCrc.u8.byteHigh = (uint8_t)buffer[i];
       // check CRC
       if (calcCrc == messageCrc.u16) {
         mutex_.lock();
@@ -226,8 +226,8 @@ void sendMessage(InterfaceMessage* msg) {
     serial_->write(&data, 1);
     crc.u16 += msg->data[i];
   }
-  data = crc.u8.byteHigh;
-  serial_->write(&data, 1);
   data = crc.u8.byteLow;
+  serial_->write(&data, 1);
+  data = crc.u8.byteHigh;
   serial_->write(&data, 1);
 }
