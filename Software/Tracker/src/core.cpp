@@ -26,26 +26,76 @@ void core_start(core* c) {
   c->kinect_frame_thread = std::thread(kinect_loop, c);
 }
 
-void core_decide(core* c) {
-  if (!c->fhd) return;
+void core_decide(core* c, double dt) {
+  std::vector<Target>& targets = c->tracking.targets;
+  for (Target& t : targets) {
+    t.timeToLive -= dt;
+  }
 
-  const fhd_candidate* closest = nullptr;
-  for (int i = 0; i < c->fhd->candidates_len; i++) {
-    const fhd_candidate* candidate = &c->fhd->candidates[i];
-    if (candidate->weight >= 1.f) {
-      if (!closest ||
-          closest->metric_position.z > candidate->metric_position.z) {
-        closest = candidate;
+  targets.erase(
+      std::remove_if(targets.begin(), targets.end(),
+                     [](const Target& t) { return t.timeToLive <= 0.0; }),
+      targets.end());
+
+  if (c->world.detections.size() == 0) {
+    return;
+  }
+
+  const std::vector<Target> prevTargets = targets;
+  for (const Detection& d : c->world.detections) {
+    if (d.weight < 1.f) continue;
+
+    if (prevTargets.empty()) {
+      targets.emplace_back(3.0, d.kinectPosition, d.metricPosition);
+    } else {
+      // Find the closest target
+      float minDist = 10000.f;
+      size_t minIdx = 0;
+      for (size_t i = 0; i < prevTargets.size(); i++) {
+        const Target& t = prevTargets[i];
+        const float dist =
+            vec2_distance(t.metricPosition.xz(), d.metricPosition.xz());
+        if (dist < minDist) {
+          minIdx = i;
+          minDist = dist;
+        }
       }
+
+      targets[minIdx].kinectPosition = d.kinectPosition;
+      targets[minIdx].metricPosition = d.metricPosition;
+      targets[minIdx].timeToLive = 3.0;
     }
   }
 
+  /*
+  TODO: Similarity checks?
   if (closest) {
     const float deg = (atan2(closest->kinect_position.y - 424.f,
                              closest->kinect_position.x - 512.f * 0.5f) +
                        F_PI_2) *
                       180.f / F_PI;
     c->state.camera.x = deg;
+  }
+  */
+}
+
+void core_detect(core* c, double timestamp) {
+  if (!c->fhd) {
+    return;
+  }
+
+  fhd_run_pass(c->fhd, c->current_frame.depth_data);
+
+  c->world.timestamp = timestamp;
+  c->world.detections.clear();
+
+  for (int i = 0; i < c->fhd->candidates_len; i++) {
+    const fhd_candidate* candidate = &c->fhd->candidates[i];
+    vec2 kinectPos{candidate->kinect_position.x, candidate->kinect_position.y};
+    vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
+                   candidate->metric_position.z};
+    c->world.detections.push_back(
+        Detection{kinectPos, metricPos, candidate->weight});
   }
 }
 
@@ -59,26 +109,38 @@ void core_serialize(core* c) {
   auto depth =
       c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len);
   std::vector<proto::Detection> detections;
-  if (c->fhd) {
-    detections.resize(c->fhd->candidates_len);
-    for (int i = 0; i < c->fhd->candidates_len; i++) {
-      const fhd_candidate* candidate = &c->fhd->candidates[i];
-      detections[i] =
-          proto::Detection(proto::Vec2(candidate->kinect_position.x,
-                                       candidate->kinect_position.y),
-                           proto::Vec3(candidate->metric_position.x,
-                                       candidate->metric_position.y,
-                                       candidate->metric_position.z),
-                           candidate->weight);
-    }
+  std::vector<proto::Target> targets;
+  detections.reserve(c->world.detections.size());
+  targets.reserve(c->tracking.targets.size());
+
+  for (const Detection& detection : c->world.detections) {
+    detections.push_back(proto::Detection(
+        proto::Vec2(detection.kinectPosition.x, detection.kinectPosition.y),
+        proto::Vec3(detection.metricPosition.x, detection.metricPosition.y,
+                    detection.metricPosition.z),
+        detection.weight));
   }
+
+  for (const Target& t : c->tracking.targets) {
+    targets.push_back(proto::Target(
+      float(t.timeToLive),
+      proto::Vec2(t.kinectPosition.x, t.kinectPosition.y),
+      proto::Vec3(t.metricPosition.x, t.metricPosition.y, t.metricPosition.z)
+    ));
+  }
+
   auto detectionOffsets = c->builder.CreateVectorOfStructs(detections);
+  auto targetOffsets = c->builder.CreateVectorOfStructs(targets);
+
   proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
   proto::FrameBuilder frame_builder(c->builder);
-  frame_builder.add_timestamp(c->state.timestamp);
+
+  frame_builder.add_timestamp(c->timestamp);
   frame_builder.add_camera(&camera);
   frame_builder.add_depth(depth);
   frame_builder.add_detections(detectionOffsets);
+  frame_builder.add_targets(targetOffsets);
+
   auto frame = frame_builder.Finish();
   c->builder.Finish(frame);
 }
@@ -118,14 +180,13 @@ int main(int argc, char** argv) {
     prev_time = current_time;
     current_time = ms_now();
     const double frame_time = current_time - prev_time;
-    c.state.timestamp += frame_time;
+    const double frameTimeSeconds = frame_time / 1000.0;
+    c.timestamp += frame_time;
 
     c.frame_source->fill_frame(&c.current_frame);
     memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
 
-    if (c.fhd) {
-      fhd_run_pass(c.fhd, c.current_frame.depth_data);
-    }
+    core_detect(&c, current_time);
 
     depth_to_rgba(c.current_frame.depth_data, c.current_frame.depth_length,
                   &c.rgba_depth);
@@ -134,9 +195,8 @@ int main(int argc, char** argv) {
     c.encoded_depth =
         EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
 
-
     c.serial.receive(&c.in_data);
-    core_decide(&c);
+    core_decide(&c, frameTimeSeconds);
 
     DL_task(loopTimeMs);
     core_serial_send(&c);

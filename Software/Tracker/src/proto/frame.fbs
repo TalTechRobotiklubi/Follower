@@ -11,6 +11,12 @@ struct Vec3 {
   z:float;
 }
 
+struct Target {
+  timeToLive:float;
+  position:Vec2;
+  metricPosition:Vec3;
+}
+
 struct Detection {
   position:Vec2;
   metricPosition:Vec3;
@@ -22,6 +28,7 @@ table Frame {
   camera:Vec2;
   depth:[ubyte];
   detections:[Detection];
+  targets:[Target];
 }
 
 root_type Frame;
