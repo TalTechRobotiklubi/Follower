@@ -8,6 +8,8 @@ Software/LowLevel/VisionBoard/.settings
 Software/LowLevel/Documents/datasheets
 Software/LowLevel/Documents/stm32f4_dsp_stdperiph_lib
 Software/LowLevel/Documents/stsw-stm32068
+Software/LowLevel/VisionBoardTest/Debug
+Software/LowLevel/SensorBoardTest/Debug
 
 Software/Remote/build*
 
