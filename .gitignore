@@ -10,6 +10,9 @@ Software/LowLevel/Documents/stm32f4_dsp_stdperiph_lib
 Software/LowLevel/Documents/stsw-stm32068
 Software/LowLevel/VisionBoardTest/Debug
 Software/LowLevel/SensorBoardTest/Debug
+Software/LowLevel/SensorBoard/Debug_STM32F407VG_FLASH.ld
+Software/LowLevel/VisionBoard/Debug_STM32F407VG_FLASH.ld
+Software/LowLevel/SensorBoard/SensorBoard.elf.launch
 
 Software/Remote/build*
 
