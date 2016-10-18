@@ -183,7 +183,7 @@ void ClientUpdate(Client* c) {
 }
 
 void RenderOverview(Client* client) {
-  const float s = 2.f;
+  const float s = 1.25f;
   const float w = float(kDepthWidth) * s;
   const float h = float(kDeptHeight) * s;
   ImDrawList* drawList = ImGui::GetWindowDrawList();

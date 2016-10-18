@@ -1,4 +1,5 @@
 #include "core.h"
+#include <cmath>
 #include <fhd.h>
 #include <stdio.h>
 #include <string.h>
@@ -67,16 +68,12 @@ void core_decide(core* c, double dt) {
     }
   }
 
-  /*
-  TODO: Similarity checks?
-  if (closest) {
-    const float deg = (atan2(closest->kinect_position.y - 424.f,
-                             closest->kinect_position.x - 512.f * 0.5f) +
-                       F_PI_2) *
-                      180.f / F_PI;
+  if (!targets.empty()) {
+    const Target& t = targets.front();
+    const float deg = (std::atan2(t.kinectPosition.y - 424.f,
+                             t.kinectPosition.x - 512.f * 0.5f) + F_PI_2) * 180.f / F_PI;
     c->state.camera.x = deg;
   }
-  */
 }
 
 void core_detect(core* c, double timestamp) {
