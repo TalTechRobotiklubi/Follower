@@ -11,6 +11,8 @@ struct Vec2;
 
 struct Vec3;
 
+struct Target;
+
 struct Detection;
 
 struct Frame;
@@ -49,6 +51,24 @@ MANUALLY_ALIGNED_STRUCT(4) Vec3 FLATBUFFERS_FINAL_CLASS {
 };
 STRUCT_END(Vec3, 12);
 
+MANUALLY_ALIGNED_STRUCT(4) Target FLATBUFFERS_FINAL_CLASS {
+ private:
+  float timeToLive_;
+  Vec2 position_;
+  Vec3 metricPosition_;
+
+ public:
+  Target() { memset(this, 0, sizeof(Target)); }
+  Target(const Target &_o) { memcpy(this, &_o, sizeof(Target)); }
+  Target(float _timeToLive, const Vec2 &_position, const Vec3 &_metricPosition)
+    : timeToLive_(flatbuffers::EndianScalar(_timeToLive)), position_(_position), metricPosition_(_metricPosition) { }
+
+  float timeToLive() const { return flatbuffers::EndianScalar(timeToLive_); }
+  const Vec2 &position() const { return position_; }
+  const Vec3 &metricPosition() const { return metricPosition_; }
+};
+STRUCT_END(Target, 24);
+
 MANUALLY_ALIGNED_STRUCT(4) Detection FLATBUFFERS_FINAL_CLASS {
  private:
   Vec2 position_;
@@ -72,12 +92,14 @@ struct Frame FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_TIMESTAMP = 4,
     VT_CAMERA = 6,
     VT_DEPTH = 8,
-    VT_DETECTIONS = 10
+    VT_DETECTIONS = 10,
+    VT_TARGETS = 12
   };
   double timestamp() const { return GetField<double>(VT_TIMESTAMP, 0.0); }
   const Vec2 *camera() const { return GetStruct<const Vec2 *>(VT_CAMERA); }
   const flatbuffers::Vector<uint8_t> *depth() const { return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_DEPTH); }
   const flatbuffers::Vector<const Detection *> *detections() const { return GetPointer<const flatbuffers::Vector<const Detection *> *>(VT_DETECTIONS); }
+  const flatbuffers::Vector<const Target *> *targets() const { return GetPointer<const flatbuffers::Vector<const Target *> *>(VT_TARGETS); }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<double>(verifier, VT_TIMESTAMP) &&
@@ -86,6 +108,8 @@ struct Frame FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.Verify(depth()) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_DETECTIONS) &&
            verifier.Verify(detections()) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_TARGETS) &&
+           verifier.Verify(targets()) &&
            verifier.EndTable();
   }
 };
@@ -97,10 +121,11 @@ struct FrameBuilder {
   void add_camera(const Vec2 *camera) { fbb_.AddStruct(Frame::VT_CAMERA, camera); }
   void add_depth(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> depth) { fbb_.AddOffset(Frame::VT_DEPTH, depth); }
   void add_detections(flatbuffers::Offset<flatbuffers::Vector<const Detection *>> detections) { fbb_.AddOffset(Frame::VT_DETECTIONS, detections); }
+  void add_targets(flatbuffers::Offset<flatbuffers::Vector<const Target *>> targets) { fbb_.AddOffset(Frame::VT_TARGETS, targets); }
   FrameBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
   FrameBuilder &operator=(const FrameBuilder &);
   flatbuffers::Offset<Frame> Finish() {
-    auto o = flatbuffers::Offset<Frame>(fbb_.EndTable(start_, 4));
+    auto o = flatbuffers::Offset<Frame>(fbb_.EndTable(start_, 5));
     return o;
   }
 };
@@ -109,9 +134,11 @@ inline flatbuffers::Offset<Frame> CreateFrame(flatbuffers::FlatBufferBuilder &_f
     double timestamp = 0.0,
     const Vec2 *camera = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> depth = 0,
-    flatbuffers::Offset<flatbuffers::Vector<const Detection *>> detections = 0) {
+    flatbuffers::Offset<flatbuffers::Vector<const Detection *>> detections = 0,
+    flatbuffers::Offset<flatbuffers::Vector<const Target *>> targets = 0) {
   FrameBuilder builder_(_fbb);
   builder_.add_timestamp(timestamp);
+  builder_.add_targets(targets);
   builder_.add_detections(detections);
   builder_.add_depth(depth);
   builder_.add_camera(camera);
@@ -122,8 +149,9 @@ inline flatbuffers::Offset<Frame> CreateFrameDirect(flatbuffers::FlatBufferBuild
     double timestamp = 0.0,
     const Vec2 *camera = 0,
     const std::vector<uint8_t> *depth = nullptr,
-    const std::vector<const Detection *> *detections = nullptr) {
-  return CreateFrame(_fbb, timestamp, camera, depth ? _fbb.CreateVector<uint8_t>(*depth) : 0, detections ? _fbb.CreateVector<const Detection *>(*detections) : 0);
+    const std::vector<const Detection *> *detections = nullptr,
+    const std::vector<const Target *> *targets = nullptr) {
+  return CreateFrame(_fbb, timestamp, camera, depth ? _fbb.CreateVector<uint8_t>(*depth) : 0, detections ? _fbb.CreateVector<const Detection *>(*detections) : 0, targets ? _fbb.CreateVector<const Target *>(*targets) : 0);
 }
 
 inline const proto::Frame *GetFrame(const void *buf) { return flatbuffers::GetRoot<proto::Frame>(buf); }

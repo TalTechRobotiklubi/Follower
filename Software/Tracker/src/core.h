@@ -8,21 +8,37 @@
 #include "image.h"
 #include "BlockDiff.h"
 #include "proto/flatbuffers/flatbuffers.h"
+#include "Target.h"
 
-struct Target {
-
+enum CoreState {
+  kCheck = 0,
+  kFind = 1
 };
 
-struct DetectionState {
+struct Detection {
+  vec2 kinectPosition;
+  vec3 metricPosition;
+  float weight;
+};
 
+struct World {
+  double timestamp = 0.0;
+  std::vector<Detection> detections;
+};
+
+struct TrackingState {
+  std::vector<Target> targets;
 };
 
 struct ControlState {
-  double timestamp = 0.0;
-  vec2 camera;
+  vec2 camera = {0.f, 0.f};
 };
 
 struct core {
+  CoreState coreState = kCheck;
+  double timestamp = 0.0;
+  World world;
+  TrackingState tracking;
   ControlState state;
   CommInput in_data;
   CommOutput out_data;

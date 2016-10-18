@@ -1,4 +1,5 @@
 #include "fhd_segmentation.h"
+#include <stdlib.h>
 #include <algorithm>
 
 // Efficient Graph Based Image Segmentation

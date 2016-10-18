@@ -1,4 +1,5 @@
 #pragma once
+#include "vec2.h"
 
 struct vec3 {
   float x;
@@ -7,6 +8,8 @@ struct vec3 {
 
   vec3() : x(0.f), y(0.f), z(0.f) {}
   vec3(float x, float y, float z) : x(x), y(y), z(z) {}
+
+  vec2 xz() const { return {x, z}; }
 };
 
 vec3 vec3_normalize(vec3 v);

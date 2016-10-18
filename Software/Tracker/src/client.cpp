@@ -15,8 +15,7 @@
 #include "imgui_impl_glfw.h"
 #include "parg/parg.h"
 #include "proto/frame_generated.h"
-#include "vec2.h"
-#include "vec3.h"
+#include "Target.h"
 
 struct CoreState {
   vec2 camera;
@@ -64,6 +63,7 @@ struct Client {
   ENetPeer* peer = nullptr;
   Texture decodedDepth;
   std::vector<Detection> detections;
+  std::vector<Target> targets;
   double coreTimestamp = 0.0;
   bool connected = false;
   const ClientOptions* options;
@@ -162,6 +162,17 @@ void ClientUpdate(Client* c) {
           }
         }
 
+        c->targets.clear();
+        auto targets = frame->targets();
+        for (size_t i = 0; i < targets->size(); i++) {
+          const proto::Target* t = targets->Get(i);
+          c->targets.emplace_back(
+            t->timeToLive(),
+            vec2{t->position().x(), t->position().y()},
+            vec3{t->metricPosition().x(), t->metricPosition().y(), t->metricPosition().z()}
+          );
+        }
+
         enet_packet_destroy(event.packet);
         break;
       }
@@ -172,7 +183,7 @@ void ClientUpdate(Client* c) {
 }
 
 void RenderOverview(Client* client) {
-  const float s = 2.f;
+  const float s = 1.25f;
   const float w = float(kDepthWidth) * s;
   const float h = float(kDeptHeight) * s;
   ImDrawList* drawList = ImGui::GetWindowDrawList();
@@ -186,18 +197,26 @@ void RenderOverview(Client* client) {
   drawList->AddCircle(robot, 20.f, ImColor(0x8E, 0x8A, 0x71), 9, 2.f);
 
   // Camera position
-  const float camRotRad = deg_to_rad(client->state.camera.x);
+  const float camRotRad = deg_to_rad(client->state.camera.y);
   const vec2 camTopLeft = vec2_rotate(vec2{-12.f, 0.f}, camRotRad);
   const vec2 camBotRight = vec2_rotate(vec2{12.f, 0.f}, camRotRad);
   drawList->AddLine(ImVec2(camTopLeft.x + robot.x, camTopLeft.y + robot.y),
                     ImVec2(camBotRight.x + robot.x, camBotRight.y + robot.y),
                     ImColor(0xC6, 0xC7, 0xC5), 10.f);
 
+  const float radius = 12.f;
   for (const Detection& detection : client->detections) {
     const float d = fl_map_range(detection.metric.z, 0.f, 4.5f, 0.f, height);
     const float tx = s * detection.position.x / w;
-    drawList->AddCircleFilled(ImVec2(c.x + w * tx, robot.y - d), 16.f,
+    drawList->AddCircle(ImVec2(c.x + w * tx, robot.y - d), radius,
                               ImColor(0x66, 0xA2, 0xC6), 32);
+  }
+
+  for (const Target& t : client->targets) {
+    const float d = fl_map_range(t.metricPosition.z, 0.f, 4.5f, 0.f, height);
+    const float tx = s * t.kinectPosition.x / w;
+    drawList->AddCircleFilled(ImVec2(c.x + w * tx, robot.y - d), t.timeToLive / 3.0f * radius,
+                              ImColor(0xFF, 0xA2, 0xC6), 32);
   }
 
   drawList->PopClipRect();
@@ -252,7 +271,6 @@ int main(int argc, char** argv) {
                  ImVec2(float(displayWidth), float(displayHeight)), -1.f,
                  flags);
 
-    ImVec2 window_size = ImGui::GetWindowSize();
     ImVec2 cursor = ImGui::GetCursorScreenPos();
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
