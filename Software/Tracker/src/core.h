@@ -10,6 +10,11 @@
 #include "proto/flatbuffers/flatbuffers.h"
 #include "Target.h"
 
+enum CoreState {
+  kCheck = 0,
+  kFind = 1
+};
+
 struct Detection {
   vec2 kinectPosition;
   vec3 metricPosition;
@@ -26,10 +31,11 @@ struct TrackingState {
 };
 
 struct ControlState {
-  vec2 camera;
+  vec2 camera = {0.f, 0.f};
 };
 
 struct core {
+  CoreState coreState = kCheck;
   double timestamp = 0.0;
   World world;
   TrackingState tracking;

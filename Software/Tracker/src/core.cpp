@@ -27,6 +27,15 @@ void core_start(core* c) {
   c->kinect_frame_thread = std::thread(kinect_loop, c);
 }
 
+void core_check(core* c, double dt) {
+  if (c->timestamp > 20.f) {
+    c->coreState = kFind;
+    return;
+  }
+
+  c->state.camera.y = 90.f * float(std::sin(c->timestamp / 100));
+}
+
 void core_decide(core* c, double dt) {
   std::vector<Target>& targets = c->tracking.targets;
   for (Target& t : targets) {
@@ -180,6 +189,7 @@ int main(int argc, char** argv) {
     const double frameTimeSeconds = frame_time / 1000.0;
     c.timestamp += frame_time;
 
+
     c.frame_source->fill_frame(&c.current_frame);
     memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
 
@@ -193,7 +203,18 @@ int main(int argc, char** argv) {
         EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
 
     c.serial.receive(&c.in_data);
-    core_decide(&c, frameTimeSeconds);
+
+    switch (c.coreState) {
+      case kCheck:
+        core_check(&c, frameTimeSeconds);
+        break;
+      case kFind: {
+        core_decide(&c, frameTimeSeconds);
+        break;
+      }
+      default:
+        break;
+    }
 
     DL_task(loopTimeMs);
     core_serial_send(&c);
