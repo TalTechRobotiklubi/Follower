@@ -10,6 +10,7 @@ const GPIO_Struct GPIO_table[] = {
 	{LED_RED,				GPIOD,	GPIO_Pin_14,	RCC_AHB1Periph_GPIOD,	EXTI_Line14,	EXTI_PortSourceGPIOD,	EXTI_PinSource14,	EXTI15_10_IRQn},
 	{LED_BLUE,				GPIOD,	GPIO_Pin_15,	RCC_AHB1Periph_GPIOD,	EXTI_Line15, 	EXTI_PortSourceGPIOD,	EXTI_PinSource15,	EXTI15_10_IRQn},
 	{USER_BUTTON,			GPIOA,  GPIO_Pin_0, 	RCC_AHB1Periph_GPIOA,	EXTI_Line0, 	EXTI_PortSourceGPIOA,	EXTI_PinSource0,	EXTI0_IRQn},
+	{STOP_BUTTON,			GPIOC,  GPIO_Pin_8, 	RCC_AHB1Periph_GPIOC,	EXTI_Line8, 	EXTI_PortSourceGPIOC,	EXTI_PinSource8,	EXTI9_5_IRQn},// PC8
 /*Sensors*/
 	{URF1_ECHO,				GPIOC,	GPIO_Pin_14,	RCC_AHB1Periph_GPIOC,	EXTI_Line14, 	EXTI_PortSourceGPIOC,	EXTI_PinSource14,	EXTI15_10_IRQn},  //PC14
 	{URF1_TRIG,				GPIOC,	GPIO_Pin_15,	RCC_AHB1Periph_GPIOC,	EXTI_Line15, 	EXTI_PortSourceGPIOC,	EXTI_PinSource15,	EXTI15_10_IRQn},  //PC15
@@ -52,7 +53,7 @@ const GPIO_Struct GPIO_table[] = {
 
 /*private function declarations*/
 void initOutput(GPIO_IdDef io);
-void initInput(GPIO_IdDef io);
+void initInput(GPIO_IdDef io,GPIOPuPd_TypeDef puPd);
 
 /*function definitions*/
 void GPIO_init(void)
@@ -69,6 +70,8 @@ void GPIO_init(void)
 	initOutput(URF6_TRIG);
 	initOutput(URF7_TRIG);
 	initOutput(URF8_TRIG);
+
+	initInput(STOP_BUTTON,GPIO_PuPd_UP);
 }
 
 void initOutput(GPIO_IdDef io)
@@ -90,7 +93,7 @@ void initOutput(GPIO_IdDef io)
 	GPIO_Init(GPIO_table[io].port, &GPIO_InitStructure);
 }
 
-void initInput(GPIO_IdDef io)
+void initInput(GPIO_IdDef io,GPIOPuPd_TypeDef puPd)
 {
 	//Structure for GPIO initialization
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -100,7 +103,7 @@ void initInput(GPIO_IdDef io)
 
 	/* Configure pin as input floating */
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_InitStructure.GPIO_PuPd = puPd;//GPIO_PuPd_NOPULL;
 	GPIO_InitStructure.GPIO_Pin  = GPIO_table[io].pin;
 
 	//GPIO speed
