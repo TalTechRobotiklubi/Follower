@@ -28,12 +28,12 @@ void core_start(core* c) {
 }
 
 void core_check(core* c, double dt) {
-  if (c->timestamp > 20.f) {
+  if (c->timestamp > 1000.0 * 5.0) {
     c->coreState = kFind;
     return;
   }
 
-  c->state.camera.y = 90.f * float(std::sin(c->timestamp / 100));
+  c->state.camera.x = 45.f * float(std::sin(c->timestamp / 100.0));
 }
 
 void core_decide(core* c, double dt) {
@@ -81,7 +81,12 @@ void core_decide(core* c, double dt) {
     const Target& t = targets.front();
     const float deg = (std::atan2(t.kinectPosition.y - 424.f,
                              t.kinectPosition.x - 512.f * 0.5f) + F_PI_2) * 180.f / F_PI;
-    c->state.camera.x = deg;
+    const float degDiff = 2.f;
+    if (deg < -5.f) {
+      c->state.camera.x += degDiff;
+    } else if (deg > 5.f) {
+      c->state.camera.x -= degDiff;
+    }
   }
 }
 

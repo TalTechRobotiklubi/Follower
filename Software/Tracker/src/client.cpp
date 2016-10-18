@@ -197,7 +197,7 @@ void RenderOverview(Client* client) {
   drawList->AddCircle(robot, 20.f, ImColor(0x8E, 0x8A, 0x71), 9, 2.f);
 
   // Camera position
-  const float camRotRad = deg_to_rad(client->state.camera.x);
+  const float camRotRad = deg_to_rad(client->state.camera.y);
   const vec2 camTopLeft = vec2_rotate(vec2{-12.f, 0.f}, camRotRad);
   const vec2 camBotRight = vec2_rotate(vec2{12.f, 0.f}, camRotRad);
   drawList->AddLine(ImVec2(camTopLeft.x + robot.x, camTopLeft.y + robot.y),
