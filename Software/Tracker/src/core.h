@@ -15,6 +15,8 @@ enum CoreState {
   kFind = 1
 };
 
+const int kMaxDetections = 8;
+
 struct Detection {
   vec2 kinectPosition;
   vec3 metricPosition;
@@ -23,7 +25,8 @@ struct Detection {
 
 struct World {
   double timestamp = 0.0;
-  std::vector<Detection> detections;
+  int32_t numDetections;
+  Detection detections[kMaxDetections];
 };
 
 struct TrackingState {

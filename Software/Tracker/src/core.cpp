@@ -14,9 +14,6 @@
 #include "kinect_frame_source.h"
 #include "proto/frame_generated.h"
 
-typedef std::chrono::milliseconds msec;
-static int loopTimeMs = 30;
-
 void kinect_loop(core* c) {
   while (c->running) {
     c->frame_source->get_frame();
@@ -47,7 +44,7 @@ void core_decide(core* c, double dt) {
                      [](const Target& t) { return t.timeToLive <= 0.0; }),
       targets.end());
 
-  if (c->world.detections.size() == 0) {
+  if (c->world.numDetections == 0) {
     return;
   }
 
@@ -98,15 +95,17 @@ void core_detect(core* c, double timestamp) {
   fhd_run_pass(c->fhd, c->current_frame.depth_data);
 
   c->world.timestamp = timestamp;
-  c->world.detections.clear();
+  c->world.numDetections = 0;
 
-  for (int i = 0; i < c->fhd->candidates_len; i++) {
+  // Flip the detection horizontally, Kinect 2's images have left-right reversed.
+  const float w = float(kDepthWidth);
+  for (int i = 0; i < std::min(c->fhd->candidates_len, kMaxDetections); i++) {
     const fhd_candidate* candidate = &c->fhd->candidates[i];
-    vec2 kinectPos{candidate->kinect_position.x, candidate->kinect_position.y};
+    vec2 kinectPos{w - candidate->kinect_position.x, candidate->kinect_position.y};
     vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
                    candidate->metric_position.z};
-    c->world.detections.push_back(
-        Detection{kinectPos, metricPos, candidate->weight});
+    c->world.detections[i] = Detection{kinectPos, metricPos, candidate->weight};
+    c->world.numDetections++;
   }
 }
 
@@ -121,7 +120,7 @@ void core_serialize(core* c) {
       c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len);
   std::vector<proto::Detection> detections;
   std::vector<proto::Target> targets;
-  detections.reserve(c->world.detections.size());
+  detections.reserve(c->world.numDetections);
   targets.reserve(c->tracking.targets.size());
 
   for (const Detection& detection : c->world.detections) {
@@ -157,17 +156,6 @@ void core_serialize(core* c) {
 }
 
 core::~core() { kinect_frame_thread.join(); }
-
-void waitTillLoopTimeElapses() {
-  static auto loop_time = std::chrono::system_clock::now();
-
-  while (std::chrono::duration_cast<msec>(std::chrono::system_clock::now() -
-                                          loop_time)
-             .count() < loopTimeMs) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-  }
-  loop_time = std::chrono::system_clock::now();
-}
 
 int main(int argc, char** argv) {
   core c;
@@ -221,14 +209,12 @@ int main(int argc, char** argv) {
         break;
     }
 
-    DL_task(loopTimeMs);
+    DL_task(int16_t(frame_time));
     core_serial_send(&c);
     core_serialize(&c);
 
     UdpHostPoll(c.udp);
     UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize());
-
-    waitTillLoopTimeElapses();
   }
 
   return 0;

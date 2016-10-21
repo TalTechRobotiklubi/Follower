@@ -8,6 +8,7 @@
 #include "AABB.h"
 #include "Decode.h"
 #include "Style.h"
+#include "Target.h"
 #include "Texture.h"
 #include "fl_constants.h"
 #include "fl_math.h"
@@ -15,7 +16,6 @@
 #include "imgui_impl_glfw.h"
 #include "parg/parg.h"
 #include "proto/frame_generated.h"
-#include "Target.h"
 
 struct CoreState {
   vec2 camera;
@@ -167,10 +167,9 @@ void ClientUpdate(Client* c) {
         for (size_t i = 0; i < targets->size(); i++) {
           const proto::Target* t = targets->Get(i);
           c->targets.emplace_back(
-            t->timeToLive(),
-            vec2{t->position().x(), t->position().y()},
-            vec3{t->metricPosition().x(), t->metricPosition().y(), t->metricPosition().z()}
-          );
+              t->timeToLive(), vec2{t->position().x(), t->position().y()},
+              vec3{t->metricPosition().x(), t->metricPosition().y(),
+                   t->metricPosition().z()});
         }
 
         enet_packet_destroy(event.packet);
@@ -209,13 +208,14 @@ void RenderOverview(Client* client) {
     const float d = fl_map_range(detection.metric.z, 0.f, 4.5f, 0.f, height);
     const float tx = s * detection.position.x / w;
     drawList->AddCircle(ImVec2(c.x + w * tx, robot.y - d), radius,
-                              ImColor(0x66, 0xA2, 0xC6), 32);
+                        ImColor(0x66, 0xA2, 0xC6), 32);
   }
 
   for (const Target& t : client->targets) {
     const float d = fl_map_range(t.metricPosition.z, 0.f, 4.5f, 0.f, height);
     const float tx = s * t.kinectPosition.x / w;
-    drawList->AddCircleFilled(ImVec2(c.x + w * tx, robot.y - d), t.timeToLive / 3.0f * radius,
+    drawList->AddCircleFilled(ImVec2(c.x + w * tx, robot.y - d),
+                              t.timeToLive / 3.0f * radius,
                               ImColor(0xFF, 0xA2, 0xC6), 32);
   }
 
@@ -283,7 +283,7 @@ int main(int argc, char** argv) {
                 client.state.camera.y);
     cursor = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
-                 ImVec2(kDepthWidth, kDeptHeight));
+                 ImVec2(kDepthWidth, kDeptHeight), ImVec2(1, 0), ImVec2(0, 1));
 
     for (Detection& d : client.detections) {
       draw_list->AddCircleFilled(
