@@ -22,5 +22,6 @@ Software/build*
 
 Hardware
 
+*.o
 *.swp
 build

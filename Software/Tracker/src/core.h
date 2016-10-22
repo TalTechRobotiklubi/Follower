@@ -15,8 +15,6 @@ enum CoreState {
   kFind = 1
 };
 
-const int kMaxDetections = 8;
-
 struct Detection {
   vec2 kinectPosition;
   vec3 metricPosition;
@@ -25,12 +23,13 @@ struct Detection {
 
 struct World {
   double timestamp = 0.0;
-  int32_t numDetections;
-  Detection detections[kMaxDetections];
+  int32_t numDetections = 0;
+  Detection detections[16];
 };
 
 struct TrackingState {
-  std::vector<Target> targets;
+  int32_t numTargets = 0;
+  Target targets[16];
 };
 
 struct ControlState {
@@ -51,6 +50,7 @@ struct core {
   kinect_frame current_frame;
   struct kinect_frame_source* frame_source = nullptr;
   struct UdpHost* udp = nullptr;
+  struct lua_State* lua;
 
   rgba_image rgba_depth;
   rgba_image prev_rgba_depth;

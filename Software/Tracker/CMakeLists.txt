@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
+include(ExternalProject)
+include(ProcessorCount)
 project(Follower)
 
+ProcessorCount(NUM_CORES)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
 set(Boost_USE_STATIC_LIBS       ON)
@@ -32,6 +35,32 @@ add_subdirectory("third_party/imgui")
 add_subdirectory("third_party/libyuv")
 add_subdirectory("third_party/enet-1.3.13")
 add_subdirectory("third_party/FastHumanDetection")
+
+if (WIN32)
+else()
+  set (LUAJIT_PATH ${CMAKE_CURRENT_BINARY_DIR}/luajit)
+  set (LUAJIT_BUILD make)
+  set (LUAJIT_INSTALL make install PREFIX=${CMAKE_CURRENT_BINARY_DIR}/luajit)
+  set (LUAJIT_LIB libluajit-5.1.a)
+endif()
+
+ExternalProject_Add(libluajit
+  SOURCE_DIR ${CMAKE_SOURCE_DIR}/third_party/LuaJIT-2.0.4
+  PREFIX ${CMAKE_CURRENT_BINARY_DIR}/luajit
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ${LUAJIT_BUILD}
+  BUILD_IN_SOURCE 1
+  INSTALL_COMMAND ${LUAJIT_INSTALL}
+)
+
+add_library(luajit STATIC IMPORTED)
+set_property(TARGET luajit PROPERTY IMPORTED_LOCATION ${LUAJIT_PATH}/lib/${LUAJIT_LIB})
+add_dependencies(luajit libluajit)
+INCLUDE_DIRECTORIES(SYSTEM
+  "${LUAJIT_PATH}/include/luajit-2.0"
+)
+
+message(STATUS "${LUAJIT_PATH}/include/luajit-2.0")
 
 set(CMAKE_CXX_STANDARD 11)
 if (WIN32)

@@ -1,8 +1,9 @@
 #include "core.h"
-#include <cmath>
 #include <fhd.h>
 #include <stdio.h>
 #include <string.h>
+#include <cmath>
+#include <lua.hpp>
 #include "Clock.h"
 #include "Encode.h"
 #include "UdpHost.h"
@@ -25,7 +26,7 @@ void core_start(core* c) {
 }
 
 void core_check(core* c, double dt) {
-  if (c->timestamp > 1000.0 * 5.0) {
+  if (true || c->timestamp > 1000.0 * 5.0) {
     c->coreState = kFind;
     return;
   }
@@ -33,57 +34,84 @@ void core_check(core* c, double dt) {
   c->state.camera.x = 45.f * float(std::sin(c->timestamp / 100.0));
 }
 
+const char* const script = R"(
+  local ffi = require("ffi")
+  ffi.cdef[[
+    typedef struct { float x, y; } vec2;
+    typedef struct { float x, y, z; } vec3;
+    typedef struct {
+      vec2 kinectPosition;
+      vec3 metricPosition;
+      float weight;
+    } Detection;
+    typedef struct {
+      double timestamp;
+      int32_t numDetections;
+      Detection detections[16];
+    } World;
+    typedef struct {
+      vec2 camera;
+    } ControlState;
+  ]]
+
+  context = {}
+  function user_decide(dt, world, state)
+    if context.targets == nil then
+      context.targets = {}
+    end
+
+    for i, t in ipairs(context.targets) do
+      t.timeToLive = t.timeToLive - dt
+    end
+
+    for i, t in pairs(context.targets) do
+      io.write(i, "\n")
+    end
+
+    local closest_detection
+    for i = 0, world.numDetections do
+      local detection = world.detections[i]
+      if detection.weight >= 1.0 then
+        if closest_detection == nil then
+          closest_detection = detection
+        else
+          if detection.metricPosition.z < closest_detection.metricPosition.z then
+            closest_detection = detection
+          end
+        end
+      end
+    end
+
+    if closest_detection ~= nil then
+      local p = closest_detection.metricPosition
+      local angle = math.atan(-p.x / p.z)
+      state.camera.x = math.deg(angle)
+    end
+    return state
+  end
+
+  function decide(dt, world, state)
+    world = ffi.cast("World*", world)
+    state = ffi.cast("ControlState*", state)
+    if user_decide ~= nil then
+      local ok, new_state = pcall(user_decide, dt, world, state)
+      if ok then
+        return new_state
+      else
+        io.write("error calling user code: ", new_state, "\n")
+      end
+    end
+  end
+)";
+
 void core_decide(core* c, double dt) {
-  std::vector<Target>& targets = c->tracking.targets;
-  for (Target& t : targets) {
-    t.timeToLive -= dt;
-  }
-
-  targets.erase(
-      std::remove_if(targets.begin(), targets.end(),
-                     [](const Target& t) { return t.timeToLive <= 0.0; }),
-      targets.end());
-
-  if (c->world.numDetections == 0) {
-    return;
-  }
-
-  const std::vector<Target> prevTargets = targets;
-  for (const Detection& d : c->world.detections) {
-    if (d.weight < 1.f) continue;
-
-    if (prevTargets.empty()) {
-      targets.emplace_back(3.0, d.kinectPosition, d.metricPosition);
-    } else {
-      // Find the closest target
-      float minDist = 10000.f;
-      size_t minIdx = 0;
-      for (size_t i = 0; i < prevTargets.size(); i++) {
-        const Target& t = prevTargets[i];
-        const float dist =
-            vec2_distance(t.metricPosition.xz(), d.metricPosition.xz());
-        if (dist < minDist) {
-          minIdx = i;
-          minDist = dist;
-        }
-      }
-
-      targets[minIdx].kinectPosition = d.kinectPosition;
-      targets[minIdx].metricPosition = d.metricPosition;
-      targets[minIdx].timeToLive = 3.0;
-    }
-  }
-
-  if (!targets.empty()) {
-    const Target& t = targets.front();
-    const float deg = (std::atan2(t.kinectPosition.y - 424.f,
-                             t.kinectPosition.x - 512.f * 0.5f) + F_PI_2) * 180.f / F_PI;
-    const float degDiff = 2.f;
-    if (deg < -5.f) {
-      c->state.camera.x += degDiff;
-    } else if (deg > 5.f) {
-      c->state.camera.x -= degDiff;
-    }
+  lua_getglobal(c->lua, "decide");
+  lua_pushnumber(c->lua, dt);
+  lua_pushlightuserdata(c->lua, &c->world);
+  lua_pushlightuserdata(c->lua, &c->state);
+  if (lua_pcall(c->lua, 3, 1, 0) == 0) {
+  } else {
+    printf("failed to call decide %s\n", lua_tostring(c->lua, -1));
   }
 }
 
@@ -97,11 +125,17 @@ void core_detect(core* c, double timestamp) {
   c->world.timestamp = timestamp;
   c->world.numDetections = 0;
 
-  // Flip the detection horizontally, Kinect 2's images have left-right reversed.
+  // Flip the detection horizontally, Kinect 2's images have left-right
+  // reversed.
   const float w = float(kDepthWidth);
-  for (int i = 0; i < std::min(c->fhd->candidates_len, kMaxDetections); i++) {
+  size_t numCandidates =
+      std::min(size_t(c->fhd->candidates_len),
+               sizeof(c->world.detections) / sizeof(Detection));
+
+  for (int i = 0; i < numCandidates; i++) {
     const fhd_candidate* candidate = &c->fhd->candidates[i];
-    vec2 kinectPos{w - candidate->kinect_position.x, candidate->kinect_position.y};
+    vec2 kinectPos{w - candidate->kinect_position.x,
+                   candidate->kinect_position.y};
     vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
                    candidate->metric_position.z};
     c->world.detections[i] = Detection{kinectPos, metricPos, candidate->weight};
@@ -121,9 +155,10 @@ void core_serialize(core* c) {
   std::vector<proto::Detection> detections;
   std::vector<proto::Target> targets;
   detections.reserve(c->world.numDetections);
-  targets.reserve(c->tracking.targets.size());
+  targets.reserve(c->tracking.numTargets);
 
-  for (const Detection& detection : c->world.detections) {
+  for (int32_t i = 0; i < c->world.numDetections; i++) {
+    const Detection& detection = c->world.detections[i];
     detections.push_back(proto::Detection(
         proto::Vec2(detection.kinectPosition.x, detection.kinectPosition.y),
         proto::Vec3(detection.metricPosition.x, detection.metricPosition.y,
@@ -131,12 +166,13 @@ void core_serialize(core* c) {
         detection.weight));
   }
 
-  for (const Target& t : c->tracking.targets) {
-    targets.push_back(proto::Target(
-      float(t.timeToLive),
-      proto::Vec2(t.kinectPosition.x, t.kinectPosition.y),
-      proto::Vec3(t.metricPosition.x, t.metricPosition.y, t.metricPosition.z)
-    ));
+  for (int32_t i = 0; i < c->tracking.numTargets; i++) {
+    const Target& t = c->tracking.targets[i];
+    targets.push_back(
+        proto::Target(float(t.weight),
+                      proto::Vec2(t.kinectPosition.x, t.kinectPosition.y),
+                      proto::Vec3(t.metricPosition.x, t.metricPosition.y,
+                                  t.metricPosition.z)));
   }
 
   auto detectionOffsets = c->builder.CreateVectorOfStructs(detections);
@@ -159,6 +195,14 @@ core::~core() { kinect_frame_thread.join(); }
 
 int main(int argc, char** argv) {
   core c;
+  c.lua = luaL_newstate();
+  luaL_openlibs(c.lua);
+
+  int scriptStatus = luaL_dostring(c.lua, script);
+  if (scriptStatus) {
+    printf("failed to load wrapper script: %s\n", lua_tostring(c.lua, -1));
+  }
+
   c.current_frame.depth_data = (uint16_t*)calloc(kDepthWidth * kDeptHeight, 2);
   c.current_frame.depth_length = kDepthWidth * kDeptHeight;
   rgba_image_init(&c.rgba_depth, kDepthWidth, kDeptHeight);
@@ -181,7 +225,6 @@ int main(int argc, char** argv) {
     const double frame_time = current_time - prev_time;
     const double frameTimeSeconds = frame_time / 1000.0;
     c.timestamp += frame_time;
-
 
     c.frame_source->fill_frame(&c.current_frame);
     memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
