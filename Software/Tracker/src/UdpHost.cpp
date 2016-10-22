@@ -8,10 +8,13 @@
 
 std::once_flag enetInit;
 
+const size_t kInputBufferSize = 8092;
+
 struct UdpHost {
   ENetAddress address;
   ENetHost* host;
-  ENetEvent event;
+  size_t inputBufferSize;
+  IoVec input;
 };
 
 UdpHost* UdpHostCreate(const char* hostAddress, int port) {
@@ -31,6 +34,9 @@ UdpHost* UdpHostCreate(const char* hostAddress, int port) {
   UdpHost* udp = (UdpHost*)calloc(1, sizeof(UdpHost));
   udp->address = address;
   udp->host = host;
+  udp->inputBufferSize = kInputBufferSize;
+  udp->input.data = (uint8_t*)calloc(kInputBufferSize, 1);
+  udp->input.len = 0;
 
   return udp;
 }
@@ -42,25 +48,29 @@ void UdpHostBroadcast(UdpHost* udp, const uint8_t* data, int len) {
 }
 
 const IoVec* UdpHostPoll(UdpHost* udp) {
-  ENetEvent* event = &udp->event;
+  ENetEvent event;
 
-  if (event->type == ENET_EVENT_TYPE_RECEIVE) {
-    enet_packet_destroy(event->packet);
-  }
-
-  bool gotEvent = enet_host_service(udp->host, event, 0) > 0;
-
-  if (gotEvent) {
-    switch (event->type) {
-      case ENET_EVENT_TYPE_RECEIVE:
-        printf("Got data %zu\n", event->packet->dataLength);
-        break;
+  if (enet_host_service(udp->host, &event, 0) > 0) {
+    switch (event.type) {
+      case ENET_EVENT_TYPE_RECEIVE: {
+        ENetPacket* packet = event.packet;
+        if (packet->dataLength > udp->inputBufferSize) {
+          free(udp->input.data);
+          udp->inputBufferSize = 1.5 * packet->dataLength;
+          udp->input.data = (uint8_t*)calloc(udp->inputBufferSize, 1);
+        }
+        memcpy(udp->input.data, packet->data, packet->dataLength);
+        udp->input.len = int(packet->dataLength);
+        printf("Got data %zu\n", event.packet->dataLength);
+        enet_packet_destroy(event.packet);
+        return &udp->input;
+      }
       default:
         break;
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 void UdpHostDestroy(UdpHost* udp) {

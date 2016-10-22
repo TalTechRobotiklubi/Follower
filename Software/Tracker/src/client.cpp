@@ -67,6 +67,7 @@ struct Client {
   double coreTimestamp = 0.0;
   bool connected = false;
   const ClientOptions* options;
+  std::vector<char> commandBuffer;
 
   ~Client();
 };
@@ -95,6 +96,7 @@ bool ClientStartConnection(Client* c) {
 
 bool ClientStart(Client* c, const ClientOptions* opt) {
   c->options = opt;
+  c->commandBuffer.resize(4096, 0);
 
   if (enet_initialize() != 0) {
     printf("Failed to initialize enet\n");
@@ -179,6 +181,18 @@ void ClientUpdate(Client* c) {
         break;
     }
   }
+}
+
+void ClientSendCommand(Client* c, const char* command, size_t len) {
+  if (!c->peer) {
+    printf("unable to send command - no connection\n");
+    return;
+  }
+
+  ENetPacket* packet =
+      enet_packet_create(command, len, ENET_PACKET_FLAG_RELIABLE);
+  enet_peer_send(c->peer, 0, packet);
+  enet_host_flush(c->udpClient);
 }
 
 void RenderOverview(Client* client) {
@@ -293,6 +307,13 @@ int main(int argc, char** argv) {
 
     ImGui::SameLine();
     RenderOverview(&client);
+
+    if (ImGui::InputText("commands", &client.commandBuffer[0],
+                         client.commandBuffer.size(),
+                         ImGuiInputTextFlags_EnterReturnsTrue)) {
+      size_t length = strlen(client.commandBuffer.data());
+      ClientSendCommand(&client, client.commandBuffer.data(), length);
+    }
 
     ImGui::End();
 
