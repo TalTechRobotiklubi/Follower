@@ -13,7 +13,6 @@
 #include "fl_constants.h"
 #include "kinect_frame.h"
 #include "kinect_frame_source.h"
-#include "proto/frame_generated.h"
 #include "proto/message_generated.h"
 
 void kinect_loop(core* c) {
@@ -189,7 +188,8 @@ void core_serialize(core* c) {
   frame_builder.add_targets(targetOffsets);
 
   auto frame = frame_builder.Finish();
-  c->builder.Finish(frame);
+  auto message = proto::CreateMessage(c->builder, proto::Payload_Frame, frame.Union());
+  c->builder.Finish(message);
 }
 
 core::~core() { kinect_frame_thread.join(); }
@@ -266,13 +266,19 @@ int main(int argc, char** argv) {
           case proto::Payload_LuaMainScript: {
             auto scriptMessage = (const proto::LuaMainScript*)message->payload();
             const char* remoteScript = scriptMessage->content()->c_str();
-            printf("%s\n", remoteScript);
             int loadStatus = luaL_dostring(c.lua, remoteScript);
+            flatbuffers::FlatBufferBuilder builder;
+            flatbuffers::Offset<flatbuffers::String> messageContent;
             if (loadStatus) {
-              printf("failed to load wrapper script: %s\n", lua_tostring(c.lua, -1));
+              const char* err = lua_tostring(c.lua, -1);
+              printf("failed to load wrapper script: %s\n", err);
+              messageContent = builder.CreateString(err);
             } else {
-
+              messageContent = builder.CreateString("load successful");
             }
+            auto message = proto::CreateMessage(builder, proto::Payload_StatusMessage, proto::CreateStatusMessage(builder, messageContent).Union());
+            builder.Finish(message);
+            UdpHostBroadcast(c.udp, builder.GetBufferPointer(), builder.GetSize());
             break;
           } 
           default: break;

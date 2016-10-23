@@ -61,7 +61,6 @@ const IoVec* UdpHostPoll(UdpHost* udp) {
         }
         memcpy(udp->input.data, packet->data, packet->dataLength);
         udp->input.len = int(packet->dataLength);
-        printf("Got data %zu\n", event.packet->dataLength);
         enet_packet_destroy(event.packet);
         return &udp->input;
       }

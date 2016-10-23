@@ -1,1 +1,1 @@
-flatc --cpp frame.fbs message.fbs
+flatc --cpp message.fbs

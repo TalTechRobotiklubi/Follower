@@ -7,41 +7,176 @@
 
 namespace proto {
 
+struct Vec2;
+
+struct Vec3;
+
+struct Target;
+
+struct Detection;
+
+struct Frame;
+
 struct LuaMainScript;
 
 struct StatusMessage;
 
 struct Message;
 
-enum MessageType {
-  MessageType_LuaMainScript = 0,
-  MessageType_MIN = MessageType_LuaMainScript,
-  MessageType_MAX = MessageType_LuaMainScript
-};
-
-inline const char **EnumNamesMessageType() {
-  static const char *names[] = { "LuaMainScript", nullptr };
-  return names;
-}
-
-inline const char *EnumNameMessageType(MessageType e) { return EnumNamesMessageType()[static_cast<int>(e)]; }
-
 enum Payload {
   Payload_NONE = 0,
-  Payload_LuaMainScript = 1,
-  Payload_StatusMessage = 2,
+  Payload_Frame = 1,
+  Payload_LuaMainScript = 2,
+  Payload_StatusMessage = 3,
   Payload_MIN = Payload_NONE,
   Payload_MAX = Payload_StatusMessage
 };
 
 inline const char **EnumNamesPayload() {
-  static const char *names[] = { "NONE", "LuaMainScript", "StatusMessage", nullptr };
+  static const char *names[] = { "NONE", "Frame", "LuaMainScript", "StatusMessage", nullptr };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) { return EnumNamesPayload()[static_cast<int>(e)]; }
 
 inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *union_obj, Payload type);
+
+MANUALLY_ALIGNED_STRUCT(4) Vec2 FLATBUFFERS_FINAL_CLASS {
+ private:
+  float x_;
+  float y_;
+
+ public:
+  Vec2() { memset(this, 0, sizeof(Vec2)); }
+  Vec2(const Vec2 &_o) { memcpy(this, &_o, sizeof(Vec2)); }
+  Vec2(float _x, float _y)
+    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)) { }
+
+  float x() const { return flatbuffers::EndianScalar(x_); }
+  float y() const { return flatbuffers::EndianScalar(y_); }
+};
+STRUCT_END(Vec2, 8);
+
+MANUALLY_ALIGNED_STRUCT(4) Vec3 FLATBUFFERS_FINAL_CLASS {
+ private:
+  float x_;
+  float y_;
+  float z_;
+
+ public:
+  Vec3() { memset(this, 0, sizeof(Vec3)); }
+  Vec3(const Vec3 &_o) { memcpy(this, &_o, sizeof(Vec3)); }
+  Vec3(float _x, float _y, float _z)
+    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)), z_(flatbuffers::EndianScalar(_z)) { }
+
+  float x() const { return flatbuffers::EndianScalar(x_); }
+  float y() const { return flatbuffers::EndianScalar(y_); }
+  float z() const { return flatbuffers::EndianScalar(z_); }
+};
+STRUCT_END(Vec3, 12);
+
+MANUALLY_ALIGNED_STRUCT(4) Target FLATBUFFERS_FINAL_CLASS {
+ private:
+  float timeToLive_;
+  Vec2 position_;
+  Vec3 metricPosition_;
+
+ public:
+  Target() { memset(this, 0, sizeof(Target)); }
+  Target(const Target &_o) { memcpy(this, &_o, sizeof(Target)); }
+  Target(float _timeToLive, const Vec2 &_position, const Vec3 &_metricPosition)
+    : timeToLive_(flatbuffers::EndianScalar(_timeToLive)), position_(_position), metricPosition_(_metricPosition) { }
+
+  float timeToLive() const { return flatbuffers::EndianScalar(timeToLive_); }
+  const Vec2 &position() const { return position_; }
+  const Vec3 &metricPosition() const { return metricPosition_; }
+};
+STRUCT_END(Target, 24);
+
+MANUALLY_ALIGNED_STRUCT(4) Detection FLATBUFFERS_FINAL_CLASS {
+ private:
+  Vec2 position_;
+  Vec3 metricPosition_;
+  float weight_;
+
+ public:
+  Detection() { memset(this, 0, sizeof(Detection)); }
+  Detection(const Detection &_o) { memcpy(this, &_o, sizeof(Detection)); }
+  Detection(const Vec2 &_position, const Vec3 &_metricPosition, float _weight)
+    : position_(_position), metricPosition_(_metricPosition), weight_(flatbuffers::EndianScalar(_weight)) { }
+
+  const Vec2 &position() const { return position_; }
+  const Vec3 &metricPosition() const { return metricPosition_; }
+  float weight() const { return flatbuffers::EndianScalar(weight_); }
+};
+STRUCT_END(Detection, 24);
+
+struct Frame FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_TIMESTAMP = 4,
+    VT_CAMERA = 6,
+    VT_DEPTH = 8,
+    VT_DETECTIONS = 10,
+    VT_TARGETS = 12
+  };
+  double timestamp() const { return GetField<double>(VT_TIMESTAMP, 0.0); }
+  const Vec2 *camera() const { return GetStruct<const Vec2 *>(VT_CAMERA); }
+  const flatbuffers::Vector<uint8_t> *depth() const { return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_DEPTH); }
+  const flatbuffers::Vector<const Detection *> *detections() const { return GetPointer<const flatbuffers::Vector<const Detection *> *>(VT_DETECTIONS); }
+  const flatbuffers::Vector<const Target *> *targets() const { return GetPointer<const flatbuffers::Vector<const Target *> *>(VT_TARGETS); }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<double>(verifier, VT_TIMESTAMP) &&
+           VerifyField<Vec2>(verifier, VT_CAMERA) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_DEPTH) &&
+           verifier.Verify(depth()) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_DETECTIONS) &&
+           verifier.Verify(detections()) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_TARGETS) &&
+           verifier.Verify(targets()) &&
+           verifier.EndTable();
+  }
+};
+
+struct FrameBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_timestamp(double timestamp) { fbb_.AddElement<double>(Frame::VT_TIMESTAMP, timestamp, 0.0); }
+  void add_camera(const Vec2 *camera) { fbb_.AddStruct(Frame::VT_CAMERA, camera); }
+  void add_depth(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> depth) { fbb_.AddOffset(Frame::VT_DEPTH, depth); }
+  void add_detections(flatbuffers::Offset<flatbuffers::Vector<const Detection *>> detections) { fbb_.AddOffset(Frame::VT_DETECTIONS, detections); }
+  void add_targets(flatbuffers::Offset<flatbuffers::Vector<const Target *>> targets) { fbb_.AddOffset(Frame::VT_TARGETS, targets); }
+  FrameBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+  FrameBuilder &operator=(const FrameBuilder &);
+  flatbuffers::Offset<Frame> Finish() {
+    auto o = flatbuffers::Offset<Frame>(fbb_.EndTable(start_, 5));
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Frame> CreateFrame(flatbuffers::FlatBufferBuilder &_fbb,
+    double timestamp = 0.0,
+    const Vec2 *camera = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> depth = 0,
+    flatbuffers::Offset<flatbuffers::Vector<const Detection *>> detections = 0,
+    flatbuffers::Offset<flatbuffers::Vector<const Target *>> targets = 0) {
+  FrameBuilder builder_(_fbb);
+  builder_.add_timestamp(timestamp);
+  builder_.add_targets(targets);
+  builder_.add_detections(detections);
+  builder_.add_depth(depth);
+  builder_.add_camera(camera);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Frame> CreateFrameDirect(flatbuffers::FlatBufferBuilder &_fbb,
+    double timestamp = 0.0,
+    const Vec2 *camera = 0,
+    const std::vector<uint8_t> *depth = nullptr,
+    const std::vector<const Detection *> *detections = nullptr,
+    const std::vector<const Target *> *targets = nullptr) {
+  return CreateFrame(_fbb, timestamp, camera, depth ? _fbb.CreateVector<uint8_t>(*depth) : 0, detections ? _fbb.CreateVector<const Detection *>(*detections) : 0, targets ? _fbb.CreateVector<const Target *>(*targets) : 0);
+}
 
 struct LuaMainScript FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
@@ -158,6 +293,7 @@ inline flatbuffers::Offset<Message> CreateMessage(flatbuffers::FlatBufferBuilder
 inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *union_obj, Payload type) {
   switch (type) {
     case Payload_NONE: return true;
+    case Payload_Frame: return verifier.VerifyTable(reinterpret_cast<const Frame *>(union_obj));
     case Payload_LuaMainScript: return verifier.VerifyTable(reinterpret_cast<const LuaMainScript *>(union_obj));
     case Payload_StatusMessage: return verifier.VerifyTable(reinterpret_cast<const StatusMessage *>(union_obj));
     default: return false;

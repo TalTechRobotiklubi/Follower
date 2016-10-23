@@ -15,7 +15,6 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "parg/parg.h"
-#include "proto/frame_generated.h"
 #include "proto/message_generated.h"
 #include "ui/Console.h"
 
@@ -51,13 +50,13 @@ ClientOptions ParseOptions(int argc, char** argv) {
   while ((res = parg_getopt(&args, argc, argv, "h:p:")) != -1) {
     switch (res) {
       case 'h':
-	opts.host = args.optarg;
-	break;
+        opts.host = args.optarg;
+        break;
       case 'p':
-	opts.port = atoi(args.optarg);
-	break;
+        opts.port = atoi(args.optarg);
+        break;
       default:
-	break;
+        break;
     }
   }
 
@@ -80,7 +79,7 @@ struct Client {
   double coreTimestamp = 0.0;
   bool connected = false;
   const ClientOptions* options;
-  std::vector<char> commandBuffer;
+  Console* console = nullptr;
 
   ~Client();
 };
@@ -91,14 +90,14 @@ void ClientSendData(Client* c, const uint8_t* data, size_t len) {
     return;
   }
 
-  ENetPacket* packet =
-      enet_packet_create(data, len, ENET_PACKET_FLAG_RELIABLE);
+  ENetPacket* packet = enet_packet_create(data, len, ENET_PACKET_FLAG_RELIABLE);
   enet_peer_send(c->peer, 0, packet);
   enet_host_flush(c->udpClient);
 }
 
-void HandleCommand(Client* c, Console* console, const std::vector<std::string>& tokens) {
+void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
   const std::string& command = tokens.front();
+  Console* console = c->console;
 
   if (command == "send_lua_file") {
     const std::string& file = tokens[1];
@@ -120,8 +119,10 @@ void HandleCommand(Client* c, Console* console, const std::vector<std::string>& 
     console->AddLog("sending %s [%ld bytes]", file.c_str(), size);
 
     flatbuffers::FlatBufferBuilder builder;
-    auto script = proto::CreateLuaMainScript(builder, builder.CreateString(content));
-    auto message = proto::CreateMessage(builder, proto::Payload_LuaMainScript, script.Union());
+    auto script =
+        proto::CreateLuaMainScript(builder, builder.CreateString(content));
+    auto message = proto::CreateMessage(builder, proto::Payload_LuaMainScript,
+                                        script.Union());
     builder.Finish(message);
 
     ClientSendData(c, builder.GetBufferPointer(), builder.GetSize());
@@ -152,7 +153,6 @@ bool ClientStartConnection(Client* c) {
 
 bool ClientStart(Client* c, const ClientOptions* opt) {
   c->options = opt;
-  c->commandBuffer.resize(4096, 0);
 
   if (enet_initialize() != 0) {
     printf("Failed to initialize enet\n");
@@ -178,63 +178,84 @@ bool ClientStart(Client* c, const ClientOptions* opt) {
   return true;
 }
 
+void ClientHandleFrame(Client* c, const proto::Frame* frame) {
+  const proto::Vec2* cam = frame->camera();
+  if (cam) {
+    c->state.camera.x = cam->x();
+    c->state.camera.y = cam->y();
+  }
+  c->coreTimestamp = frame->timestamp();
+  rgba_image img;
+  if (DecodeFrame(c->decoder, frame->depth()->Data(), frame->depth()->size(),
+                  kDepthWidth, kDeptHeight, &img)) {
+    TextureUpdate(&c->decodedDepth, img.data, img.width, img.height);
+  }
+
+  c->detections.clear();
+  auto detections = frame->detections();
+  for (size_t i = 0; i < detections->size(); i++) {
+    const proto::Detection* d = detections->Get(i);
+    if (d->weight() >= 1.f) {
+      Detection local;
+      const proto::Vec2 position = d->position();
+      local.position.x = position.x();
+      local.position.y = position.y();
+      const proto::Vec3 metric = d->metricPosition();
+      local.metric = vec3(metric.x(), metric.y(), metric.z());
+      c->detections.push_back(local);
+    }
+  }
+
+  c->targets.clear();
+  auto targets = frame->targets();
+  for (size_t i = 0; i < targets->size(); i++) {
+    const proto::Target* t = targets->Get(i);
+    c->targets.emplace_back(
+        t->timeToLive(), vec2{t->position().x(), t->position().y()},
+        vec3{t->metricPosition().x(), t->metricPosition().y(),
+             t->metricPosition().z()});
+  }
+}
+
+void ClientHandleStatusMessage(Client* c, const proto::StatusMessage* message) {
+  c->console->AddLog("%s", message->message()->c_str());
+}
+
+void ClientHandleMessage(Client* c, const uint8_t* data, size_t len) {
+  const proto::Message* message = proto::GetMessage(data);
+  switch (message->payload_type()) {
+    case proto::Payload_Frame:
+      ClientHandleFrame(c, (const proto::Frame*)message->payload());
+      break;
+    case proto::Payload_StatusMessage:
+      ClientHandleStatusMessage(
+          c, (const proto::StatusMessage*)message->payload());
+      break;
+      break;
+    default:
+      break;
+  }
+}
+
 void ClientUpdate(Client* c) {
   ENetEvent event;
   if (enet_host_service(c->udpClient, &event, 0) > 0) {
     switch (event.type) {
       case ENET_EVENT_TYPE_CONNECT:
-	c->connected = true;
-	break;
+        c->connected = true;
+        break;
       case ENET_EVENT_TYPE_DISCONNECT:
-	enet_peer_reset(c->peer);
-	ClientStartConnection(c);
-	c->connected = false;
-	break;
+        enet_peer_reset(c->peer);
+        ClientStartConnection(c);
+        c->connected = false;
+        break;
       case ENET_EVENT_TYPE_RECEIVE: {
-	const proto::Frame* frame = proto::GetFrame(event.packet->data);
-	const proto::Vec2* cam = frame->camera();
-	if (cam) {
-	  c->state.camera.x = cam->x();
-	  c->state.camera.y = cam->y();
-	}
-	c->coreTimestamp = frame->timestamp();
-	rgba_image img;
-	if (DecodeFrame(c->decoder, frame->depth()->Data(),
-			frame->depth()->size(), kDepthWidth, kDeptHeight,
-			&img)) {
-	  TextureUpdate(&c->decodedDepth, img.data, img.width, img.height);
-	}
-
-	c->detections.clear();
-	auto detections = frame->detections();
-	for (size_t i = 0; i < detections->size(); i++) {
-	  const proto::Detection* d = detections->Get(i);
-	  if (d->weight() >= 1.f) {
-	    Detection local;
-	    const proto::Vec2 position = d->position();
-	    local.position.x = position.x();
-	    local.position.y = position.y();
-	    const proto::Vec3 metric = d->metricPosition();
-	    local.metric = vec3(metric.x(), metric.y(), metric.z());
-	    c->detections.push_back(local);
-	  }
-	}
-
-	c->targets.clear();
-	auto targets = frame->targets();
-	for (size_t i = 0; i < targets->size(); i++) {
-	  const proto::Target* t = targets->Get(i);
-	  c->targets.emplace_back(
-	      t->timeToLive(), vec2{t->position().x(), t->position().y()},
-	      vec3{t->metricPosition().x(), t->metricPosition().y(),
-		   t->metricPosition().z()});
-	}
-
-	enet_packet_destroy(event.packet);
-	break;
+        ClientHandleMessage(c, event.packet->data, event.packet->dataLength);
+        enet_packet_destroy(event.packet);
+        break;
       }
       default:
-	break;
+        break;
     }
   }
 }
@@ -258,22 +279,22 @@ void RenderOverview(Client* client) {
   const vec2 camTopLeft = vec2_rotate(vec2{-12.f, 0.f}, camRotRad);
   const vec2 camBotRight = vec2_rotate(vec2{12.f, 0.f}, camRotRad);
   drawList->AddLine(ImVec2(camTopLeft.x + robot.x, camTopLeft.y + robot.y),
-		    ImVec2(camBotRight.x + robot.x, camBotRight.y + robot.y),
-		    ImColor(0xC6, 0xC7, 0xC5), 10.f);
+                    ImVec2(camBotRight.x + robot.x, camBotRight.y + robot.y),
+                    ImColor(0xC6, 0xC7, 0xC5), 10.f);
 
   const float radius = 12.f;
   for (const Detection& detection : client->detections) {
     const float d = fl_map_range(detection.metric.z, 0.f, 4.5f, 0.f, height);
     const float tx = s * detection.position.x / w;
     drawList->AddCircle(ImVec2(c.x + w * tx, robot.y - d), radius,
-			ImColor(0x66, 0xA2, 0xC6), 32);
+                        ImColor(0x66, 0xA2, 0xC6), 32);
   }
 
   for (const Target& t : client->targets) {
     const float d = fl_map_range(t.metricPosition.z, 0.f, 4.5f, 0.f, height);
     const float tx = s * t.kinectPosition.x / w;
     drawList->AddCircleFilled(ImVec2(c.x + w * tx, robot.y - d),
-			      t.weight * radius, ImColor(0xFF, 0xA2, 0xC6), 32);
+                              t.weight * radius, ImColor(0xFF, 0xA2, 0xC6), 32);
   }
 
   drawList->PopClipRect();
@@ -292,7 +313,7 @@ int main(int argc, char** argv) {
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
   GLFWwindow* window = glfwCreateWindow(mode->width, mode->height,
-					"Follower Remote", nullptr, nullptr);
+                                        "Follower Remote", nullptr, nullptr);
 
   glfwMakeContextCurrent(window);
 
@@ -308,7 +329,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  Console console;
+  client.console = new Console();
   while (!glfwWindowShouldClose(window)) {
     ClientUpdate(&client);
     glfwPollEvents();
@@ -322,42 +343,42 @@ int main(int argc, char** argv) {
     ImGui::SetNextWindowPos(ImVec2(0, 0));
 
     ImGuiWindowFlags flags =
-	ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
-	ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar;
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar;
 
     ImGui::Begin("follower", &showWindow,
-		 ImVec2(float(displayWidth), float(displayHeight)), -1.f,
-		 flags);
+                 ImVec2(float(displayWidth), float(displayHeight)), -1.f,
+                 flags);
 
     ImVec2 cursor = ImGui::GetCursorScreenPos();
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
     ImGui::Text("%s:%u - %s", options.host, options.port,
-		client.connected ? "connected" : "disconnected");
+                client.connected ? "connected" : "disconnected");
     ImGui::SameLine();
     ImGui::Text("| core time: %.2f", client.coreTimestamp / 1000.0);
     ImGui::SameLine();
     ImGui::Text("| camera: (%.1f, %.1f)", client.state.camera.x,
-		client.state.camera.y);
+                client.state.camera.y);
     cursor = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
-		 ImVec2(kDepthWidth, kDeptHeight), ImVec2(1, 0), ImVec2(0, 1));
+                 ImVec2(kDepthWidth, kDeptHeight), ImVec2(1, 0), ImVec2(0, 1));
 
     for (Detection& d : client.detections) {
       draw_list->AddCircleFilled(
-	  ImVec2(cursor.x + d.position.x, cursor.y + d.position.y), 20.f,
-	  ImColor(255, 0, 0));
+          ImVec2(cursor.x + d.position.x, cursor.y + d.position.y), 20.f,
+          ImColor(255, 0, 0));
     }
 
     ImGui::SameLine();
     RenderOverview(&client);
 
-    const char* cmd = console.Draw("console", float(displayWidth) - 20.f, -1.f);
+    const char* cmd =
+        client.console->Draw("console", float(displayWidth) - 20.f, -1.f);
     if (cmd) {
-      printf("%s\n", cmd);
-			auto tokens = split(cmd, ' ');
+      auto tokens = split(cmd, ' ');
       if (tokens.size() > 1) {
-        HandleCommand(&client, &console, tokens);
+        HandleCommand(&client, tokens);
       }
     }
 
@@ -370,6 +391,8 @@ int main(int argc, char** argv) {
     ImGui::Render();
     glfwSwapBuffers(window);
   }
+
+  delete client.console;
 
   ImGui_ImplGlfw_Shutdown();
   glfwTerminate();
