@@ -1,16 +1,4 @@
 function user_decide(dt, world, state)
-  if context.targets == nil then
-    context.targets = {}
-  end
-
-  for i, t in ipairs(context.targets) do
-    t.timeToLive = t.timeToLive - dt
-  end
-
-  for i, t in pairs(context.targets) do
-    io.write(i, "\n")
-  end
-
   local closest_detection
   for i = 0, world.numDetections do
     local detection = world.detections[i]
