@@ -89,7 +89,7 @@ target_link_libraries(
 
 target_link_libraries(
   follower_core
-  luajit
+  ${LUAJIT_LIBRARY}
   ${Boost_LIBRARIES}
   ${KINECTV2_LIBRARY}
   yuv
@@ -105,7 +105,15 @@ target_link_libraries(
 
 add_custom_command(
   TARGET follower_core POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scripts
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  ${CMAKE_CURRENT_SOURCE_DIR}/scripts ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scripts
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${ARTIFACT_DIR}/scripts
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/scripts ${ARTIFACT_DIR}/scripts
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/classifiers/classifier.nn ${ARTIFACT_DIR}
 )
+
+if (WIN32)
+  add_custom_command(
+    TARGET follower_core POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${LUAJIT_ROOT}/lib/lua51.dll ${ARTIFACT_DIR}
+	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_DIR:floatfann>/floatfann.dll ${ARTIFACT_DIR}
+  )
+endif()

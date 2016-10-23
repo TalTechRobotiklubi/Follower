@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <float.h>
 #include "Clock.h"
-#include "KinectLiveFrameSource.cpp.h"
+#include "KinectLiveFrameSource.h"
 #include "fl_yuy2_convert.h"
 
 namespace {
