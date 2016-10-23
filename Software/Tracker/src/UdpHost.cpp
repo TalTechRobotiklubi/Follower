@@ -1,5 +1,4 @@
 #include "UdpHost.h"
-#include "Peer.h"
 
 #include <enet/enet.h>
 #include <stdio.h>
@@ -75,16 +74,4 @@ const IoVec* UdpHostPoll(UdpHost* udp) {
 void UdpHostDestroy(UdpHost* udp) {
   enet_host_destroy(udp->host);
   free(udp);
-}
-
-void UdpHostAddPeer(UdpHost* udp, const Peer* peer) {
-  ENetAddress addr;
-  enet_address_set_host(&addr, peer->address);
-  addr.port = peer->port;
-
-  ENetPeer* remote = enet_host_connect(udp->host, &addr, 1, 0);
-
-  if (!remote) {
-    printf("Failed to init connection\n");
-  }
 }

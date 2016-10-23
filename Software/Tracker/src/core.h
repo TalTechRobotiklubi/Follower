@@ -11,13 +11,7 @@
 #include "ScriptLoader.h"
 #include "CoreObj.h"
 
-enum CoreState {
-  kCheck = 0,
-  kFind = 1
-};
-
 struct core {
-  CoreState coreState = kCheck;
   double timestamp = 0.0;
   World world;
   TrackingState tracking;

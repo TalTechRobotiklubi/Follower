@@ -24,16 +24,6 @@ void core_start(core* c) {
   c->kinect_frame_thread = std::thread(kinect_loop, c);
 }
 
-void core_check(core* c, double dt) {
-  (void)dt;
-  if (true || c->timestamp > 1000.0 * 5.0) {
-    c->coreState = kFind;
-    return;
-  }
-
-  c->state.camera.x = 45.f * float(std::sin(c->timestamp / 100.0));
-}
-
 void core_decide(core* c, double dt) {
   ScriptLoaderUpdate(&c->scripts, dt, &c->world, &c->state);
 }
@@ -199,18 +189,7 @@ int main(int argc, char** argv) {
         EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
 
     c.serial.receive(&c.in_data);
-
-    switch (c.coreState) {
-      case kCheck:
-        core_check(&c, frameTimeSeconds);
-        break;
-      case kFind: {
-        core_decide(&c, frameTimeSeconds);
-        break;
-      }
-      default:
-        break;
-    }
+    core_decide(&c, frameTimeSeconds);
 
     DL_task(int16_t(frame_time));
     core_serial_send(&c);
