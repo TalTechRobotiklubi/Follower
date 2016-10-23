@@ -39,6 +39,7 @@ set(CORE_SOURCES
 
   kinect_frame.cpp
 
+  ScriptLoader.cpp
   UdpHost.cpp
 
   vec2.cpp
@@ -104,4 +105,11 @@ target_link_libraries(
   ${CMAKE_DL_LIBS}
   ${CMAKE_THREAD_LIBS_INIT}
   ${WINSOCK}
+)
+
+add_custom_command(
+  TARGET follower_core POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scripts
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+  ${CMAKE_CURRENT_SOURCE_DIR}/scripts ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scripts
 )

@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
-#include <lua.hpp>
 #include "Clock.h"
 #include "Encode.h"
 #include "UdpHost.h"
@@ -34,85 +33,8 @@ void core_check(core* c, double dt) {
   c->state.camera.x = 45.f * float(std::sin(c->timestamp / 100.0));
 }
 
-const char* const script = R"(
-  local ffi = require("ffi")
-  ffi.cdef[[
-    typedef struct { float x, y; } vec2;
-    typedef struct { float x, y, z; } vec3;
-    typedef struct {
-      vec2 kinectPosition;
-      vec3 metricPosition;
-      float weight;
-    } Detection;
-    typedef struct {
-      double timestamp;
-      int32_t numDetections;
-      Detection detections[16];
-    } World;
-    typedef struct {
-      vec2 camera;
-    } ControlState;
-  ]]
-
-  context = {}
-  function user_decide(dt, world, state)
-    if context.targets == nil then
-      context.targets = {}
-    end
-
-    for i, t in ipairs(context.targets) do
-      t.timeToLive = t.timeToLive - dt
-    end
-
-    for i, t in pairs(context.targets) do
-      io.write(i, "\n")
-    end
-
-    local closest_detection
-    for i = 0, world.numDetections do
-      local detection = world.detections[i]
-      if detection.weight >= 1.0 then
-        if closest_detection == nil then
-          closest_detection = detection
-        else
-          if detection.metricPosition.z < closest_detection.metricPosition.z then
-            closest_detection = detection
-          end
-        end
-      end
-    end
-
-    if closest_detection ~= nil then
-      local p = closest_detection.metricPosition
-      local angle = math.atan(-p.x / p.z)
-      state.camera.x = math.deg(angle)
-    end
-    return state
-  end
-
-  function decide(dt, world, state)
-    world = ffi.cast("World*", world)
-    state = ffi.cast("ControlState*", state)
-    if user_decide ~= nil then
-      local ok, new_state = pcall(user_decide, dt, world, state)
-      if ok then
-        return new_state
-      else
-        io.write("error calling user code: ", new_state, "\n")
-      end
-    end
-  end
-)";
-
 void core_decide(core* c, double dt) {
-  lua_getglobal(c->lua, "decide");
-  lua_pushnumber(c->lua, dt);
-  lua_pushlightuserdata(c->lua, &c->world);
-  lua_pushlightuserdata(c->lua, &c->state);
-  if (lua_pcall(c->lua, 3, 1, 0) == 0) {
-  } else {
-    printf("failed to call decide %s\n", lua_tostring(c->lua, -1));
-  }
+  ScriptLoaderUpdate(&c->scripts, dt, &c->world, &c->state);
 }
 
 void core_detect(core* c, double timestamp) {
@@ -168,11 +90,10 @@ void core_serialize(core* c) {
 
   for (int32_t i = 0; i < c->tracking.numTargets; i++) {
     const Target& t = c->tracking.targets[i];
-    targets.push_back(
-        proto::Target(float(t.weight),
-                      proto::Vec2(t.kinectPosition.x, t.kinectPosition.y),
-                      proto::Vec3(t.metricPosition.x, t.metricPosition.y,
-                                  t.metricPosition.z)));
+    targets.push_back(proto::Target(
+        float(t.weight), proto::Vec2(t.kinectPosition.x, t.kinectPosition.y),
+        proto::Vec3(t.metricPosition.x, t.metricPosition.y,
+                    t.metricPosition.z)));
   }
 
   auto detectionOffsets = c->builder.CreateVectorOfStructs(detections);
@@ -188,7 +109,8 @@ void core_serialize(core* c) {
   frame_builder.add_targets(targetOffsets);
 
   auto frame = frame_builder.Finish();
-  auto message = proto::CreateMessage(c->builder, proto::Payload_Frame, frame.Union());
+  auto message =
+      proto::CreateMessage(c->builder, proto::Payload_Frame, frame.Union());
   c->builder.Finish(message);
 }
 
@@ -196,12 +118,10 @@ core::~core() { kinect_frame_thread.join(); }
 
 int main(int argc, char** argv) {
   core c;
-  c.lua = luaL_newstate();
-  luaL_openlibs(c.lua);
-
-  int scriptStatus = luaL_dostring(c.lua, script);
-  if (scriptStatus) {
-    printf("failed to load wrapper script: %s\n", lua_tostring(c.lua, -1));
+  if (!ScriptLoaderInit(&c.scripts)) {
+    printf("Failed to load setup scripts: %s\n",
+           ScriptLoaderGetError(&c.scripts));
+    return 1;
   }
 
   c.current_frame.depth_data = (uint16_t*)calloc(kDepthWidth * kDeptHeight, 2);
@@ -264,24 +184,30 @@ int main(int argc, char** argv) {
       if (message) {
         switch (message->payload_type()) {
           case proto::Payload_LuaMainScript: {
-            auto scriptMessage = (const proto::LuaMainScript*)message->payload();
+            auto scriptMessage =
+                (const proto::LuaMainScript*)message->payload();
             const char* remoteScript = scriptMessage->content()->c_str();
-            int loadStatus = luaL_dostring(c.lua, remoteScript);
+            bool loadStatus = ScriptLoaderExec(&c.scripts, remoteScript);
+
             flatbuffers::FlatBufferBuilder builder;
             flatbuffers::Offset<flatbuffers::String> messageContent;
             if (loadStatus) {
-              const char* err = lua_tostring(c.lua, -1);
+              const char* err = ScriptLoaderGetError(&c.scripts);
               printf("failed to load wrapper script: %s\n", err);
               messageContent = builder.CreateString(err);
             } else {
               messageContent = builder.CreateString("load successful");
             }
-            auto message = proto::CreateMessage(builder, proto::Payload_StatusMessage, proto::CreateStatusMessage(builder, messageContent).Union());
+            auto message = proto::CreateMessage(
+                builder, proto::Payload_StatusMessage,
+                proto::CreateStatusMessage(builder, messageContent).Union());
             builder.Finish(message);
-            UdpHostBroadcast(c.udp, builder.GetBufferPointer(), builder.GetSize());
+            UdpHostBroadcast(c.udp, builder.GetBufferPointer(),
+                             builder.GetSize());
             break;
-          } 
-          default: break;
+          }
+          default:
+            break;
         }
       }
     }

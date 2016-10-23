@@ -60,8 +60,6 @@ INCLUDE_DIRECTORIES(SYSTEM
   "${LUAJIT_PATH}/include/luajit-2.0"
 )
 
-message(STATUS "${LUAJIT_PATH}/include/luajit-2.0")
-
 set(CMAKE_CXX_STANDARD 11)
 if (WIN32)
   add_definitions(

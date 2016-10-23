@@ -8,7 +8,7 @@
 #include "AABB.h"
 #include "Decode.h"
 #include "Style.h"
-#include "Target.h"
+#include "CoreObj.h"
 #include "Texture.h"
 #include "fl_constants.h"
 #include "fl_math.h"
@@ -62,11 +62,6 @@ ClientOptions ParseOptions(int argc, char** argv) {
 
   return opts;
 }
-
-struct Detection {
-  vec2 position;
-  vec3 metric;
-};
 
 struct Client {
   CoreState state;
@@ -198,10 +193,11 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
     if (d->weight() >= 1.f) {
       Detection local;
       const proto::Vec2 position = d->position();
-      local.position.x = position.x();
-      local.position.y = position.y();
+      local.kinectPosition.x = position.x();
+      local.kinectPosition.y = position.y();
       const proto::Vec3 metric = d->metricPosition();
-      local.metric = vec3(metric.x(), metric.y(), metric.z());
+      local.metricPosition = vec3(metric.x(), metric.y(), metric.z());
+      local.weight = d->weight();
       c->detections.push_back(local);
     }
   }
@@ -284,8 +280,8 @@ void RenderOverview(Client* client) {
 
   const float radius = 12.f;
   for (const Detection& detection : client->detections) {
-    const float d = fl_map_range(detection.metric.z, 0.f, 4.5f, 0.f, height);
-    const float tx = s * detection.position.x / w;
+    const float d = fl_map_range(detection.metricPosition.z, 0.f, 4.5f, 0.f, height);
+    const float tx = s * detection.kinectPosition.x / w;
     drawList->AddCircle(ImVec2(c.x + w * tx, robot.y - d), radius,
                         ImColor(0x66, 0xA2, 0xC6), 32);
   }
@@ -366,7 +362,7 @@ int main(int argc, char** argv) {
 
     for (Detection& d : client.detections) {
       draw_list->AddCircleFilled(
-          ImVec2(cursor.x + d.position.x, cursor.y + d.position.y), 20.f,
+          ImVec2(cursor.x + d.kinectPosition.x, cursor.y + d.kinectPosition.y), 20.f,
           ImColor(255, 0, 0));
     }
 

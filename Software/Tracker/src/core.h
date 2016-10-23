@@ -8,32 +8,12 @@
 #include "image.h"
 #include "BlockDiff.h"
 #include "proto/flatbuffers/flatbuffers.h"
-#include "Target.h"
+#include "ScriptLoader.h"
+#include "CoreObj.h"
 
 enum CoreState {
   kCheck = 0,
   kFind = 1
-};
-
-struct Detection {
-  vec2 kinectPosition;
-  vec3 metricPosition;
-  float weight;
-};
-
-struct World {
-  double timestamp = 0.0;
-  int32_t numDetections = 0;
-  Detection detections[16];
-};
-
-struct TrackingState {
-  int32_t numTargets = 0;
-  Target targets[16];
-};
-
-struct ControlState {
-  vec2 camera = {0.f, 0.f};
 };
 
 struct core {
@@ -50,7 +30,7 @@ struct core {
   kinect_frame current_frame;
   struct kinect_frame_source* frame_source = nullptr;
   struct UdpHost* udp = nullptr;
-  struct lua_State* lua;
+  ScriptLoader scripts;
 
   rgba_image rgba_depth;
   rgba_image prev_rgba_depth;
