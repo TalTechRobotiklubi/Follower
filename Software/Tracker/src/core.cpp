@@ -25,6 +25,7 @@ void core_start(core* c) {
 }
 
 void core_check(core* c, double dt) {
+  (void)dt;
   if (true || c->timestamp > 1000.0 * 5.0) {
     c->coreState = kFind;
     return;
@@ -35,6 +36,44 @@ void core_check(core* c, double dt) {
 
 void core_decide(core* c, double dt) {
   ScriptLoaderUpdate(&c->scripts, dt, &c->world, &c->state);
+}
+
+void core_handle_message(core* c, const uint8_t* data, size_t) {
+  auto message = proto::GetMessage(data);
+  if (!message) {
+    return;
+  }
+
+  switch (message->payload_type()) {
+    case proto::Payload_LuaMainScript: {
+      auto scriptMessage =
+          (const proto::LuaMainScript*)message->payload();
+      const char* remoteScript = scriptMessage->content()->c_str();
+
+      flatbuffers::FlatBufferBuilder builder;
+      flatbuffers::Offset<flatbuffers::String> messageContent;
+      if (ScriptLoaderExec(&c->scripts, remoteScript)) {
+        messageContent = builder.CreateString("load successful");
+      } else {
+        const char* err = ScriptLoaderGetError(&c->scripts);
+        if (err) {
+          printf("failed to load wrapper script: %s\n", err);
+          messageContent = builder.CreateString(err);
+        } else {
+          messageContent = builder.CreateString("failed to load script, no lua error");
+        }
+      }
+      auto message = proto::CreateMessage(
+          builder, proto::Payload_StatusMessage,
+          proto::CreateStatusMessage(builder, messageContent).Union());
+      builder.Finish(message);
+      UdpHostBroadcast(c->udp, builder.GetBufferPointer(),
+                       builder.GetSize());
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 void core_detect(core* c, double timestamp) {
@@ -54,7 +93,7 @@ void core_detect(core* c, double timestamp) {
       std::min(size_t(c->fhd->candidates_len),
                sizeof(c->world.detections) / sizeof(Detection));
 
-  for (int i = 0; i < numCandidates; i++) {
+  for (size_t i = 0; i < numCandidates; i++) {
     const fhd_candidate* candidate = &c->fhd->candidates[i];
     vec2 kinectPos{w - candidate->kinect_position.x,
                    candidate->kinect_position.y};
@@ -180,36 +219,7 @@ int main(int argc, char** argv) {
     const IoVec* received = UdpHostPoll(c.udp);
 
     if (received) {
-      auto message = proto::GetMessage(received->data);
-      if (message) {
-        switch (message->payload_type()) {
-          case proto::Payload_LuaMainScript: {
-            auto scriptMessage =
-                (const proto::LuaMainScript*)message->payload();
-            const char* remoteScript = scriptMessage->content()->c_str();
-            bool loadStatus = ScriptLoaderExec(&c.scripts, remoteScript);
-
-            flatbuffers::FlatBufferBuilder builder;
-            flatbuffers::Offset<flatbuffers::String> messageContent;
-            if (loadStatus) {
-              const char* err = ScriptLoaderGetError(&c.scripts);
-              printf("failed to load wrapper script: %s\n", err);
-              messageContent = builder.CreateString(err);
-            } else {
-              messageContent = builder.CreateString("load successful");
-            }
-            auto message = proto::CreateMessage(
-                builder, proto::Payload_StatusMessage,
-                proto::CreateStatusMessage(builder, messageContent).Union());
-            builder.Finish(message);
-            UdpHostBroadcast(c.udp, builder.GetBufferPointer(),
-                             builder.GetSize());
-            break;
-          }
-          default:
-            break;
-        }
-      }
+      core_handle_message(&c, received->data, received->len);
     }
 
     UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize());
