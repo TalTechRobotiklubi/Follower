@@ -1,0 +1,24 @@
+namespace proto;
+
+enum MessageType : byte {
+  LuaMainScript = 0
+}
+
+table LuaMainScript {
+  content:string;
+}
+
+table StatusMessage {
+  message:string;
+}
+
+union Payload {
+  LuaMainScript,
+  StatusMessage
+}
+
+table Message {
+  payload:Payload;
+}
+
+root_type Message;

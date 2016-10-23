@@ -16,6 +16,7 @@
 #include "imgui_impl_glfw.h"
 #include "parg/parg.h"
 #include "proto/frame_generated.h"
+#include "proto/message_generated.h"
 #include "ui/Console.h"
 
 struct CoreState {
@@ -84,6 +85,18 @@ struct Client {
   ~Client();
 };
 
+void ClientSendData(Client* c, const uint8_t* data, size_t len) {
+  if (!c->peer) {
+    printf("unable to send command - no connection\n");
+    return;
+  }
+
+  ENetPacket* packet =
+      enet_packet_create(data, len, ENET_PACKET_FLAG_RELIABLE);
+  enet_peer_send(c->peer, 0, packet);
+  enet_host_flush(c->udpClient);
+}
+
 void HandleCommand(Client* c, Console* console, const std::vector<std::string>& tokens) {
   const std::string& command = tokens.front();
 
@@ -105,6 +118,13 @@ void HandleCommand(Client* c, Console* console, const std::vector<std::string>& 
     fclose(f);
 
     console->AddLog("sending %s [%ld bytes]", file.c_str(), size);
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto script = proto::CreateLuaMainScript(builder, builder.CreateString(content));
+    auto message = proto::CreateMessage(builder, proto::Payload_LuaMainScript, script.Union());
+    builder.Finish(message);
+
+    ClientSendData(c, builder.GetBufferPointer(), builder.GetSize());
   }
 }
 
@@ -217,18 +237,6 @@ void ClientUpdate(Client* c) {
 	break;
     }
   }
-}
-
-void ClientSendCommand(Client* c, const char* command, size_t len) {
-  if (!c->peer) {
-    printf("unable to send command - no connection\n");
-    return;
-  }
-
-  ENetPacket* packet =
-      enet_packet_create(command, len, ENET_PACKET_FLAG_RELIABLE);
-  enet_peer_send(c->peer, 0, packet);
-  enet_host_flush(c->udpClient);
 }
 
 void RenderOverview(Client* client) {

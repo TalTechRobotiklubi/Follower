@@ -14,6 +14,7 @@
 #include "kinect_frame.h"
 #include "kinect_frame_source.h"
 #include "proto/frame_generated.h"
+#include "proto/message_generated.h"
 
 void kinect_loop(core* c) {
   while (c->running) {
@@ -256,7 +257,29 @@ int main(int argc, char** argv) {
     core_serial_send(&c);
     core_serialize(&c);
 
-    UdpHostPoll(c.udp);
+    const IoVec* received = UdpHostPoll(c.udp);
+
+    if (received) {
+      auto message = proto::GetMessage(received->data);
+      if (message) {
+        switch (message->payload_type()) {
+          case proto::Payload_LuaMainScript: {
+            auto scriptMessage = (const proto::LuaMainScript*)message->payload();
+            const char* remoteScript = scriptMessage->content()->c_str();
+            printf("%s\n", remoteScript);
+            int loadStatus = luaL_dostring(c.lua, remoteScript);
+            if (loadStatus) {
+              printf("failed to load wrapper script: %s\n", lua_tostring(c.lua, -1));
+            } else {
+
+            }
+            break;
+          } 
+          default: break;
+        }
+      }
+    }
+
     UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize());
   }
 
