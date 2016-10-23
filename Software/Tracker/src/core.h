@@ -4,7 +4,7 @@
 #include "comm/serial_comm.h"
 #include "comm/comm_input.h"
 #include "comm/comm_output.h"
-#include "kinect_frame.h"
+#include "KinectFrame.h"
 #include "image.h"
 #include "BlockDiff.h"
 #include "proto/flatbuffers/flatbuffers.h"
@@ -21,8 +21,8 @@ struct core {
   SerialComm serial;
   std::thread kinect_frame_thread;
   std::atomic_bool running;
-  kinect_frame current_frame;
-  struct kinect_frame_source* frame_source = nullptr;
+  KinectFrame kinectFrame;
+  struct KinectFrameSource* frameSource = nullptr;
   struct UdpHost* udp = nullptr;
   ScriptLoader scripts;
 

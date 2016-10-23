@@ -5,17 +5,16 @@
 #include <cmath>
 #include "Clock.h"
 #include "Encode.h"
+#include "KinectFrameSource.h"
 #include "UdpHost.h"
 #include "comm/datalayer.h"
 #include "core_opt.h"
 #include "fl_constants.h"
-#include "kinect_frame.h"
-#include "kinect_frame_source.h"
 #include "proto/message_generated.h"
 
 void kinect_loop(core* c) {
   while (c->running) {
-    c->frame_source->get_frame();
+    c->frameSource->GetFrame();
   }
 }
 
@@ -35,8 +34,7 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
 
   switch (message->payload_type()) {
     case proto::Payload_LuaMainScript: {
-      auto scriptMessage =
-          (const proto::LuaMainScript*)message->payload();
+      auto scriptMessage = (const proto::LuaMainScript*)message->payload();
       const char* remoteScript = scriptMessage->content()->c_str();
 
       flatbuffers::FlatBufferBuilder builder;
@@ -49,15 +47,15 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
           printf("failed to load wrapper script: %s\n", err);
           messageContent = builder.CreateString(err);
         } else {
-          messageContent = builder.CreateString("failed to load script, no lua error");
+          messageContent =
+              builder.CreateString("failed to load script, no lua error");
         }
       }
       auto message = proto::CreateMessage(
           builder, proto::Payload_StatusMessage,
           proto::CreateStatusMessage(builder, messageContent).Union());
       builder.Finish(message);
-      UdpHostBroadcast(c->udp, builder.GetBufferPointer(),
-                       builder.GetSize());
+      UdpHostBroadcast(c->udp, builder.GetBufferPointer(), builder.GetSize());
       break;
     }
     default:
@@ -70,7 +68,7 @@ void core_detect(core* c, double timestamp) {
     return;
   }
 
-  fhd_run_pass(c->fhd, c->current_frame.depth_data);
+  fhd_run_pass(c->fhd, c->kinectFrame.depthData);
 
   c->world.timestamp = timestamp;
   c->world.numDetections = 0;
@@ -152,8 +150,8 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  c.current_frame.depth_data = (uint16_t*)calloc(kDepthWidth * kDeptHeight, 2);
-  c.current_frame.depth_length = kDepthWidth * kDeptHeight;
+  c.kinectFrame.depthData = (uint16_t*)calloc(kDepthWidth * kDeptHeight, 2);
+  c.kinectFrame.depthLength = kDepthWidth * kDeptHeight;
   rgba_image_init(&c.rgba_depth, kDepthWidth, kDeptHeight);
   rgba_image_init(&c.prev_rgba_depth, kDepthWidth, kDeptHeight);
   ActiveMapReset(&c.rgba_depth_diff, kDepthWidth, kDeptHeight);
@@ -175,12 +173,12 @@ int main(int argc, char** argv) {
     const double frameTimeSeconds = frame_time / 1000.0;
     c.timestamp += frame_time;
 
-    c.frame_source->fill_frame(&c.current_frame);
+    c.frameSource->FillFrame(&c.kinectFrame);
     memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
 
     core_detect(&c, current_time);
 
-    depth_to_rgba(c.current_frame.depth_data, c.current_frame.depth_length,
+    depth_to_rgba(c.kinectFrame.depthData, c.kinectFrame.depthLength,
                   &c.rgba_depth);
     BlockDiff(c.prev_rgba_depth.data, c.rgba_depth.data, kDepthWidth,
               kDeptHeight, &c.rgba_depth_diff);

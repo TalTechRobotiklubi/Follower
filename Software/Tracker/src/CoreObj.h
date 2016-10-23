@@ -30,5 +30,7 @@ struct TrackingState {
 };
 
 struct ControlState {
-  vec2 camera = {0.f, 0.f};
+  vec2 camera;
+  vec2 rotationSpeed;
+  float speed = 0.f;
 };

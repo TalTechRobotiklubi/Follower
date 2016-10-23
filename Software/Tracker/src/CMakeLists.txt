@@ -29,12 +29,12 @@ set(CORE_SOURCES
 
   Encode.cpp
 
-  fl_sqlite_source.cpp
   fl_yuy2_convert.cpp
 
   image.cpp
 
-  kinect_frame.cpp
+  KinectFrame.cpp
+  KinectSqliteFrameSource.cpp
 
   ScriptLoader.cpp
   UdpHost.cpp
@@ -45,7 +45,7 @@ set(CORE_SOURCES
 )
 
 if (KINECT_ENABLED)
-  list(APPEND CORE_SOURCES kinect_live_source.cpp)
+  list(APPEND CORE_SOURCES KinectLiveFrameSource.cpp)
 endif()
 
 add_executable(

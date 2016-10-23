@@ -6,9 +6,9 @@
 #include "UdpHost.h"
 #include "core.h"
 #include "fl_constants.h"
-#include "fl_sqlite_source.h"
-#include "kinect_live_source.h"
-#include "kinect_null_frame_source.h"
+#include "KinectLiveFrameSource.h"
+#include "KinectNullFrameSource.h"
+#include "KinectSqliteFrameSource.h"
 #include "parg/parg.h"
 
 int parse_opt(core* c, int argc, char** argv) {
@@ -21,7 +21,7 @@ int parse_opt(core* c, int argc, char** argv) {
   while ((res = parg_getopt(&args, argc, argv, "i:c:d:h:p:s:")) != -1) {
     switch (res) {
       case 'd':
-        c->frame_source = new fl_sqlite_source(args.optarg);
+        c->frameSource = new KinectSqliteFrameSource(args.optarg);
         printf("frame source: database\n");
         break;
       case 's':
@@ -67,13 +67,13 @@ int parse_opt(core* c, int argc, char** argv) {
     abort();
   }
 
-  if (!c->frame_source) {
+  if (!c->frameSource) {
 #ifdef FL_KINECT_ENABLED
     printf("frame source: kinect\n");
-    c->frame_source = new kinect_live_source();
+    c->frameSource = new KinectLiveFrameSource();
 #else
     printf("frame source: null\n");
-    c->frame_source = new kinect_null_frame_source();
+    c->frameSource = new KinectNullFrameSource();
 #endif
   }
 

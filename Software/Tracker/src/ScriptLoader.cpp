@@ -21,6 +21,8 @@ static const char* const initScript = R"(
     } World;
     typedef struct {
       vec2 camera;
+      vec2 rotationSpeed;
+      float speed;
     } ControlState;
   ]]
 
