@@ -17,10 +17,6 @@
 #include "proto/message_generated.h"
 #include "ui/Console.h"
 
-struct CoreState {
-  vec2 camera;
-};
-
 struct ClientOptions {
   const char* host = "127.0.0.1";
   uint16_t port = 9001;
@@ -63,7 +59,7 @@ ClientOptions ParseOptions(int argc, char** argv) {
 }
 
 struct Client {
-  CoreState state;
+  ControlState state;
   Decoder* decoder = nullptr;
   ENetHost* udpClient = nullptr;
   ENetPeer* peer = nullptr;
@@ -174,10 +170,10 @@ bool ClientStart(Client* c, const ClientOptions* opt) {
 
 void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   const proto::Vec2* cam = frame->camera();
-  if (cam) {
-    c->state.camera.x = cam->x();
-    c->state.camera.y = cam->y();
-  }
+  c->state.camera.x = cam->x();
+  c->state.camera.y = cam->y();
+  c->state.rotationSpeed = frame->rotationSpeed();
+  c->state.speed = frame->speed();
   c->coreTimestamp = frame->timestamp();
   rgba_image img;
   if (DecodeFrame(c->decoder, frame->depth()->Data(), frame->depth()->size(),
@@ -353,9 +349,6 @@ int main(int argc, char** argv) {
                 client.connected ? "connected" : "disconnected");
     ImGui::SameLine();
     ImGui::Text("| core time: %.2f", client.coreTimestamp / 1000.0);
-    ImGui::SameLine();
-    ImGui::Text("| camera: (%.1f, %.1f)", client.state.camera.x,
-                client.state.camera.y);
     cursor = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
                  ImVec2(kDepthWidth, kDeptHeight), ImVec2(1, 0), ImVec2(0, 1));
@@ -370,7 +363,7 @@ int main(int argc, char** argv) {
     RenderOverview(&client);
 
     const char* cmd =
-        client.console->Draw("console", float(displayWidth) - 20.f, -1.f);
+        client.console->Draw("console", float(displayWidth - 20) * 0.5f, -1.f);
     if (cmd) {
       auto tokens = split(cmd, ' ');
       if (tokens.size() > 1) {

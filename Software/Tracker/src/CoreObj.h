@@ -31,6 +31,6 @@ struct TrackingState {
 
 struct ControlState {
   vec2 camera;
-  vec2 rotationSpeed;
+  float rotationSpeed = 0.f;
   float speed = 0.f;
 };

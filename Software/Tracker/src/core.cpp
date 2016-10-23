@@ -130,6 +130,8 @@ void core_serialize(core* c) {
 
   frame_builder.add_timestamp(c->timestamp);
   frame_builder.add_camera(&camera);
+  frame_builder.add_rotationSpeed(c->state.rotationSpeed);
+  frame_builder.add_speed(c->state.speed);
   frame_builder.add_depth(depth);
   frame_builder.add_detections(detectionOffsets);
   frame_builder.add_targets(targetOffsets);
