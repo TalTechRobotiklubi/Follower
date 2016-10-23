@@ -66,6 +66,8 @@ add_executable(
   Texture.cpp
   vec2.cpp
 
+  ui/Console.cpp
+
   parg/parg.c
 )
 
