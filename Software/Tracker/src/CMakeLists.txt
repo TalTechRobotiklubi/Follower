@@ -13,9 +13,6 @@ endif()
 add_definitions(-DGLFW_INCLUDE_GLEXT)
 
 set(CORE_SOURCES
-  algorithm/algorithm_move.cpp
-  algorithm/algorithm_runner.cpp
-
   AsyncSerial.cpp
   BlockDiff.cpp
 
@@ -58,7 +55,6 @@ add_executable(
 
 add_executable(
   follower_client
-  AABB.cpp
   client.cpp
   Decode.cpp
   fl_math.cpp

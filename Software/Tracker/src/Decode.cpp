@@ -56,7 +56,7 @@ bool DecodeFrame(Decoder* dc, const uint8_t* data, int len, int targetWidth,
     return false;
   }
 
-  if (dc->unscaled.width != image->r_w || dc->unscaled.height != image->r_h) {
+  if (dc->unscaled.width != int(image->r_w) || dc->unscaled.height != int(image->r_h)) {
     if (dc->unscaled.data) {
       free(dc->unscaled.data);
     }
@@ -69,7 +69,7 @@ bool DecodeFrame(Decoder* dc, const uint8_t* data, int len, int targetWidth,
                      dc->unscaled.data, dc->unscaled.pitch, image->r_w,
                      image->r_h);
 
-  if (targetWidth != image->r_w || targetHeight != image->r_h) {
+  if (targetWidth != int(image->r_w) || targetHeight != int(image->r_h)) {
     if (dc->scaledOutput.width != targetWidth ||
         dc->scaledOutput.height != targetHeight) {
       if (dc->scaledOutput.data) {

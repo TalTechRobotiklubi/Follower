@@ -6,7 +6,6 @@
 #include "Clock.h"
 #include "Encode.h"
 #include "UdpHost.h"
-#include "algorithm/algorithm_runner.h"
 #include "comm/datalayer.h"
 #include "core_opt.h"
 #include "fl_constants.h"

@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "AABB.h"
 #include "Decode.h"
 #include "Style.h"
 #include "CoreObj.h"
@@ -218,6 +217,7 @@ void ClientHandleStatusMessage(Client* c, const proto::StatusMessage* message) {
 }
 
 void ClientHandleMessage(Client* c, const uint8_t* data, size_t len) {
+  (void)len;
   const proto::Message* message = proto::GetMessage(data);
   switch (message->payload_type()) {
     case proto::Payload_Frame:
