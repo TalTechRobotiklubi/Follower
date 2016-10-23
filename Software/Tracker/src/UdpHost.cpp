@@ -55,7 +55,7 @@ const IoVec* UdpHostPoll(UdpHost* udp) {
         ENetPacket* packet = event.packet;
         if (packet->dataLength > udp->inputBufferSize) {
           free(udp->input.data);
-          udp->inputBufferSize = 1.5 * packet->dataLength;
+          udp->inputBufferSize = size_t(1.5 * packet->dataLength);
           udp->input.data = (uint8_t*)calloc(udp->inputBufferSize, 1);
         }
         memcpy(udp->input.data, packet->data, packet->dataLength);

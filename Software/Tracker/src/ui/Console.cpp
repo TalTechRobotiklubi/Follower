@@ -67,7 +67,7 @@ void Console::AddLog(const char* fmt, ...) {
 }
 
 const char* Console::Draw(const char* title, float w, float h) {
-  if (!ImGui::BeginChild(title, ImVec2(w, h), ImGuiWindowFlags_NoScrollbar)) {
+  if (!ImGui::BeginChild(title, ImVec2(w, h), true, ImGuiWindowFlags_NoScrollbar)) {
     ImGui::End();
     return nullptr;
   }

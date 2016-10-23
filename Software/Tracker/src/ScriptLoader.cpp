@@ -90,8 +90,7 @@ bool ScriptLoaderExecFile(ScriptLoader* loader, const char* file) {
 }
 
 bool ScriptLoaderExec(ScriptLoader* loader, const char* script) {
-  int res = luaL_dostring(loader->lua, script);
-  return !bool(res);
+  return luaL_dostring(loader->lua, script) == 0;
 }
 
 const char* ScriptLoaderGetError(ScriptLoader* loader) {

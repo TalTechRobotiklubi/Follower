@@ -183,7 +183,7 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
 
   c->detections.clear();
   auto detections = frame->detections();
-  for (size_t i = 0; i < detections->size(); i++) {
+  for (uint32_t i = 0; i < detections->size(); i++) {
     const proto::Detection* d = detections->Get(i);
     if (d->weight() >= 1.f) {
       Detection local;
@@ -199,7 +199,7 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
 
   c->targets.clear();
   auto targets = frame->targets();
-  for (size_t i = 0; i < targets->size(); i++) {
+  for (uint32_t i = 0; i < targets->size(); i++) {
     const proto::Target* t = targets->Get(i);
     c->targets.emplace_back(
         t->timeToLive(), vec2{t->position().x(), t->position().y()},
@@ -286,7 +286,7 @@ void RenderOverview(Client* client) {
     const float d = fl_map_range(t.metricPosition.z, 0.f, 4.5f, 0.f, height);
     const float tx = s * t.kinectPosition.x / w;
     drawList->AddCircleFilled(ImVec2(c.x + w * tx, robot.y - d),
-                              t.weight * radius, ImColor(0xFF, 0xA2, 0xC6), 32);
+                              float(t.weight) * radius, ImColor(0xFF, 0xA2, 0xC6), 32);
   }
 
   drawList->PopClipRect();
@@ -351,7 +351,7 @@ int main(int argc, char** argv) {
     ImGui::Text("| core time: %.2f", client.coreTimestamp / 1000.0);
     cursor = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
-                 ImVec2(kDepthWidth, kDeptHeight), ImVec2(1, 0), ImVec2(0, 1));
+                 ImVec2(float(kDepthWidth), float(kDeptHeight)), ImVec2(1, 0), ImVec2(0, 1));
 
     for (Detection& d : client.detections) {
       draw_list->AddCircleFilled(
@@ -363,7 +363,7 @@ int main(int argc, char** argv) {
     RenderOverview(&client);
 
     const char* cmd =
-        client.console->Draw("console", float(displayWidth - 20) * 0.5f, -1.f);
+        client.console->Draw("console", float(displayWidth - 20) * 0.5f, 400.f);
     if (cmd) {
       auto tokens = split(cmd, ' ');
       if (tokens.size() > 1) {
