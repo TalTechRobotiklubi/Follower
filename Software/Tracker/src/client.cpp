@@ -70,9 +70,21 @@ struct Client {
   bool connected = false;
   const ClientOptions* options;
   Console* console = nullptr;
+  std::vector<float> speedHistory = std::vector<float>(512, 0.f);
+  std::vector<float> rotationSpeedHistory = std::vector<float>(512, 0.f);
 
   ~Client();
 };
+
+void ClientUpdateHistory(Client* c, float speed, float rotationSpeed) {
+  std::rotate(c->rotationSpeedHistory.begin(),
+              c->rotationSpeedHistory.begin() + 1,
+              c->rotationSpeedHistory.end());
+  std::rotate(c->speedHistory.begin(), c->speedHistory.begin() + 1,
+              c->speedHistory.end());
+  c->rotationSpeedHistory.back() = rotationSpeed;
+  c->speedHistory.back() = speed;
+}
 
 void ClientSendData(Client* c, const uint8_t* data, size_t len) {
   if (!c->peer) {
@@ -231,6 +243,8 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
         Target(t->weight(), vec2{t->kinect().x(), t->kinect().y()},
                vec3{t->position().x(), t->position().y(), t->position().z()});
   }
+
+  ClientUpdateHistory(c, frame->speed(), frame->rotationSpeed());
 }
 
 void ClientHandleStatusMessage(Client* c, const proto::StatusMessage* message) {
@@ -388,6 +402,9 @@ int main(int argc, char** argv) {
                 client.connected ? "connected" : "disconnected");
     ImGui::SameLine();
     ImGui::Text("| core time: %.2f", client.coreTimestamp / 1000.0);
+    RenderOverview(&client);
+    ImGui::SameLine();
+
     cursor = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
                  ImVec2(float(kDepthWidth), float(kDeptHeight)), ImVec2(1, 0),
@@ -400,7 +417,15 @@ int main(int argc, char** argv) {
     }
 
     ImGui::SameLine();
-    RenderOverview(&client);
+
+    ImGui::BeginGroup();
+    ImGui::PlotLines("##rotationSpeed", client.rotationSpeedHistory.data(),
+                     client.rotationSpeedHistory.size(), 0, "rotation speed",
+                     -360.f, 360.f, ImVec2(240.f, 80.f));
+    ImGui::PlotLines("##speed", client.speedHistory.data(),
+                     client.speedHistory.size(), 0, "speed", 0.f, 300.f,
+                     ImVec2(240.f, 80.f));
+    ImGui::EndGroup();
 
     const char* cmd =
         client.console->Draw("console", float(displayWidth - 20) * 0.5f, 400.f);
