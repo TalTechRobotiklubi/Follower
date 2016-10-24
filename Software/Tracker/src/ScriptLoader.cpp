@@ -9,16 +9,31 @@ static const char* const initScript = R"(
   ffi.cdef[[
     typedef struct { float x, y; } vec2;
     typedef struct { float x, y, z; } vec3;
+
     typedef struct {
       vec2 kinectPosition;
       vec3 metricPosition;
       float weight;
     } Detection;
+
     typedef struct {
       double timestamp;
       int32_t numDetections;
       Detection detections[16];
     } World;
+
+    typedef struct {
+      float weight;
+      vec2 kinect;
+      vec3 position;
+    } Target;
+
+    typedef struct {
+      int32_t activeTarget;
+      int32_t numTargets;
+      Target targets[16];
+    } TrackingState;
+
     typedef struct {
       vec2 camera;
       vec2 rotationSpeed;
@@ -28,11 +43,12 @@ static const char* const initScript = R"(
 
   context = {}
 
-  function decide(dt, world, state)
+  function do_decide(dt, world, state, tracking)
     world = ffi.cast("World*", world)
     state = ffi.cast("ControlState*", state)
-    if user_decide ~= nil then
-      local ok, new_state = pcall(user_decide, dt, world, state)
+    tracking = ffi.cast("TrackingState*", tracking)
+    if decide ~= nil then
+      local ok, new_state = pcall(decide, dt, world, state, tracking)
       if ok then
         return new_state
       else
@@ -58,13 +74,14 @@ bool ScriptLoaderInit(ScriptLoader* loader) {
 }
 
 const char* ScriptLoaderUpdate(ScriptLoader* loader, double dt, World* world,
-                               ControlState* state) {
+                               ControlState* state, TrackingState* tracking) {
   lua_State* L = loader->lua;
-  lua_getglobal(L, "decide");
+  lua_getglobal(L, "do_decide");
   lua_pushnumber(L, dt);
   lua_pushlightuserdata(L, world);
   lua_pushlightuserdata(L, state);
-  if (lua_pcall(L, 3, 1, 0) != 0) {
+  lua_pushlightuserdata(L, tracking);
+  if (lua_pcall(L, 4, 1, 0) != 0) {
     return lua_tostring(L, -1);
   }
 

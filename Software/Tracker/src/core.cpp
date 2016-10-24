@@ -23,7 +23,7 @@ void core_start(core* c) {
 }
 
 void core_decide(core* c, double dt) {
-  ScriptLoaderUpdate(&c->scripts, dt, &c->world, &c->state);
+  ScriptLoaderUpdate(&c->scripts, dt, &c->world, &c->state, &c->tracking);
 }
 
 void core_handle_message(core* c, const uint8_t* data, size_t) {
@@ -116,14 +116,15 @@ void core_serialize(core* c) {
 
   for (int32_t i = 0; i < c->tracking.numTargets; i++) {
     const Target& t = c->tracking.targets[i];
-    targets.push_back(proto::Target(
-        float(t.weight), proto::Vec2(t.kinectPosition.x, t.kinectPosition.y),
-        proto::Vec3(t.metricPosition.x, t.metricPosition.y,
-                    t.metricPosition.z)));
+    targets.push_back(
+        proto::Target(t.weight, proto::Vec2(t.kinect.x, t.kinect.y),
+                      proto::Vec3(t.position.x, t.position.y, t.position.z)));
   }
 
   auto detectionOffsets = c->builder.CreateVectorOfStructs(detections);
   auto targetOffsets = c->builder.CreateVectorOfStructs(targets);
+  auto tracking = proto::CreateTrackingState(
+      c->builder, c->tracking.activeTarget, targetOffsets);
 
   proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
   proto::FrameBuilder frame_builder(c->builder);
@@ -134,7 +135,7 @@ void core_serialize(core* c) {
   frame_builder.add_speed(c->state.speed);
   frame_builder.add_depth(depth);
   frame_builder.add_detections(detectionOffsets);
-  frame_builder.add_targets(targetOffsets);
+  frame_builder.add_tracking(tracking);
 
   auto frame = frame_builder.Finish();
   auto message =

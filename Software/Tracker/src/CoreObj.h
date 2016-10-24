@@ -15,16 +15,17 @@ struct World {
 };
 
 struct Target {
-  double weight = 1.0;
-  vec2 kinectPosition;
-  vec3 metricPosition;
+  float weight = 0.f;
+  vec2 kinect;
+  vec3 position;
 
   Target() = default;
-  Target(double weight, vec2 kinectPos, vec3 metricPos)
-    : weight(weight), kinectPosition(kinectPos), metricPosition(metricPos) {}
+  Target(float weight, vec2 kinect, vec3 position)
+    : weight(weight), kinect(kinect), position(position) {}
 };
 
 struct TrackingState {
+  int32_t activeTarget = -1;
   int32_t numTargets = 0;
   Target targets[16];
 };

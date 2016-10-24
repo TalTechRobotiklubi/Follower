@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "CoreObj.h"
 #include "Decode.h"
 #include "Style.h"
-#include "CoreObj.h"
 #include "Texture.h"
 #include "fl_constants.h"
 #include "fl_math.h"
@@ -198,13 +198,13 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   }
 
   c->targets.clear();
-  auto targets = frame->targets();
+  auto tracking = frame->tracking();
+  auto targets = tracking->targets();
   for (uint32_t i = 0; i < targets->size(); i++) {
     const proto::Target* t = targets->Get(i);
     c->targets.emplace_back(
-        t->timeToLive(), vec2{t->position().x(), t->position().y()},
-        vec3{t->metricPosition().x(), t->metricPosition().y(),
-             t->metricPosition().z()});
+        t->weight(), vec2{t->kinect().x(), t->kinect().y()},
+        vec3{t->position().x(), t->position().y(), t->position().z()});
   }
 }
 
@@ -276,17 +276,20 @@ void RenderOverview(Client* client) {
 
   const float radius = 12.f;
   for (const Detection& detection : client->detections) {
-    const float d = fl_map_range(detection.metricPosition.z, 0.f, 4.5f, 0.f, height);
+    const float d =
+        fl_map_range(detection.metricPosition.z, 0.f, 4.5f, 0.f, height);
     const float tx = s * detection.kinectPosition.x / w;
     drawList->AddCircle(ImVec2(c.x + w * tx, robot.y - d), radius,
                         ImColor(0x66, 0xA2, 0xC6), 32);
   }
 
+  printf("Target count: %d\n", client->targets.size());
   for (const Target& t : client->targets) {
-    const float d = fl_map_range(t.metricPosition.z, 0.f, 4.5f, 0.f, height);
-    const float tx = s * t.kinectPosition.x / w;
+    const float d = fl_map_range(t.position.z, 0.f, 4.5f, 0.f, height);
+    const float tx = s * t.kinect.x / w;
     drawList->AddCircleFilled(ImVec2(c.x + w * tx, robot.y - d),
-                              float(t.weight) * radius, ImColor(0xFF, 0xA2, 0xC6), 32);
+                              float(t.weight) * radius,
+                              ImColor(0xFF, 0xA2, 0xC6), 32);
   }
 
   drawList->PopClipRect();
@@ -351,12 +354,13 @@ int main(int argc, char** argv) {
     ImGui::Text("| core time: %.2f", client.coreTimestamp / 1000.0);
     cursor = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
-                 ImVec2(float(kDepthWidth), float(kDeptHeight)), ImVec2(1, 0), ImVec2(0, 1));
+                 ImVec2(float(kDepthWidth), float(kDeptHeight)), ImVec2(1, 0),
+                 ImVec2(0, 1));
 
     for (Detection& d : client.detections) {
       draw_list->AddCircleFilled(
-          ImVec2(cursor.x + d.kinectPosition.x, cursor.y + d.kinectPosition.y), 20.f,
-          ImColor(255, 0, 0));
+          ImVec2(cursor.x + d.kinectPosition.x, cursor.y + d.kinectPosition.y),
+          20.f, ImColor(255, 0, 0));
     }
 
     ImGui::SameLine();

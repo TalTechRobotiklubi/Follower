@@ -12,15 +12,20 @@ struct Vec3 {
 }
 
 struct Target {
-  timeToLive:float;
-  position:Vec2;
-  metricPosition:Vec3;
+  weight:float;
+  kinect:Vec2;
+  position:Vec3;
 }
 
 struct Detection {
   position:Vec2;
   metricPosition:Vec3;
   weight:float;
+}
+
+table TrackingState {
+  activeTarget:int;
+  targets:[Target];  
 }
 
 table Frame {
@@ -30,7 +35,7 @@ table Frame {
   speed:float;
   depth:[ubyte];
   detections:[Detection];
-  targets:[Target];
+  tracking:TrackingState;
 }
 
 table LuaMainScript {
