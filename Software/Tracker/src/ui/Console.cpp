@@ -41,7 +41,10 @@ Console::Console() {
   memset(InputBuf, 0, sizeof(InputBuf));
   HistoryPos = -1;
   Commands.push_back("help");
-  Commands.push_back("send_lua_file");
+  Commands.push_back("startscript");
+  Commands.push_back("stop");
+  Commands.push_back("speed");
+  Commands.push_back("rot");
 }
 
 Console::~Console() {

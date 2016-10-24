@@ -26,6 +26,44 @@ void core_decide(core* c, double dt) {
   ScriptLoaderUpdate(&c->scripts, dt, &c->world, &c->state, &c->tracking);
 }
 
+void core_send_status_message(core* c, const char* message) {
+  flatbuffers::FlatBufferBuilder builder;
+  auto content = builder.CreateString(message);
+  auto m = proto::CreateMessage(
+      builder, proto::Payload_StatusMessage,
+      proto::CreateStatusMessage(builder, content).Union());
+  builder.Finish(m);
+  UdpHostBroadcast(c->udp, builder.GetBufferPointer(), builder.GetSize());
+}
+
+void core_stop_actions(core* c) {
+  ScriptLoaderExec(&c->scripts, "decide = nil");
+  c->state = ControlState();
+}
+
+void core_handle_command(core* c, const proto::Command* command) {
+  switch (command->type()) {
+    case proto::CommandType_Stop:
+      core_stop_actions(c);
+      core_send_status_message(c, "stop done");
+      break;
+    case proto::CommandType_Speed: {
+      c->state.speed = float(atof(command->arg()->c_str()));
+      std::string actual = std::to_string(c->state.speed);
+      core_send_status_message(c, actual.c_str());
+      break;
+    }
+    case proto::CommandType_RotationSpeed: {
+      c->state.rotationSpeed = float(atof(command->arg()->c_str()));
+      std::string actual = std::to_string(c->state.rotationSpeed);
+      core_send_status_message(c, actual.c_str());
+      break;
+    }
+    default:
+      break;
+  }
+}
+
 void core_handle_message(core* c, const uint8_t* data, size_t) {
   auto message = proto::GetMessage(data);
   if (!message) {
@@ -37,25 +75,22 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
       auto scriptMessage = (const proto::LuaMainScript*)message->payload();
       const char* remoteScript = scriptMessage->content()->c_str();
 
-      flatbuffers::FlatBufferBuilder builder;
-      flatbuffers::Offset<flatbuffers::String> messageContent;
       if (ScriptLoaderExec(&c->scripts, remoteScript)) {
-        messageContent = builder.CreateString("load successful");
+        core_send_status_message(c, "load successful");
       } else {
         const char* err = ScriptLoaderGetError(&c->scripts);
         if (err) {
           printf("failed to load wrapper script: %s\n", err);
-          messageContent = builder.CreateString(err);
+          core_send_status_message(c, err);
         } else {
-          messageContent =
-              builder.CreateString("failed to load script, no lua error");
+          core_send_status_message(c, "failed to load script, no lua error");
         }
       }
-      auto message = proto::CreateMessage(
-          builder, proto::Payload_StatusMessage,
-          proto::CreateStatusMessage(builder, messageContent).Union());
-      builder.Finish(message);
-      UdpHostBroadcast(c->udp, builder.GetBufferPointer(), builder.GetSize());
+      break;
+    }
+    case proto::Payload_Command: {
+      auto command = (const proto::Command*)message->payload();
+      core_handle_command(c, command);
       break;
     }
     default:
@@ -85,7 +120,8 @@ void core_detect(core* c, double timestamp) {
                      candidate->kinect_position.y};
       vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
                      candidate->metric_position.z};
-      c->world.detections[i] = Detection{kinectPos, metricPos, candidate->weight};
+      c->world.detections[i] =
+          Detection{kinectPos, metricPos, candidate->weight};
       c->world.numDetections++;
     }
   }

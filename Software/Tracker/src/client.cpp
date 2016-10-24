@@ -85,11 +85,30 @@ void ClientSendData(Client* c, const uint8_t* data, size_t len) {
   enet_host_flush(c->udpClient);
 }
 
+void SendCommand(Client* c, proto::CommandType type, const char* args) {
+  flatbuffers::FlatBufferBuilder builder;
+  auto cmd = proto::CreateCommandDirect(builder, type, args);
+  auto message =
+      proto::CreateMessage(builder, proto::Payload_Command, cmd.Union());
+  builder.Finish(message);
+  ClientSendData(c, builder.GetBufferPointer(), builder.GetSize());
+}
+
 void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
   const std::string& command = tokens.front();
   Console* console = c->console;
 
-  if (command == "send_lua_file") {
+  const auto needArg = [&]() {
+    if (tokens.size() < 2) {
+      console->AddLog("need an argument");
+      return true;
+    }
+    return false;
+  };
+
+  if (command == "startscript") {
+    if (needArg()) return;
+
     const std::string& file = tokens[1];
 
     FILE* f = fopen(file.c_str(), "rb");
@@ -114,8 +133,15 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
     auto message = proto::CreateMessage(builder, proto::Payload_LuaMainScript,
                                         script.Union());
     builder.Finish(message);
-
     ClientSendData(c, builder.GetBufferPointer(), builder.GetSize());
+  } else if (command == "stop") {
+    SendCommand(c, proto::CommandType_Stop, nullptr);
+  } else if (command == "speed") {
+    if (needArg()) return;
+    SendCommand(c, proto::CommandType_Speed, tokens[1].c_str());
+  } else if (command == "rot") {
+    if (needArg()) return;
+    SendCommand(c, proto::CommandType_RotationSpeed, tokens[1].c_str());
   }
 }
 
@@ -380,7 +406,7 @@ int main(int argc, char** argv) {
         client.console->Draw("console", float(displayWidth - 20) * 0.5f, 400.f);
     if (cmd) {
       auto tokens = split(cmd, ' ');
-      if (tokens.size() > 1) {
+      if (tokens.size() >= 1) {
         HandleCommand(&client, tokens);
       }
     }

@@ -7,6 +7,8 @@
 
 namespace proto {
 
+struct Command;
+
 struct Vec2;
 
 struct Vec3;
@@ -25,17 +27,33 @@ struct StatusMessage;
 
 struct Message;
 
+enum CommandType {
+  CommandType_RotationSpeed = 0,
+  CommandType_Stop = 1,
+  CommandType_Speed = 2,
+  CommandType_MIN = CommandType_RotationSpeed,
+  CommandType_MAX = CommandType_Speed
+};
+
+inline const char **EnumNamesCommandType() {
+  static const char *names[] = { "RotationSpeed", "Stop", "Speed", nullptr };
+  return names;
+}
+
+inline const char *EnumNameCommandType(CommandType e) { return EnumNamesCommandType()[static_cast<int>(e)]; }
+
 enum Payload {
   Payload_NONE = 0,
   Payload_Frame = 1,
   Payload_LuaMainScript = 2,
   Payload_StatusMessage = 3,
+  Payload_Command = 4,
   Payload_MIN = Payload_NONE,
-  Payload_MAX = Payload_StatusMessage
+  Payload_MAX = Payload_Command
 };
 
 inline const char **EnumNamesPayload() {
-  static const char *names[] = { "NONE", "Frame", "LuaMainScript", "StatusMessage", nullptr };
+  static const char *names[] = { "NONE", "Frame", "LuaMainScript", "StatusMessage", "Command", nullptr };
   return names;
 }
 
@@ -112,6 +130,50 @@ MANUALLY_ALIGNED_STRUCT(4) Detection FLATBUFFERS_FINAL_CLASS {
   float weight() const { return flatbuffers::EndianScalar(weight_); }
 };
 STRUCT_END(Detection, 24);
+
+struct Command FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_TYPE = 4,
+    VT_ARG = 6
+  };
+  CommandType type() const { return static_cast<CommandType>(GetField<int8_t>(VT_TYPE, 0)); }
+  const flatbuffers::String *arg() const { return GetPointer<const flatbuffers::String *>(VT_ARG); }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<int8_t>(verifier, VT_TYPE) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_ARG) &&
+           verifier.Verify(arg()) &&
+           verifier.EndTable();
+  }
+};
+
+struct CommandBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_type(CommandType type) { fbb_.AddElement<int8_t>(Command::VT_TYPE, static_cast<int8_t>(type), 0); }
+  void add_arg(flatbuffers::Offset<flatbuffers::String> arg) { fbb_.AddOffset(Command::VT_ARG, arg); }
+  CommandBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+  CommandBuilder &operator=(const CommandBuilder &);
+  flatbuffers::Offset<Command> Finish() {
+    auto o = flatbuffers::Offset<Command>(fbb_.EndTable(start_, 2));
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Command> CreateCommand(flatbuffers::FlatBufferBuilder &_fbb,
+    CommandType type = CommandType_RotationSpeed,
+    flatbuffers::Offset<flatbuffers::String> arg = 0) {
+  CommandBuilder builder_(_fbb);
+  builder_.add_arg(arg);
+  builder_.add_type(type);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Command> CreateCommandDirect(flatbuffers::FlatBufferBuilder &_fbb,
+    CommandType type = CommandType_RotationSpeed,
+    const char *arg = nullptr) {
+  return CreateCommand(_fbb, type, arg ? _fbb.CreateString(arg) : 0);
+}
 
 struct TrackingState FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
@@ -356,6 +418,7 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *union_obj
     case Payload_Frame: return verifier.VerifyTable(reinterpret_cast<const Frame *>(union_obj));
     case Payload_LuaMainScript: return verifier.VerifyTable(reinterpret_cast<const LuaMainScript *>(union_obj));
     case Payload_StatusMessage: return verifier.VerifyTable(reinterpret_cast<const StatusMessage *>(union_obj));
+    case Payload_Command: return verifier.VerifyTable(reinterpret_cast<const Command *>(union_obj));
     default: return false;
   }
 }

@@ -1,5 +1,16 @@
 namespace proto;
 
+enum CommandType : byte {
+  RotationSpeed,
+  Stop,
+  Speed
+}
+
+table Command {
+  type:CommandType;
+  arg:string;
+}
+
 struct Vec2 {
   x:float;
   y:float;
@@ -49,7 +60,8 @@ table StatusMessage {
 union Payload {
   Frame,
   LuaMainScript,
-  StatusMessage
+  StatusMessage,
+  Command
 }
 
 table Message {
