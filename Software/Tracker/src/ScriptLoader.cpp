@@ -36,7 +36,7 @@ static const char* const initScript = R"(
 
     typedef struct {
       vec2 camera;
-      vec2 rotationSpeed;
+      float rotationSpeed;
       float speed;
     } ControlState;
   ]]

@@ -73,21 +73,21 @@ void core_detect(core* c, double timestamp) {
   c->world.timestamp = timestamp;
   c->world.numDetections = 0;
 
+  const float w = float(kDepthWidth);
+  size_t numCandidates = size_t(c->fhd->candidates_len);
+
   // Flip the detection horizontally, Kinect 2's images have left-right
   // reversed.
-  const float w = float(kDepthWidth);
-  size_t numCandidates =
-      std::min(size_t(c->fhd->candidates_len),
-               sizeof(c->world.detections) / sizeof(Detection));
-
   for (size_t i = 0; i < numCandidates; i++) {
     const fhd_candidate* candidate = &c->fhd->candidates[i];
-    vec2 kinectPos{w - candidate->kinect_position.x,
-                   candidate->kinect_position.y};
-    vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
-                   candidate->metric_position.z};
-    c->world.detections[i] = Detection{kinectPos, metricPos, candidate->weight};
-    c->world.numDetections++;
+    if (candidate->weight >= 1.f) {
+      vec2 kinectPos{w - candidate->kinect_position.x,
+                     candidate->kinect_position.y};
+      vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
+                     candidate->metric_position.z};
+      c->world.detections[i] = Detection{kinectPos, metricPos, candidate->weight};
+      c->world.numDetections++;
+    }
   }
 }
 

@@ -60,12 +60,12 @@ ClientOptions ParseOptions(int argc, char** argv) {
 
 struct Client {
   ControlState state;
+  TrackingState tracking;
   Decoder* decoder = nullptr;
   ENetHost* udpClient = nullptr;
   ENetPeer* peer = nullptr;
   Texture decodedDepth;
   std::vector<Detection> detections;
-  std::vector<Target> targets;
   double coreTimestamp = 0.0;
   bool connected = false;
   const ClientOptions* options;
@@ -185,26 +185,25 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   auto detections = frame->detections();
   for (uint32_t i = 0; i < detections->size(); i++) {
     const proto::Detection* d = detections->Get(i);
-    if (d->weight() >= 1.f) {
-      Detection local;
-      const proto::Vec2 position = d->position();
-      local.kinectPosition.x = position.x();
-      local.kinectPosition.y = position.y();
-      const proto::Vec3 metric = d->metricPosition();
-      local.metricPosition = vec3(metric.x(), metric.y(), metric.z());
-      local.weight = d->weight();
-      c->detections.push_back(local);
-    }
+    Detection local;
+    const proto::Vec2 position = d->position();
+    local.kinectPosition.x = position.x();
+    local.kinectPosition.y = position.y();
+    const proto::Vec3 metric = d->metricPosition();
+    local.metricPosition = vec3(metric.x(), metric.y(), metric.z());
+    local.weight = d->weight();
+    c->detections.push_back(local);
   }
 
-  c->targets.clear();
   auto tracking = frame->tracking();
   auto targets = tracking->targets();
+  c->tracking.numTargets = tracking->targets()->size();
+  c->tracking.activeTarget = tracking->activeTarget();
   for (uint32_t i = 0; i < targets->size(); i++) {
     const proto::Target* t = targets->Get(i);
-    c->targets.emplace_back(
-        t->weight(), vec2{t->kinect().x(), t->kinect().y()},
-        vec3{t->position().x(), t->position().y(), t->position().z()});
+    c->tracking.targets[i] =
+        Target(t->weight(), vec2{t->kinect().x(), t->kinect().y()},
+               vec3{t->position().x(), t->position().y(), t->position().z()});
   }
 }
 
@@ -283,13 +282,24 @@ void RenderOverview(Client* client) {
                         ImColor(0x66, 0xA2, 0xC6), 32);
   }
 
-  printf("Target count: %d\n", client->targets.size());
-  for (const Target& t : client->targets) {
+  const TrackingState* tracking = &client->tracking;
+  const auto TargetToRenderCoords = [&](const Target& t) {
     const float d = fl_map_range(t.position.z, 0.f, 4.5f, 0.f, height);
     const float tx = s * t.kinect.x / w;
-    drawList->AddCircleFilled(ImVec2(c.x + w * tx, robot.y - d),
-                              float(t.weight) * radius,
+    return ImVec2(c.x + w * tx, robot.y - d);
+  };
+
+  for (int32_t i = 0; i < tracking->numTargets; i++) {
+    const Target& t = tracking->targets[i];
+    ImVec2 renderCoord = TargetToRenderCoords(t);
+    drawList->AddCircleFilled(renderCoord, t.weight * radius,
                               ImColor(0xFF, 0xA2, 0xC6), 32);
+  }
+
+  if (tracking->activeTarget > -1) {
+    const Target& t = tracking->targets[tracking->activeTarget];
+    ImVec2 position = TargetToRenderCoords(t);
+    drawList->AddLine(robot, position, ImColor(0xB0, 0x06, 0xEF), 2.f);
   }
 
   drawList->PopClipRect();
