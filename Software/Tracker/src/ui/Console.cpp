@@ -117,13 +117,13 @@ const char* Console::Draw(const char* title, float w, float h) {
     const char* item = Items[i];
     if (!filter.PassFilter(item)) continue;
     ImVec4 col =
-        ImVec4(0.1f, 0.1f, 0.1f, 1.0f);  // A better implementation may store
+        ImVec4(1.f, 1.f, 1.f, 1.0f);  // A better implementation may store
                                          // a type per-item. For the sample
                                          // let's just parse the text.
     if (strstr(item, "[error]"))
-      col = ImColor(201, 87, 81);
+      col = ImColor(221, 87, 81);
     else if (strncmp(item, "# ", 2) == 0)
-      col = ImColor(201, 87, 81);
+      col = ImColor(221, 87, 81);
     ImGui::PushStyleColor(ImGuiCol_Text, col);
     ImGui::TextUnformatted(item);
     ImGui::PopStyleColor();
