@@ -89,7 +89,7 @@ target_link_libraries(
 
 target_link_libraries(
   follower_core
-  ${LUAJIT_LIBRARY}
+  ${LUAJIT_LIBRARIES}
   ${Boost_LIBRARIES}
   ${KINECTV2_LIBRARY}
   yuv
