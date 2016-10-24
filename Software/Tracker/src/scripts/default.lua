@@ -1,5 +1,3 @@
-local inspect = require "inspect"
-
 local MAX_TTL = 1.5
 
 function filter(a, f)
