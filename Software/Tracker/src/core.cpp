@@ -181,13 +181,12 @@ void core_serialize(core* c) {
   c->builder.Finish(message);
 }
 
-core::~core() { kinect_frame_thread.join(); }
+core::~core() { if (kinect_frame_thread.joinable()) kinect_frame_thread.join(); }
 
 int main(int argc, char** argv) {
   core c;
   if (!ScriptLoaderInit(&c.scripts)) {
-    printf("Failed to load setup scripts: %s\n",
-           ScriptLoaderGetError(&c.scripts));
+    printf("Failed to initialize lua\n");
     return 1;
   }
 

@@ -58,10 +58,13 @@ static const char* const initScript = R"(
   end
 )";
 
-ScriptLoader::~ScriptLoader() { lua_close(lua); }
+ScriptLoader::~ScriptLoader() { if (lua) lua_close(lua); }
 
 bool ScriptLoaderInit(ScriptLoader* loader) {
   loader->lua = luaL_newstate();
+  if (!loader->lua) {
+    return false;
+  }
   luaL_openlibs(loader->lua);
 
   if (luaL_dostring(loader->lua, initScript)) {
