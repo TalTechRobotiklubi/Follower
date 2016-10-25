@@ -366,6 +366,7 @@ int main(int argc, char** argv) {
   ImGui::GetStyle() = Style::Bright();
 
   bool showWindow = true;
+  bool showConsole = true;
   ImVec4 bgColor = ImColor(218, 223, 225);
 
   ClientOptions options = ParseOptions(argc, argv);
@@ -427,14 +428,16 @@ int main(int argc, char** argv) {
                      ImVec2(240.f, 80.f));
     ImGui::EndGroup();
 
-    const char* cmd =
-        client.console->Draw("console", float(displayWidth - 20) * 0.5f, 400.f);
-    if (cmd) {
-      auto tokens = split(cmd, ' ');
-      if (tokens.size() >= 1) {
-        HandleCommand(&client, tokens);
+    ImGui::Begin("##consolewindow", &showConsole, ImVec2(600.f, 400.f));
+      const char* cmd =
+          client.console->Draw("console", float(displayWidth - 20) * 0.5f, 300.f);
+      if (cmd) {
+        auto tokens = split(cmd, ' ');
+        if (tokens.size() >= 1) {
+          HandleCommand(&client, tokens);
+        }
       }
-    }
+    ImGui::End();
 
     ImGui::End();
 
