@@ -8,6 +8,7 @@
 #include "Follower.h"
 #include "TRobot.h"
 #include "configure.h"
+#include "chartdisplay.h"
 
 class DataLayerBase;
 class WorkerObjectBase;
@@ -58,7 +59,7 @@ private:
   QSettings* settings_;
   Configure* conf_;
   bool keyboardOff_;
-
+  ChartDisplay* charts_;
 };
 
 #endif // FOLLOWERUI_H
