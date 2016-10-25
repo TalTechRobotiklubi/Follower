@@ -59,8 +59,20 @@ void core_handle_command(core* c, const proto::Command* command) {
       core_send_status_message(c, actual.c_str());
       break;
     }
-    default:
+    case proto::CommandType_StopVideo: {
+      c->sendVideo = false;
+      core_send_status_message(c, "ok");
       break;
+    }
+    case proto::CommandType_StartVideo: {
+      c->sendVideo = true;
+      core_send_status_message(c, "ok");
+      break;
+    }
+    default: {
+      core_send_status_message(c, "unknown command");
+      break;
+    }
   }
 }
 
@@ -171,7 +183,9 @@ void core_serialize(core* c) {
   frame_builder.add_camera(&camera);
   frame_builder.add_rotationSpeed(c->state.rotationSpeed);
   frame_builder.add_speed(c->state.speed);
-  frame_builder.add_depth(depth);
+  if (c->sendVideo) {
+    frame_builder.add_depth(depth);
+  }
   frame_builder.add_detections(detectionOffsets);
   frame_builder.add_tracking(tracking);
 
@@ -218,12 +232,14 @@ int main(int argc, char** argv) {
 
     core_detect(&c, current_time);
 
-    depth_to_rgba(c.kinectFrame.depthData, c.kinectFrame.depthLength,
-                  &c.rgba_depth);
-    BlockDiff(c.prev_rgba_depth.data, c.rgba_depth.data, kDepthWidth,
-              kDeptHeight, &c.rgba_depth_diff);
-    c.encoded_depth =
-        EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
+    if (c.sendVideo) {
+      depth_to_rgba(c.kinectFrame.depthData, c.kinectFrame.depthLength,
+                    &c.rgba_depth);
+      BlockDiff(c.prev_rgba_depth.data, c.rgba_depth.data, kDepthWidth,
+                kDeptHeight, &c.rgba_depth_diff);
+      c.encoded_depth =
+          EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
+    }
 
     c.serial.receive(&c.in_data);
     core_decide(&c, frameTimeSeconds);

@@ -31,12 +31,14 @@ enum CommandType {
   CommandType_RotationSpeed = 0,
   CommandType_Stop = 1,
   CommandType_Speed = 2,
+  CommandType_StartVideo = 3,
+  CommandType_StopVideo = 4,
   CommandType_MIN = CommandType_RotationSpeed,
-  CommandType_MAX = CommandType_Speed
+  CommandType_MAX = CommandType_StopVideo
 };
 
 inline const char **EnumNamesCommandType() {
-  static const char *names[] = { "RotationSpeed", "Stop", "Speed", nullptr };
+  static const char *names[] = { "RotationSpeed", "Stop", "Speed", "StartVideo", "StopVideo", nullptr };
   return names;
 }
 
