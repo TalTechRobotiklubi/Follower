@@ -158,6 +158,10 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
     SendCommand(c, proto::CommandType_StopVideo, nullptr);
   } else if (command == "startvideo") {
     SendCommand(c, proto::CommandType_StartVideo, nullptr);
+  } else if (command == "record") {
+    SendCommand(c, proto::CommandType_RecordDepth, nullptr);
+  } else if (command == "stoprecord") {
+    SendCommand(c, proto::CommandType_StopRecord, nullptr);
   }
 }
 

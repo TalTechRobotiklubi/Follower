@@ -5,7 +5,9 @@ enum CommandType : byte {
   Stop,
   Speed,
   StartVideo,
-  StopVideo
+  StopVideo,
+  RecordDepth,
+  StopRecord
 }
 
 table Command {

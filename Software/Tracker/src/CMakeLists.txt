@@ -30,6 +30,7 @@ set(CORE_SOURCES
   Encode.cpp
 
   fl_yuy2_convert.cpp
+  fl_sqlite_writer.cpp
 
   image.cpp
 

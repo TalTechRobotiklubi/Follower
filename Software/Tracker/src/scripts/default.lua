@@ -60,7 +60,7 @@ function decide(dt, world, state, tracking)
       local detection = world.detections[i]
       local p = detection.metricPosition
       local dist = distance(target.position, detection.metricPosition)
-      if dist < 1.0 then
+      if dist < 0.8 then
         local k = detection.kinectPosition
         target.kinect = {x = k.x, y = k.y}
         target.position = {x = p.x, y = p.y, z = p.z}
@@ -70,6 +70,7 @@ function decide(dt, world, state, tracking)
     end
   end
 
+  local rspeed = 40.0
   if target ~= nil then
     tracking.numTargets = 1
     tracking.activeTarget = 0
@@ -81,15 +82,15 @@ function decide(dt, world, state, tracking)
     local angle = math.deg(math.atan(-target.position.x / target.position.z))
 
     if angle > 10.0 then
-      state.rotationSpeed = -45.0
+      state.rotationSpeed = rspeed
       state.speed = 0.0
     elseif angle < -10.0 then
-      state.rotationSpeed = 45.0
+      state.rotationSpeed = -rspeed
       state.speed = 0.0
     else 
       state.rotationSpeed = 0.0
-      if target.position.z > 0.6 then
-        state.speed = 80.0
+      if target.position.z > 1.4 then
+        state.speed = 200.0
       else
         state.speed = 0.0
       end
@@ -97,7 +98,11 @@ function decide(dt, world, state, tracking)
   else
     tracking.numTargets = 0
     tracking.activeTarget = -1
+    state.rotationSpeed = 0.0
+    state.speed = 0.0
   end
+
+  state.camera.y = 20.0
 
   return state
 end

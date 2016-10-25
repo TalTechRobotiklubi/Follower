@@ -11,6 +11,7 @@
 #include "core_opt.h"
 #include "fl_constants.h"
 #include "proto/message_generated.h"
+#include "fl_sqlite_writer.h"
 
 void kinect_loop(core* c) {
   while (c->running) {
@@ -66,6 +67,24 @@ void core_handle_command(core* c, const proto::Command* command) {
     }
     case proto::CommandType_StartVideo: {
       c->sendVideo = true;
+      core_send_status_message(c, "ok");
+      break;
+    }
+    case proto::CommandType_RecordDepth: {
+      if (!c->writer) {
+        const char* db = "depth_frames.db";
+        c->writer = fl_sqlite_writer_create(db);
+        core_send_status_message(c, "recording to depth_frames.db");
+      } else {
+        core_send_status_message(c, "already recording");
+      }
+      break;
+    }
+    case proto::CommandType_StopRecord: {
+      if (c->writer) {
+        fl_sqlite_writer_destroy(c->writer);
+        c->writer = nullptr;
+      }
       core_send_status_message(c, "ok");
       break;
     }
@@ -195,7 +214,10 @@ void core_serialize(core* c) {
   c->builder.Finish(message);
 }
 
-core::~core() { if (kinect_frame_thread.joinable()) kinect_frame_thread.join(); }
+core::~core() {
+  if (kinect_frame_thread.joinable()) kinect_frame_thread.join();
+  if (writer) fl_sqlite_writer_destroy(writer);
+}
 
 int main(int argc, char** argv) {
   core c;
@@ -228,6 +250,11 @@ int main(int argc, char** argv) {
     c.timestamp += frame_time;
 
     c.frameSource->FillFrame(&c.kinectFrame);
+    
+    if (c.writer) {
+      fl_sqlite_writer_add_frame(c.writer, &c.kinectFrame);
+    }
+
     memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
 
     core_detect(&c, current_time);

@@ -1,7 +1,7 @@
 #include "fl_sqlite_writer.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "kinect_frame.h"
+#include "KinectFrame.h"
 #include "sqlite3/sqlite3.h"
 
 struct fl_sqlite_writer {
@@ -46,10 +46,10 @@ void fl_sqlite_writer_destroy(fl_sqlite_writer* writer) {
 }
 
 bool fl_sqlite_writer_add_frame(fl_sqlite_writer* writer,
-                                const kinect_frame* frame) {
-  const int length = int(frame->depth_length * sizeof(uint16_t));
+                                const KinectFrame* frame) {
+  const int length = int(frame->depthLength * sizeof(uint16_t));
   sqlite3_reset(writer->insert_query);
-  sqlite3_bind_blob(writer->insert_query, 1, frame->depth_data, length,
+  sqlite3_bind_blob(writer->insert_query, 1, frame->depthData, length,
                     SQLITE_STATIC);
 
   int res = sqlite3_step(writer->insert_query);
