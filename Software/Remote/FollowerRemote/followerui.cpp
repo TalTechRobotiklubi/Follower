@@ -15,6 +15,7 @@
 #include "Kinematics.h"
 #include "TRobot.h"
 #include "configure.h"
+#include "chartdisplay.h"
 
 FollowerUi::FollowerUi(Follower *robot)
   : QMainWindow()
@@ -356,4 +357,7 @@ void FollowerUi::setupPidConfig()
   connect(conf_, &Configure::routineStatus, this, &FollowerUi::keyboardDisabled);
 
   ui.tabWidget->addTab(conf_, "PID Config");
+
+  charts_ = new ChartDisplay();
+  ui.tabWidget->addTab(charts_, "Data Charts");
 }

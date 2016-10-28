@@ -154,6 +154,14 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
   } else if (command == "rot") {
     if (needArg()) return;
     SendCommand(c, proto::CommandType_RotationSpeed, tokens[1].c_str());
+  } else if (command == "stopvideo") {
+    SendCommand(c, proto::CommandType_StopVideo, nullptr);
+  } else if (command == "startvideo") {
+    SendCommand(c, proto::CommandType_StartVideo, nullptr);
+  } else if (command == "record") {
+    SendCommand(c, proto::CommandType_RecordDepth, nullptr);
+  } else if (command == "stoprecord") {
+    SendCommand(c, proto::CommandType_StopRecord, nullptr);
   }
 }
 
@@ -213,10 +221,13 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   c->state.rotationSpeed = frame->rotationSpeed();
   c->state.speed = frame->speed();
   c->coreTimestamp = frame->timestamp();
-  rgba_image img;
-  if (DecodeFrame(c->decoder, frame->depth()->Data(), frame->depth()->size(),
-                  kDepthWidth, kDeptHeight, &img)) {
-    TextureUpdate(&c->decodedDepth, img.data, img.width, img.height);
+
+  if (frame->depth()) {
+    rgba_image img;
+    if (DecodeFrame(c->decoder, frame->depth()->Data(), frame->depth()->size(),
+                    kDepthWidth, kDeptHeight, &img)) {
+      TextureUpdate(&c->decodedDepth, img.data, img.width, img.height);
+    }
   }
 
   c->detections.clear();
@@ -403,9 +414,6 @@ int main(int argc, char** argv) {
                 client.connected ? "connected" : "disconnected");
     ImGui::SameLine();
     ImGui::Text("| core time: %.2f", client.coreTimestamp / 1000.0);
-    RenderOverview(&client);
-    ImGui::SameLine();
-
     cursor = ImGui::GetCursorScreenPos();
     ImGui::Image(client.decodedDepth.PtrHandle(),
                  ImVec2(float(kDepthWidth), float(kDeptHeight)), ImVec2(1, 0),
@@ -416,6 +424,9 @@ int main(int argc, char** argv) {
           ImVec2(cursor.x + d.kinectPosition.x, cursor.y + d.kinectPosition.y),
           20.f, ImColor(255, 0, 0));
     }
+    ImGui::SameLine();
+
+    RenderOverview(&client);
 
     ImGui::SameLine();
 

@@ -3,7 +3,11 @@ namespace proto;
 enum CommandType : byte {
   RotationSpeed,
   Stop,
-  Speed
+  Speed,
+  StartVideo,
+  StopVideo,
+  RecordDepth,
+  StopRecord
 }
 
 table Command {

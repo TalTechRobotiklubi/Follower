@@ -41,7 +41,7 @@ Encoder* EncoderCreate(int w, int h) {
     printf("%s\n", vpx_codec_iface_name(codecIface));
     e->encoderCfg.g_threads = 2;
     e->encoderCfg.g_lag_in_frames = 0;
-    e->encoderCfg.rc_target_bitrate = 400;
+    e->encoderCfg.rc_target_bitrate = 192;
     e->encoderCfg.g_w = e->dstWidth;
     e->encoderCfg.g_h = e->dstHeight;
     e->encoderCfg.g_timebase.num = 1000;

@@ -1,5 +1,6 @@
 QT       += core \
-            serialport
+            serialport \
+            charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -32,7 +33,8 @@ SOURCES += \
     Algorithms/algorithmturn.cpp \
     configure.cpp \
     Data/InterfaceConfig.cpp \
-    Data/InterfaceHandler.cpp
+    Data/InterfaceHandler.cpp \
+    chartdisplay.cpp
 
 HEADERS  +=  \
     CANWorkerThread.h \
@@ -58,7 +60,8 @@ HEADERS  +=  \
     Algorithms/algorithmturn.h \
     configure.h \
     Data/InterfaceConfig.h \
-    Data/InterfaceHandler.h
+    Data/InterfaceHandler.h \
+    chartdisplay.h
 
 INCLUDEPATH += \
 	 ./Data \
@@ -67,6 +70,7 @@ INCLUDEPATH += \
 
 FORMS    += \
     followerui.ui \
-    configure.ui
+    configure.ui \
+    chartdisplay.ui
 
 LIBS += User32.Lib

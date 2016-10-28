@@ -13,6 +13,8 @@
 
 struct core {
   double timestamp = 0.0;
+  bool sendVideo = true;
+  struct fl_sqlite_writer* writer = nullptr;
   World world;
   TrackingState tracking;
   ControlState state;
