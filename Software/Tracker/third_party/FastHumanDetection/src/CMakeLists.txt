@@ -4,10 +4,6 @@ if (OPENMP_FOUND)
   add_definitions(-DFHD_OMP)
 endif()
 
-if (WIN32)
-  include_directories(${KINECTV2_INCLUDE_DIR})
-endif()
-
 add_library(fhd
   fhd.cpp
   fhd_block_allocator.cpp
@@ -23,90 +19,6 @@ add_library(fhd
 
   pcg/pcg_basic.c
 )
-
-if (FHD_BUILD_TOOLS)
-  add_library(imgui
-    imgui/imgui.cpp
-    imgui/imgui_draw.cpp
-    imgui/imgui_impl_glfw_gl3.cpp
-  )
-
-  set(UTIL_SOURCES
-    fhd_candidate_db.cpp
-    fhd_sqlite_source.cpp
-    tools/fhd_debug_frame_source.cpp
-  )
-
-  if (WIN32)
-    list(APPEND UTIL_SOURCES tools/fhd_kinect_source.cpp)
-  endif()
-
-  add_library(fhd_util
-    ${UTIL_SOURCES}
-  )
-
-  add_executable(
-    fhd_ui
-    tools/fhd_filebrowser.cpp
-    tools/fhd_texture.cpp
-    tools/ui.cpp
-  )
-
-  add_executable(
-    fhd_train
-    tools/fhd_train.cpp
-  )
-
-  add_executable(
-    fhd_test
-    tools/fhd_test.cpp
-  )
-
-  target_link_libraries(
-    fhd_ui
-    ${KINECTV2_LIBRARY}
-    fhd_util
-    fhd
-    sqlite
-    imgui
-    glfw
-    glew
-    floatfann
-    ${GLFW_LIBRARIES}
-  )
-
-  target_link_libraries(
-    fhd_train
-    fhd_util
-    fhd
-    floatfann
-    sqlite
-    ${CMAKE_DL_LIBS}
-  )
-
-  target_link_libraries(
-    fhd_test
-    fhd_util
-    fhd
-    floatfann
-    sqlite
-    ${CMAKE_DL_LIBS}
-  )
-endif()
-
-if (FHD_BUILD_EXAMPLES)
-    add_executable(example_detect
-      examples/example_detect.cpp
-    )
-
-    target_link_libraries(example_detect
-      fhd_util
-      fhd
-      floatfann
-      sqlite
-      ${KINECTV2_LIBRARY}
-    )
-endif()
 
 set (FHD_HEADERS
   fhd.h

@@ -31,6 +31,7 @@ set(CORE_SOURCES
 
   fl_yuy2_convert.cpp
   fl_sqlite_writer.cpp
+  File.cpp
 
   image.cpp
 
@@ -58,6 +59,7 @@ add_executable(
   follower_client
   client.cpp
   Decode.cpp
+  File.cpp
   fl_math.cpp
   image.cpp
   Style.cpp

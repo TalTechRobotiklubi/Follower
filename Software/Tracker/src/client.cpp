@@ -7,6 +7,7 @@
 #include <string.h>
 #include "CoreObj.h"
 #include "Decode.h"
+#include "File.h"
 #include "Style.h"
 #include "Texture.h"
 #include "fl_constants.h"
@@ -110,8 +111,8 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
   const std::string& command = tokens.front();
   Console* console = c->console;
 
-  const auto needArg = [&]() {
-    if (tokens.size() < 2) {
+  const auto needArg = [&](size_t n) {
+    if (tokens.size() < n) {
       console->AddLog("need an argument");
       return true;
     }
@@ -119,40 +120,35 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
   };
 
   if (command == "startscript") {
-    if (needArg()) return;
+    if (needArg(1)) return;
 
     const std::string& file = tokens[1];
 
-    FILE* f = fopen(file.c_str(), "rb");
-    if (!f) {
+    IoVec content = LoadFile(file.c_str());
+
+    if (!content.data) {
       console->AddLog("no such file");
       return;
     }
 
-    fseek(f, 0, SEEK_END);
-    int64_t size = ftell(f);
-    fseek(f, 0, SEEK_SET);
-
-    std::string content(size, 0);
-    fread(&content[0], 1, size, f);
-    fclose(f);
-
-    console->AddLog("sending %s [%ld bytes]", file.c_str(), size);
+    console->AddLog("sending %s [%zu bytes]", file.c_str(), content.len);
 
     flatbuffers::FlatBufferBuilder builder;
-    auto script =
-        proto::CreateLuaMainScript(builder, builder.CreateString(content));
+    auto script = proto::CreateLuaMainScript(
+        builder, builder.CreateString((const char*)content.data, content.len));
     auto message = proto::CreateMessage(builder, proto::Payload_LuaMainScript,
                                         script.Union());
     builder.Finish(message);
     ClientSendData(c, builder.GetBufferPointer(), builder.GetSize());
+
+    free(content.data);
   } else if (command == "stop") {
     SendCommand(c, proto::CommandType_Stop, nullptr);
   } else if (command == "speed") {
-    if (needArg()) return;
+    if (needArg(1)) return;
     SendCommand(c, proto::CommandType_Speed, tokens[1].c_str());
   } else if (command == "rot") {
-    if (needArg()) return;
+    if (needArg(1)) return;
     SendCommand(c, proto::CommandType_RotationSpeed, tokens[1].c_str());
   } else if (command == "stopvideo") {
     SendCommand(c, proto::CommandType_StopVideo, nullptr);
@@ -162,6 +158,32 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
     SendCommand(c, proto::CommandType_RecordDepth, nullptr);
   } else if (command == "stoprecord") {
     SendCommand(c, proto::CommandType_StopRecord, nullptr);
+  } else if (command == "setclassifier") {
+    if (needArg(2)) return;
+
+    const std::string& outputName = tokens[1];
+    const std::string& inputFile = tokens[2];
+
+    IoVec content = LoadFile(inputFile.c_str());
+
+    if (!content.data) {
+      console->AddLog("no such file");
+      return;
+    }
+
+    console->AddLog("sending %s as %s [%zu bytes]", inputFile.c_str(),
+                    outputName.c_str(), content.len);
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto classifier = proto::CreateClassifier(
+        builder, builder.CreateString(outputName),
+        builder.CreateVector((const int8_t*)content.data, content.len));
+    auto message = proto::CreateMessage(builder, proto::Payload_Classifier,
+                                        classifier.Union());
+    builder.Finish(message);
+    ClientSendData(c, builder.GetBufferPointer(), builder.GetSize());
+
+    free(content.data);
   }
 }
 
