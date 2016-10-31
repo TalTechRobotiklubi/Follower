@@ -235,10 +235,13 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   c->state.rotationSpeed = frame->rotationSpeed();
   c->state.speed = frame->speed();
   c->coreTimestamp = frame->timestamp();
-  rgba_image img;
-  if (DecodeFrame(c->decoder, frame->depth()->Data(), frame->depth()->size(),
-                  kDepthWidth, kDeptHeight, &img)) {
-    TextureUpdate(&c->decodedDepth, img.data, img.width, img.height);
+
+  if (frame->depth()) {
+    rgba_image img;
+    if (DecodeFrame(c->decoder, frame->depth()->Data(), frame->depth()->size(),
+                    kDepthWidth, kDeptHeight, &img)) {
+      TextureUpdate(&c->decodedDepth, img.data, img.width, img.height);
+    }
   }
 
   c->detections.clear();

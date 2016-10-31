@@ -6,13 +6,13 @@
 #include <cmath>
 #include "Clock.h"
 #include "Encode.h"
+#include "File.h"
 #include "KinectFrameSource.h"
 #include "UdpHost.h"
 #include "comm/datalayer.h"
 #include "core_opt.h"
 #include "fl_constants.h"
 #include "proto/message_generated.h"
-#include "File.h"
 
 void kinect_loop(core* c) {
   while (c->running) {
