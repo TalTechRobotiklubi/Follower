@@ -25,6 +25,8 @@ struct LuaMainScript;
 
 struct StatusMessage;
 
+struct Classifier;
+
 struct Message;
 
 enum CommandType {
@@ -47,13 +49,14 @@ enum Payload {
   Payload_Frame = 1,
   Payload_LuaMainScript = 2,
   Payload_StatusMessage = 3,
-  Payload_Command = 4,
+  Payload_Classifier = 4,
+  Payload_Command = 5,
   Payload_MIN = Payload_NONE,
   Payload_MAX = Payload_Command
 };
 
 inline const char **EnumNamesPayload() {
-  static const char *names[] = { "NONE", "Frame", "LuaMainScript", "StatusMessage", "Command", nullptr };
+  static const char *names[] = { "NONE", "Frame", "LuaMainScript", "StatusMessage", "Classifier", "Command", nullptr };
   return names;
 }
 
@@ -374,6 +377,51 @@ inline flatbuffers::Offset<StatusMessage> CreateStatusMessageDirect(flatbuffers:
   return CreateStatusMessage(_fbb, message ? _fbb.CreateString(message) : 0);
 }
 
+struct Classifier FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_NAME = 4,
+    VT_CONTENT = 6
+  };
+  const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
+  const flatbuffers::Vector<int8_t> *content() const { return GetPointer<const flatbuffers::Vector<int8_t> *>(VT_CONTENT); }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_NAME) &&
+           verifier.Verify(name()) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_CONTENT) &&
+           verifier.Verify(content()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ClassifierBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_name(flatbuffers::Offset<flatbuffers::String> name) { fbb_.AddOffset(Classifier::VT_NAME, name); }
+  void add_content(flatbuffers::Offset<flatbuffers::Vector<int8_t>> content) { fbb_.AddOffset(Classifier::VT_CONTENT, content); }
+  ClassifierBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+  ClassifierBuilder &operator=(const ClassifierBuilder &);
+  flatbuffers::Offset<Classifier> Finish() {
+    auto o = flatbuffers::Offset<Classifier>(fbb_.EndTable(start_, 2));
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Classifier> CreateClassifier(flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> name = 0,
+    flatbuffers::Offset<flatbuffers::Vector<int8_t>> content = 0) {
+  ClassifierBuilder builder_(_fbb);
+  builder_.add_content(content);
+  builder_.add_name(name);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Classifier> CreateClassifierDirect(flatbuffers::FlatBufferBuilder &_fbb,
+    const char *name = nullptr,
+    const std::vector<int8_t> *content = nullptr) {
+  return CreateClassifier(_fbb, name ? _fbb.CreateString(name) : 0, content ? _fbb.CreateVector<int8_t>(*content) : 0);
+}
+
 struct Message FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_PAYLOAD_TYPE = 4,
@@ -418,6 +466,7 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *union_obj
     case Payload_Frame: return verifier.VerifyTable(reinterpret_cast<const Frame *>(union_obj));
     case Payload_LuaMainScript: return verifier.VerifyTable(reinterpret_cast<const LuaMainScript *>(union_obj));
     case Payload_StatusMessage: return verifier.VerifyTable(reinterpret_cast<const StatusMessage *>(union_obj));
+    case Payload_Classifier: return verifier.VerifyTable(reinterpret_cast<const Classifier *>(union_obj));
     case Payload_Command: return verifier.VerifyTable(reinterpret_cast<const Command *>(union_obj));
     default: return false;
   }

@@ -1,5 +1,6 @@
 #include "core.h"
 #include <fhd.h>
+#include <fhd_classifier.h>
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
@@ -11,6 +12,7 @@
 #include "core_opt.h"
 #include "fl_constants.h"
 #include "proto/message_generated.h"
+#include "File.h"
 
 void kinect_loop(core* c) {
   while (c->running) {
@@ -39,6 +41,24 @@ void core_send_status_message(core* c, const char* message) {
 void core_stop_actions(core* c) {
   ScriptLoaderExec(&c->scripts, "decide = nil");
   c->state = ControlState();
+}
+
+bool core_set_classifier(core* c, const char* name, const uint8_t* classifier,
+                         size_t len) {
+  if (c->fhd->classifier) {
+    fhd_classifier_destroy(c->fhd->classifier);
+    c->fhd->classifier = nullptr;
+  }
+
+  // Clunky libfann API. Can't load from memory.
+  if (!SaveFile(name, classifier, len)) {
+    return false;
+  }
+
+  c->fhd->classifier = fhd_classifier_create(name);
+  printf("loaded classifier %s\n", name);
+
+  return c->fhd->classifier != nullptr;
 }
 
 void core_handle_command(core* c, const proto::Command* command) {
@@ -93,13 +113,24 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
       core_handle_command(c, command);
       break;
     }
+    case proto::Payload_Classifier: {
+      auto classifierMsg = (const proto::Classifier*)message->payload();
+      if (core_set_classifier(c, classifierMsg->name()->c_str(),
+                              (const uint8_t*)classifierMsg->content()->data(),
+                              classifierMsg->content()->size())) {
+        core_send_status_message(c, "loaded classifier");
+      } else {
+        core_send_status_message(c, "failed to load classifier");
+      }
+      break;
+    }
     default:
       break;
   }
 }
 
 void core_detect(core* c, double timestamp) {
-  if (!c->fhd) {
+  if (!c->fhd->classifier) {
     return;
   }
 
@@ -198,6 +229,8 @@ int main(int argc, char** argv) {
   ActiveMapReset(&c.rgba_depth_diff, kDepthWidth, kDeptHeight);
 
   c.encoder = EncoderCreate(kDepthWidth, kDeptHeight);
+  c.fhd = (fhd_context*)calloc(1, sizeof(fhd_context));
+  fhd_context_init(c.fhd, kDepthWidth, kDeptHeight, 8, 8);
 
   if (!parse_opt(&c, argc, argv)) {
     return 1;

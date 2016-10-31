@@ -30,6 +30,7 @@ set(CORE_SOURCES
   Encode.cpp
 
   fl_yuy2_convert.cpp
+  File.cpp
 
   image.cpp
 
@@ -57,6 +58,7 @@ add_executable(
   follower_client
   client.cpp
   Decode.cpp
+  File.cpp
   fl_math.cpp
   image.cpp
   Style.cpp

@@ -45,6 +45,7 @@ Console::Console() {
   Commands.push_back("stop");
   Commands.push_back("speed");
   Commands.push_back("rot");
+  Commands.push_back("setclassifier");
 }
 
 Console::~Console() {
