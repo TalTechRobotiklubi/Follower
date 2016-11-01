@@ -1,6 +1,9 @@
 Configuring vpx library to build it with VS2013
 ./configure --disable-examples --disable-docs --enable-vp8 --enable-realtime-only --enable-runtime-cpu-detect --target=x86_64-win64-vs12
 
+Project depends on boost. In case of Windows use prebuilt binaries. While installing the boost confirm that it has lib folder 
+and not lib... In the last case rename it to be just lib folder.
+
 Set up first time
 -----------------
 1. Create a new folder (bin, build or smt.)

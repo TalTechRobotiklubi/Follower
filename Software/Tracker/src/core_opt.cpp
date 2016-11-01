@@ -31,8 +31,6 @@ int parse_opt(core* c, int argc, char** argv) {
       case 'c': {
         fhd_classifier* classifier = fhd_classifier_create(args.optarg);
         if (classifier) {
-          c->fhd = (fhd_context*)calloc(1, sizeof(fhd_context));
-          fhd_context_init(c->fhd, kDepthWidth, kDeptHeight, 8, 8);
           c->fhd->classifier = classifier;
           printf("using classifier - %s\n", args.optarg);
         } else {

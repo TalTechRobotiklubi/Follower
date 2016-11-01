@@ -61,10 +61,16 @@ table StatusMessage {
   message:string;
 }
 
+table Classifier {
+  name:string;
+  content:[byte];
+}
+
 union Payload {
   Frame,
   LuaMainScript,
   StatusMessage,
+  Classifier,
   Command
 }
 
