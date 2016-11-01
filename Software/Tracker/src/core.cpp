@@ -275,6 +275,8 @@ int main(int argc, char** argv) {
 
   double current_time = ms_now();
   double prev_time = current_time;
+  const double broadcastInterval = 0.30;
+  double timeUntilBroadCast = broadcastInterval;
   while (c.running) {
     prev_time = current_time;
     current_time = ms_now();
@@ -292,7 +294,7 @@ int main(int argc, char** argv) {
 
     core_detect(&c, current_time);
 
-    if (c.sendVideo) {
+    if (c.sendVideo && timeUntilBroadCast <= 0.0) {
       depth_to_rgba(c.kinectFrame.depthData, c.kinectFrame.depthLength,
                     &c.rgba_depth);
       BlockDiff(c.prev_rgba_depth.data, c.rgba_depth.data, kDepthWidth,
@@ -314,7 +316,13 @@ int main(int argc, char** argv) {
       core_handle_message(&c, received->data, received->len);
     }
 
-    UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize());
+    if (timeUntilBroadCast <= 0.0) {
+      UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize());
+      timeUntilBroadCast = broadcastInterval;
+    } else {
+      timeUntilBroadCast -= frame_time; 
+    }
+
   }
 
   return 0;

@@ -303,7 +303,7 @@ void ClientHandleMessage(Client* c, const uint8_t* data, size_t len) {
 
 void ClientUpdate(Client* c) {
   ENetEvent event;
-  if (enet_host_service(c->udpClient, &event, 0) > 0) {
+  while (enet_host_service(c->udpClient, &event, 0) > 0) {
     switch (event.type) {
       case ENET_EVENT_TYPE_CONNECT:
         c->connected = true;
