@@ -6,95 +6,153 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 
-#define COL_COUNT 6
+const int ColCount = 6;
 
 ChartDisplay::ChartDisplay(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::chartdisplay)
+  QWidget(parent),
+  ui(new Ui::chartdisplay)
 {
-    ui->setupUi(this);
+  ui->setupUi(this);
+  chart_ = new QChart();
 
-    QDir directory(QDir::currentPath().append(QDir::separator()).append("measurements"));
+  for (int i = 0; i < ColCount; i++)
+  {
+    this->logWhitelist_.append(false);
+    this->logAssoc_.append(QString("Data") + QString("%1").arg(i + 1));
+  }
 
-    /*
-     * Uncomment if you want to read files by hand.
-    if (!directory.exists())
-    {
-      directory.mkdir(directory.absolutePath());
-    }
+  this->ui->seriesList->addItems(logAssoc_);
 
-    ReadFromFile(directory.path() + QDir::separator() + "test1.csv");
-     */
+  scene_ = new QGraphicsScene(this);
+  scene_->setBackgroundBrush(QBrush(Qt::black));
+  ui->graphicsView->setScene(scene_);
+  ui->graphicsView->setRenderHint(QPainter::Antialiasing);
 }
 
 ChartDisplay::~ChartDisplay()
 {
-    delete ui;
+  delete ui;
 }
 
-void ChartDisplay::ReadFromFile(QString filePath)
+void ChartDisplay::drawChart(const QList<QLineSeries*>& seriesList)
 {
-    qDebug() << "Started.";
-    QFile file(filePath);
-    bool atData = false;
-    int i = 0;
+  chart_->removeAllSeries();
+  chart_->legend()->hide();
 
-    // Initialize the line series in the log array.
-    for (int j = 0; j < COL_COUNT; j++)
+  for (int i = 0; i < ColCount; i++)
+    chart_->addSeries(seriesList.at(i));
+
+  chart_->createDefaultAxes();
+  chart_->setTitle("Test chart");
+  chart_->setSizePolicy(ui->graphicsView->sizePolicy());
+  chart_->setMinimumSize(ui->graphicsView->size());
+
+  scene_->addItem(chart_);
+  scene_->update();
+}
+
+void ChartDisplay::readFromFile(QString filePath)
+{
+  qDebug() << "Two.";
+  QFile file(filePath);
+  bool atData = false;
+  QList<QLineSeries *> seriesList;
+
+  for (int j = 0; j < ColCount; j++)
+    seriesList.append(new QLineSeries);
+
+  // Try to open the file.
+  if (!file.open(QIODevice::ReadOnly))
+  {
+    qDebug() << "Error loading chart data from file: " << file.errorString();
+    return;
+  }
+
+  // Start reading the file.
+  int lineIndex = 0;
+  while (!file.atEnd())
+  {
+    QByteArray line = file.readLine().trimmed();
+
+    if (!atData)
     {
-        currentLog.append(new QLineSeries);
+      // Measutrements start delimited with this key word.
+      // Keep looking until we find it.
+      qDebug() << "No data";
+      if (line.contains("Measurements"))
+      {
+        atData = true;
+      }
     }
-
-    // Try to open the file.
-    if (!file.open(QIODevice::ReadOnly))
+    else
     {
-        qDebug() << "Error loading chart data from file: " << file.errorString();
-        return;
+      qDebug() << "Have data";
+      // We're here, so we're expecting data. 6 columns to be exact.
+      // Save the array, parse it, add it to the respective data series.
+      QList<QByteArray> dataList(line.split(','));
+      for (int j = 0; j < ColCount; j++)
+      {
+        QString str(dataList[j].constData());
+        seriesList.at(j)->append(lineIndex, str.toFloat());
+      }
+
+      lineIndex++;
     }
+  }
 
-    // Start reading the file.
-    while (!file.atEnd())
-    {
-        QByteArray line = file.readLine();
+  if (!atData)
+    return;
 
-        if (!atData)
-        {
-            // Measutrements start delimited with this key word.
-            // Keep looking until we find it.
-            qDebug() << "No data";
-            if (line.contains("Measurements"))
-            {
-                atData = true;
-            }
-        }
-        else
-        {
-            qDebug() << "Have data";
-            // We're here, so we're expecting data. 6 columns to be exact.
-            // Save the array, parse it, add it to the respective data series.
-            QList<QByteArray> dataList(line.split(','));
-            for (int j = 0; j < COL_COUNT; j++)
-            {
-                QString str(dataList[j].constData());
-                currentLog[j]->append(i, str.toFloat());
-            }
+  drawChart(seriesList);
+}
 
-            i++;
-        }
-    }
+void ChartDisplay::showEvent(QShowEvent* event)
+{
+  populateFileList();
+  QWidget::showEvent(event);
+}
 
-    QChart *chart = new QChart();
-    chart->legend()->hide();
+void ChartDisplay::redrawLines()
+{
+  for (int i = 0; i < ColCount; i++)
+  {
+    chart_->series().at(i)->setVisible(logWhitelist_[i]);
+    //currentLog_[i]->setVisible();
+  }
 
-    for (i = 0; i < COL_COUNT; i++)
-    {
-        chart->addSeries(currentLog[i]);
-    }
+  scene_->update();
+}
 
-    chart->createDefaultAxes();
-    chart->setTitle("Test chart");
+void ChartDisplay::populateFileList()
+{
+  QDir directory(QDir::currentPath().append(QDir::separator()).append("measurements"));
 
-    QChartView *chartView = new QChartView(chart, this);
-    chartView->setMinimumSize(this->size());
-    chartView->setRenderHint(QPainter::Antialiasing);
+  QString filter = "*.csv";
+  QStringList measureFiles = directory.entryList(filter.split(" "));
+  measureFiles.prepend("");
+
+  this->ui->fileSelect->clear();
+  this->ui->fileSelect->addItems(measureFiles);
+  this->ui->fileSelect->setEditable(false);
+}
+
+void ChartDisplay::on_fileSelect_currentIndexChanged(const QString &arg1)
+{
+  if (arg1.length())
+  {
+    readFromFile(QDir::currentPath().append(QDir::separator()).append("measurements") + QDir::separator() + arg1);
+  }
+}
+
+void ChartDisplay::on_seriesList_itemClicked(QListWidgetItem *item)
+{
+  //    logWhitelist[logAssoc.indexOf(item->text())] = item->isSelected();
+  qDebug() << "Three.";
+
+  qDebug() << this->logAssoc_.indexOf(item->text());
+  int i = this->logAssoc_.indexOf(item->text());
+  qDebug() << this->logWhitelist_.length();
+  this->logWhitelist_[i] = !this->logWhitelist_[i];
+  qDebug() << this->logWhitelist_[i];
+  this->redrawLines();
 }
