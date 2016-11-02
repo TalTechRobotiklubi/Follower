@@ -19,6 +19,14 @@ Set up first time
 		```
 4. Open follower.sln file with Visual Studio 2013
 
+Running the core
+--------
+follower_core 
+-h x.x.x.x (ip-address) 
+-c classifier.nn 
+-s COMx 
+-i default.lua
+
 Coding
 -------
 1. Next time after set up it is necessary only to open follower.sln file for coding
