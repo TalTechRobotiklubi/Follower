@@ -1,8 +1,10 @@
 #ifndef CHARTDISPLAY_H
 #define CHARTDISPLAY_H
 
+#include <QDir>
 #include <QWidget>
 #include <QList>
+#include <QListWidgetItem>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 
@@ -22,10 +24,19 @@ public:
 
     void ReadFromFile(QString filePath);
 
+private slots:
+    void on_fileSelect_currentIndexChanged(const QString &arg1);
+    void on_seriesList_itemClicked(QListWidgetItem *item);
+
 private:
+    void RedrawLines();
     Ui::chartdisplay *ui;
 
     QList<QLineSeries *> currentLog;
+    QList<bool> logWhitelist;
+    QStringList logAssoc;
+    QGraphicsScene *scene_;
+    QChart *chart_;
 };
 
 #endif // CHARTDISPLAY_H
