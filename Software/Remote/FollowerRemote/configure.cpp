@@ -44,7 +44,7 @@ void Configure::onNewFeedbackData(const QList<uint8_t>& list)
       *fileStream_ << ",";
     }
     *fileStream_ << kinematics_->translationSpeed() << ",";
-    *fileStream_ << kinematics_->rotationSpeed() << ",";
+    *fileStream_ << kinematics_->rotationSpeed();
     *fileStream_ << "\r\n";
   }
 }
@@ -146,7 +146,6 @@ void Configure::writePidParametersToFile()
 {
   fileStream_ = new QTextStream(&activeFile_);
   *fileStream_ << "Parameters\r\n";
-  *fileStream_ << "----------\r\n";
   for(int i = 0; i < ui->tableParams->rowCount(); ++i)
   {
     for (int j = 0; j < ui->tableParams->columnCount(); ++j)
@@ -159,15 +158,14 @@ void Configure::writePidParametersToFile()
   {
     *fileStream_ << "\r\n";
     *fileStream_ << "Testing Routine\r\n";
-    *fileStream_ << "----------\r\n";
     for (int i = 0; i < ui->tableTest->rowCount(); ++i)
     {
       for (int j = 0; j < ui->tableTest->columnCount(); ++j)
       {
         if (QTableWidgetItem *item = ui->tableTest->item(i, j))
-        {
-          *fileStream_ << item->text().append(",");
-        }
+          *fileStream_ << item->text();
+        if (j < ui->tableTest->columnCount() - 1)
+          *fileStream_ << ",";
       }
       *fileStream_ << "\r\n";
     }
@@ -175,7 +173,6 @@ void Configure::writePidParametersToFile()
 
   *fileStream_ << "\r\n";
   *fileStream_ << "Measurements\r\n";
-  *fileStream_ << "----------\r\n";
 }
 
 void Configure::savePidParameters()
