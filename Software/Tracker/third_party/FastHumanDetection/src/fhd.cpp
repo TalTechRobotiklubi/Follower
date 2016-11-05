@@ -467,6 +467,8 @@ void fhd_copy_regions(fhd_context* fhd) {
     fhd_candidate* candidate = &fhd->candidates[i];
     fhd_image_clear(&candidate->depth, 0);
     candidate->depth_position = reg;
+    candidate->kinect_position = center;
+    candidate->metric_position = r->center;
 
     const float scale_factor =
         std::min(std::min(sy_p, sy_n), std::min(sx_p, sx_n));
