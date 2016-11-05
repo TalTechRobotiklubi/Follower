@@ -35,6 +35,7 @@ struct core {
   IoVec encoded_depth;
 
   struct fhd_context* fhd = nullptr;
+  struct fhd_classifier* classifier = nullptr;
 
   flatbuffers::FlatBufferBuilder builder;
 

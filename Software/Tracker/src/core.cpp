@@ -46,9 +46,9 @@ void core_stop_actions(core* c) {
 
 bool core_set_classifier(core* c, const char* name, const uint8_t* classifier,
                          size_t len) {
-  if (c->fhd->classifier) {
-    fhd_classifier_destroy(c->fhd->classifier);
-    c->fhd->classifier = nullptr;
+  if (c->classifier) {
+    fhd_classifier_destroy(c->classifier);
+    c->classifier = nullptr;
   }
 
   // Clunky libfann API. Can't load from memory.
@@ -56,10 +56,10 @@ bool core_set_classifier(core* c, const char* name, const uint8_t* classifier,
     return false;
   }
 
-  c->fhd->classifier = fhd_classifier_create(name);
+  c->classifier = fhd_classifier_create(name);
   printf("loaded classifier %s\n", name);
 
-  return c->fhd->classifier != nullptr;
+  return c->classifier != nullptr;
 }
 
 void core_handle_command(core* c, const proto::Command* command) {
@@ -161,11 +161,12 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
 }
 
 void core_detect(core* c, double timestamp) {
-  if (!c->fhd->classifier) {
+  if (!c->classifier) {
     return;
   }
 
   fhd_run_pass(c->fhd, c->kinectFrame.depthData);
+  fhd_run_classifier(c->fhd, c->classifier);
 
   c->world.timestamp = timestamp;
   c->world.numDetections = 0;
