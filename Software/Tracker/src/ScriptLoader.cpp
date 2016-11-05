@@ -48,10 +48,7 @@ static const char* const initScript = R"(
     state = ffi.cast("ControlState*", state)
     tracking = ffi.cast("TrackingState*", tracking)
     if decide ~= nil then
-      local ok, new_state = pcall(decide, dt, world, state, tracking)
-      if ok then
-        return new_state
-      else
+      if not pcall(decide, dt, world, state, tracking) then
         io.write("error calling user code: ", new_state, "\n")
       end
     end
@@ -84,7 +81,7 @@ const char* ScriptLoaderUpdate(ScriptLoader* loader, double dt, World* world,
   lua_pushlightuserdata(L, world);
   lua_pushlightuserdata(L, state);
   lua_pushlightuserdata(L, tracking);
-  if (lua_pcall(L, 4, 1, 0) != 0) {
+  if (lua_pcall(L, 4, 0, 0) != 0) {
     return lua_tostring(L, -1);
   }
 

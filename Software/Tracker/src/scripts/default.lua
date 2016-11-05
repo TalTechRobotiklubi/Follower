@@ -103,6 +103,4 @@ function decide(dt, world, state, tracking)
   end
 
   state.camera.y = 20.0
-
-  return state
 end
