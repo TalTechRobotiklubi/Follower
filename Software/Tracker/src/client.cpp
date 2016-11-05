@@ -59,6 +59,13 @@ ClientOptions ParseOptions(int argc, char** argv) {
   return opts;
 }
 
+void ShiftPush(std::vector<float>& container, float v) {
+  if (container.size() < 1) return;
+
+  std::rotate(container.begin(), container.begin() + 1, container.end());
+  container.back() = v;
+}
+
 struct Client {
   ControlState state;
   TrackingState tracking;
@@ -67,24 +74,21 @@ struct Client {
   ENetPeer* peer = nullptr;
   Texture decodedDepth;
   std::vector<Detection> detections;
+  double prevCoreTimestamp = 0.0;
   double coreTimestamp = 0.0;
   bool connected = false;
   const ClientOptions* options;
   Console* console = nullptr;
   std::vector<float> speedHistory = std::vector<float>(512, 0.f);
   std::vector<float> rotationSpeedHistory = std::vector<float>(512, 0.f);
+  std::vector<float> frameTimeHistory = std::vector<float>(256, 0.f);
 
   ~Client();
 };
 
 void ClientUpdateHistory(Client* c, float speed, float rotationSpeed) {
-  std::rotate(c->rotationSpeedHistory.begin(),
-              c->rotationSpeedHistory.begin() + 1,
-              c->rotationSpeedHistory.end());
-  std::rotate(c->speedHistory.begin(), c->speedHistory.begin() + 1,
-              c->speedHistory.end());
-  c->rotationSpeedHistory.back() = rotationSpeed;
-  c->speedHistory.back() = speed;
+  ShiftPush(c->rotationSpeedHistory, rotationSpeed);
+  ShiftPush(c->speedHistory, speed);
 }
 
 void ClientSendData(Client* c, const uint8_t* data, size_t len) {
@@ -241,6 +245,8 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   c->state.rotationSpeed = frame->rotationSpeed();
   c->state.speed = frame->speed();
   c->coreTimestamp = frame->timestamp();
+
+  ShiftPush(c->frameTimeHistory, frame->coreDtMs());
 
   if (frame->depth()) {
     rgba_image img;
@@ -450,24 +456,28 @@ int main(int argc, char** argv) {
 
     ImGui::SameLine();
 
+    const ImVec2 plotSize(240.f, 80.f);
     ImGui::BeginGroup();
     ImGui::PlotLines("##rotationSpeed", client.rotationSpeedHistory.data(),
                      client.rotationSpeedHistory.size(), 0, "rotation speed",
-                     -360.f, 360.f, ImVec2(240.f, 80.f));
+                     -360.f, 360.f, plotSize);
     ImGui::PlotLines("##speed", client.speedHistory.data(),
                      client.speedHistory.size(), 0, "speed", 0.f, 300.f,
-                     ImVec2(240.f, 80.f));
+                     plotSize);
+    ImGui::PlotLines("##coreFrameTime", client.frameTimeHistory.data(),
+                     client.frameTimeHistory.size(), 0, "core frame time (ms)",
+                     0.f, 100.f, plotSize);
     ImGui::EndGroup();
 
     ImGui::Begin("##consolewindow", &showConsole, ImVec2(600.f, 400.f));
-      const char* cmd =
-          client.console->Draw("console", float(displayWidth - 20) * 0.5f, 300.f);
-      if (cmd) {
-        auto tokens = split(cmd, ' ');
-        if (tokens.size() >= 1) {
-          HandleCommand(&client, tokens);
-        }
+    const char* cmd =
+        client.console->Draw("console", float(displayWidth - 20) * 0.5f, 300.f);
+    if (cmd) {
+      auto tokens = split(cmd, ' ');
+      if (tokens.size() >= 1) {
+        HandleCommand(&client, tokens);
       }
+    }
     ImGui::End();
 
     ImGui::End();

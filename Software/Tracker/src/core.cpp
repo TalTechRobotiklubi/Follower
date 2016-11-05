@@ -12,8 +12,8 @@
 #include "comm/datalayer.h"
 #include "core_opt.h"
 #include "fl_constants.h"
-#include "proto/message_generated.h"
 #include "fl_sqlite_writer.h"
+#include "proto/message_generated.h"
 
 void kinect_loop(core* c) {
   while (c->running) {
@@ -231,6 +231,7 @@ void core_serialize(core* c) {
   proto::FrameBuilder frame_builder(c->builder);
 
   frame_builder.add_timestamp(c->timestamp);
+  frame_builder.add_coreDtMs(c->dtMilli);
   frame_builder.add_camera(&camera);
   frame_builder.add_rotationSpeed(c->state.rotationSpeed);
   frame_builder.add_speed(c->state.speed);
@@ -276,7 +277,7 @@ int main(int argc, char** argv) {
 
   double current_time = ms_now();
   double prev_time = current_time;
-  const double broadcastInterval = 0.30;
+  const double broadcastInterval = 0.03;
   double timeUntilBroadCast = broadcastInterval;
   while (c.running) {
     prev_time = current_time;
@@ -284,9 +285,10 @@ int main(int argc, char** argv) {
     const double frame_time = current_time - prev_time;
     const double frameTimeSeconds = frame_time / 1000.0;
     c.timestamp += frame_time;
+    c.dtMilli = float(frame_time);
 
     c.frameSource->FillFrame(&c.kinectFrame);
-    
+
     if (c.writer) {
       fl_sqlite_writer_add_frame(c.writer, &c.kinectFrame);
     }
@@ -318,12 +320,12 @@ int main(int argc, char** argv) {
     }
 
     if (timeUntilBroadCast <= 0.0) {
-      UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize());
+      UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(),
+                       c.builder.GetSize());
       timeUntilBroadCast = broadcastInterval;
     } else {
-      timeUntilBroadCast -= frame_time; 
+      timeUntilBroadCast -= frameTimeSeconds;
     }
-
   }
 
   return 0;

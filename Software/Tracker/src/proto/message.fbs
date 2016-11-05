@@ -45,6 +45,7 @@ table TrackingState {
 
 table Frame {
   timestamp:double;
+  coreDtMs:float;
   camera:Vec2;
   rotationSpeed:float;
   speed:float;

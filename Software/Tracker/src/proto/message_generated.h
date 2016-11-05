@@ -229,14 +229,16 @@ inline flatbuffers::Offset<TrackingState> CreateTrackingStateDirect(flatbuffers:
 struct Frame FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_TIMESTAMP = 4,
-    VT_CAMERA = 6,
-    VT_ROTATIONSPEED = 8,
-    VT_SPEED = 10,
-    VT_DEPTH = 12,
-    VT_DETECTIONS = 14,
-    VT_TRACKING = 16
+    VT_COREDTMS = 6,
+    VT_CAMERA = 8,
+    VT_ROTATIONSPEED = 10,
+    VT_SPEED = 12,
+    VT_DEPTH = 14,
+    VT_DETECTIONS = 16,
+    VT_TRACKING = 18
   };
   double timestamp() const { return GetField<double>(VT_TIMESTAMP, 0.0); }
+  float coreDtMs() const { return GetField<float>(VT_COREDTMS, 0.0f); }
   const Vec2 *camera() const { return GetStruct<const Vec2 *>(VT_CAMERA); }
   float rotationSpeed() const { return GetField<float>(VT_ROTATIONSPEED, 0.0f); }
   float speed() const { return GetField<float>(VT_SPEED, 0.0f); }
@@ -246,6 +248,7 @@ struct Frame FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<double>(verifier, VT_TIMESTAMP) &&
+           VerifyField<float>(verifier, VT_COREDTMS) &&
            VerifyField<Vec2>(verifier, VT_CAMERA) &&
            VerifyField<float>(verifier, VT_ROTATIONSPEED) &&
            VerifyField<float>(verifier, VT_SPEED) &&
@@ -263,6 +266,7 @@ struct FrameBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_timestamp(double timestamp) { fbb_.AddElement<double>(Frame::VT_TIMESTAMP, timestamp, 0.0); }
+  void add_coreDtMs(float coreDtMs) { fbb_.AddElement<float>(Frame::VT_COREDTMS, coreDtMs, 0.0f); }
   void add_camera(const Vec2 *camera) { fbb_.AddStruct(Frame::VT_CAMERA, camera); }
   void add_rotationSpeed(float rotationSpeed) { fbb_.AddElement<float>(Frame::VT_ROTATIONSPEED, rotationSpeed, 0.0f); }
   void add_speed(float speed) { fbb_.AddElement<float>(Frame::VT_SPEED, speed, 0.0f); }
@@ -272,13 +276,14 @@ struct FrameBuilder {
   FrameBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
   FrameBuilder &operator=(const FrameBuilder &);
   flatbuffers::Offset<Frame> Finish() {
-    auto o = flatbuffers::Offset<Frame>(fbb_.EndTable(start_, 7));
+    auto o = flatbuffers::Offset<Frame>(fbb_.EndTable(start_, 8));
     return o;
   }
 };
 
 inline flatbuffers::Offset<Frame> CreateFrame(flatbuffers::FlatBufferBuilder &_fbb,
     double timestamp = 0.0,
+    float coreDtMs = 0.0f,
     const Vec2 *camera = 0,
     float rotationSpeed = 0.0f,
     float speed = 0.0f,
@@ -293,18 +298,20 @@ inline flatbuffers::Offset<Frame> CreateFrame(flatbuffers::FlatBufferBuilder &_f
   builder_.add_speed(speed);
   builder_.add_rotationSpeed(rotationSpeed);
   builder_.add_camera(camera);
+  builder_.add_coreDtMs(coreDtMs);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<Frame> CreateFrameDirect(flatbuffers::FlatBufferBuilder &_fbb,
     double timestamp = 0.0,
+    float coreDtMs = 0.0f,
     const Vec2 *camera = 0,
     float rotationSpeed = 0.0f,
     float speed = 0.0f,
     const std::vector<uint8_t> *depth = nullptr,
     const std::vector<const Detection *> *detections = nullptr,
     flatbuffers::Offset<TrackingState> tracking = 0) {
-  return CreateFrame(_fbb, timestamp, camera, rotationSpeed, speed, depth ? _fbb.CreateVector<uint8_t>(*depth) : 0, detections ? _fbb.CreateVector<const Detection *>(*detections) : 0, tracking);
+  return CreateFrame(_fbb, timestamp, coreDtMs, camera, rotationSpeed, speed, depth ? _fbb.CreateVector<uint8_t>(*depth) : 0, detections ? _fbb.CreateVector<const Detection *>(*detections) : 0, tracking);
 }
 
 struct LuaMainScript FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
