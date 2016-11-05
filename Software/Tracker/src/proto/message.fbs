@@ -52,6 +52,7 @@ table Frame {
   depth:[ubyte];
   detections:[Detection];
   tracking:TrackingState;
+  closestObstacle:Vec3;
 }
 
 table LuaMainScript {

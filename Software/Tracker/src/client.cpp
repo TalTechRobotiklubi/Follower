@@ -69,12 +69,12 @@ void ShiftPush(std::vector<float>& container, float v) {
 struct Client {
   ControlState state;
   TrackingState tracking;
+  World world;
   Decoder* decoder = nullptr;
   ENetHost* udpClient = nullptr;
   ENetPeer* peer = nullptr;
   Texture decodedDepth;
   std::vector<Detection> detections;
-  double prevCoreTimestamp = 0.0;
   double coreTimestamp = 0.0;
   bool connected = false;
   const ClientOptions* options;
@@ -85,11 +85,6 @@ struct Client {
 
   ~Client();
 };
-
-void ClientUpdateHistory(Client* c, float speed, float rotationSpeed) {
-  ShiftPush(c->rotationSpeedHistory, rotationSpeed);
-  ShiftPush(c->speedHistory, speed);
-}
 
 void ClientSendData(Client* c, const uint8_t* data, size_t len) {
   if (!c->peer) {
@@ -240,13 +235,17 @@ bool ClientStart(Client* c, const ClientOptions* opt) {
 
 void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   const proto::Vec2* cam = frame->camera();
+  const proto::Vec3* obstacle = frame->closestObstacle();
   c->state.camera.x = cam->x();
   c->state.camera.y = cam->y();
   c->state.rotationSpeed = frame->rotationSpeed();
   c->state.speed = frame->speed();
   c->coreTimestamp = frame->timestamp();
+  c->world.closestObstacle = vec3(obstacle->x(), obstacle->y(), obstacle->z());
 
   ShiftPush(c->frameTimeHistory, frame->coreDtMs());
+  ShiftPush(c->rotationSpeedHistory, frame->rotationSpeed());
+  ShiftPush(c->speedHistory, frame->speed());
 
   if (frame->depth()) {
     rgba_image img;
@@ -280,8 +279,6 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
         Target(t->weight(), vec2{t->kinect().x(), t->kinect().y()},
                vec3{t->position().x(), t->position().y(), t->position().z()});
   }
-
-  ClientUpdateHistory(c, frame->speed(), frame->rotationSpeed());
 }
 
 void ClientHandleStatusMessage(Client* c, const proto::StatusMessage* message) {
@@ -377,6 +374,18 @@ void RenderOverview(Client* client) {
     const Target& t = tracking->targets[tracking->activeTarget];
     ImVec2 position = TargetToRenderCoords(t);
     drawList->AddLine(robot, position, ImColor(0xB0, 0x06, 0xEF), 2.f);
+  }
+
+  if (client->world.closestObstacle.z > 0.f) {
+    vec3 o = client->world.closestObstacle;
+    const float rectWidth = 32.f;
+    const float rectHeight = 4.f;
+    ImVec2 rectPos(c.x + w * 0.5f - rectWidth * 0.5f,
+                   (robot.y - fl_map_range(o.z, 0.f, 4.5f, 0.f, height) -
+                    rectHeight * 0.5f));
+    drawList->AddRectFilled(
+        rectPos, ImVec2(rectPos.x + rectWidth, rectPos.y + rectHeight),
+        ImColor(0x8D, 0xB5, 0xD1));
   }
 
   drawList->PopClipRect();

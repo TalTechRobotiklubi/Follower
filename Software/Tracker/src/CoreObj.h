@@ -12,6 +12,7 @@ struct World {
   double timestamp = 0.0;
   int32_t numDetections = 0;
   Detection detections[16];
+  vec3 closestObstacle;
 };
 
 struct Target {

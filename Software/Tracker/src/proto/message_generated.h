@@ -235,7 +235,8 @@ struct Frame FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_SPEED = 12,
     VT_DEPTH = 14,
     VT_DETECTIONS = 16,
-    VT_TRACKING = 18
+    VT_TRACKING = 18,
+    VT_CLOSESTOBSTACLE = 20
   };
   double timestamp() const { return GetField<double>(VT_TIMESTAMP, 0.0); }
   float coreDtMs() const { return GetField<float>(VT_COREDTMS, 0.0f); }
@@ -245,6 +246,7 @@ struct Frame FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::Vector<uint8_t> *depth() const { return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_DEPTH); }
   const flatbuffers::Vector<const Detection *> *detections() const { return GetPointer<const flatbuffers::Vector<const Detection *> *>(VT_DETECTIONS); }
   const TrackingState *tracking() const { return GetPointer<const TrackingState *>(VT_TRACKING); }
+  const Vec3 *closestObstacle() const { return GetStruct<const Vec3 *>(VT_CLOSESTOBSTACLE); }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<double>(verifier, VT_TIMESTAMP) &&
@@ -258,6 +260,7 @@ struct Frame FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.Verify(detections()) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_TRACKING) &&
            verifier.VerifyTable(tracking()) &&
+           VerifyField<Vec3>(verifier, VT_CLOSESTOBSTACLE) &&
            verifier.EndTable();
   }
 };
@@ -273,10 +276,11 @@ struct FrameBuilder {
   void add_depth(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> depth) { fbb_.AddOffset(Frame::VT_DEPTH, depth); }
   void add_detections(flatbuffers::Offset<flatbuffers::Vector<const Detection *>> detections) { fbb_.AddOffset(Frame::VT_DETECTIONS, detections); }
   void add_tracking(flatbuffers::Offset<TrackingState> tracking) { fbb_.AddOffset(Frame::VT_TRACKING, tracking); }
+  void add_closestObstacle(const Vec3 *closestObstacle) { fbb_.AddStruct(Frame::VT_CLOSESTOBSTACLE, closestObstacle); }
   FrameBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
   FrameBuilder &operator=(const FrameBuilder &);
   flatbuffers::Offset<Frame> Finish() {
-    auto o = flatbuffers::Offset<Frame>(fbb_.EndTable(start_, 8));
+    auto o = flatbuffers::Offset<Frame>(fbb_.EndTable(start_, 9));
     return o;
   }
 };
@@ -289,9 +293,11 @@ inline flatbuffers::Offset<Frame> CreateFrame(flatbuffers::FlatBufferBuilder &_f
     float speed = 0.0f,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> depth = 0,
     flatbuffers::Offset<flatbuffers::Vector<const Detection *>> detections = 0,
-    flatbuffers::Offset<TrackingState> tracking = 0) {
+    flatbuffers::Offset<TrackingState> tracking = 0,
+    const Vec3 *closestObstacle = 0) {
   FrameBuilder builder_(_fbb);
   builder_.add_timestamp(timestamp);
+  builder_.add_closestObstacle(closestObstacle);
   builder_.add_tracking(tracking);
   builder_.add_detections(detections);
   builder_.add_depth(depth);
@@ -310,8 +316,9 @@ inline flatbuffers::Offset<Frame> CreateFrameDirect(flatbuffers::FlatBufferBuild
     float speed = 0.0f,
     const std::vector<uint8_t> *depth = nullptr,
     const std::vector<const Detection *> *detections = nullptr,
-    flatbuffers::Offset<TrackingState> tracking = 0) {
-  return CreateFrame(_fbb, timestamp, coreDtMs, camera, rotationSpeed, speed, depth ? _fbb.CreateVector<uint8_t>(*depth) : 0, detections ? _fbb.CreateVector<const Detection *>(*detections) : 0, tracking);
+    flatbuffers::Offset<TrackingState> tracking = 0,
+    const Vec3 *closestObstacle = 0) {
+  return CreateFrame(_fbb, timestamp, coreDtMs, camera, rotationSpeed, speed, depth ? _fbb.CreateVector<uint8_t>(*depth) : 0, detections ? _fbb.CreateVector<const Detection *>(*detections) : 0, tracking, closestObstacle);
 }
 
 struct LuaMainScript FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
