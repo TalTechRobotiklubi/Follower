@@ -49,8 +49,9 @@ static const char* const initScript = R"(
     state = ffi.cast("ControlState*", state)
     tracking = ffi.cast("TrackingState*", tracking)
     if decide ~= nil then
-      if not pcall(decide, dt, world, state, tracking) then
-        io.write("error calling user code: ", new_state, "\n")
+      local ok, err = pcall(decide, dt, world, state, tracking)
+      if not ok then
+        io.write("error calling user code: ", err, "\n")
       end
     end
   end
