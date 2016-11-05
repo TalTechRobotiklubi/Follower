@@ -159,10 +159,9 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
   } else if (command == "stoprecord") {
     SendCommand(c, proto::CommandType_StopRecord, nullptr);
   } else if (command == "setclassifier") {
-    if (needArg(2)) return;
+    if (needArg(1)) return;
 
-    const std::string& outputName = tokens[1];
-    const std::string& inputFile = tokens[2];
+    const std::string& inputFile = tokens[1];
 
     IoVec content = LoadFile(inputFile.c_str());
 
@@ -171,12 +170,11 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
       return;
     }
 
-    console->AddLog("sending %s as %s [%zu bytes]", inputFile.c_str(),
-                    outputName.c_str(), content.len);
+    console->AddLog("sending %s [%zu bytes]", inputFile.c_str(), content.len);
 
     flatbuffers::FlatBufferBuilder builder;
     auto classifier = proto::CreateClassifier(
-        builder, builder.CreateString(outputName),
+        builder, builder.CreateString("core_current_classifier.nn"),
         builder.CreateVector((const int8_t*)content.data, content.len));
     auto message = proto::CreateMessage(builder, proto::Payload_Classifier,
                                         classifier.Union());
