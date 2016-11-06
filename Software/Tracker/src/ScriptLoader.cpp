@@ -21,6 +21,7 @@ static const char* const initScript = R"(
       int32_t numDetections;
       Detection detections[16];
       vec3 closestObstacle;
+      uint8_t distance_sensors[8];
     } World;
 
     typedef struct {

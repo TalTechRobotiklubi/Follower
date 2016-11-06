@@ -87,14 +87,14 @@ void SerialComm::receive(CommInput* data)
 {
   if (isOpen()) {
     takeLock();
-    get(DLParamDistanceSensor1, &data->distance_sensor1);
-    get(DLParamDistanceSensor2, &data->distance_sensor2);
-    get(DLParamDistanceSensor3, &data->distance_sensor3);
-    get(DLParamDistanceSensor4, &data->distance_sensor4);
-    get(DLParamDistanceSensor5, &data->distance_sensor5);
-    get(DLParamDistanceSensor6, &data->distance_sensor6);
-    get(DLParamDistanceSensor7, &data->distance_sensor7);
-    get(DLParamDistanceSensor8, &data->distance_sensor8);
+    get(DLParamDistanceSensor1, &data->distance_sensor[0]);
+    get(DLParamDistanceSensor2, &data->distance_sensor[1]);
+    get(DLParamDistanceSensor3, &data->distance_sensor[2]);
+    get(DLParamDistanceSensor4, &data->distance_sensor[3]);
+    get(DLParamDistanceSensor5, &data->distance_sensor[4]);
+    get(DLParamDistanceSensor6, &data->distance_sensor[5]);
+    get(DLParamDistanceSensor7, &data->distance_sensor[6]);
+    get(DLParamDistanceSensor8, &data->distance_sensor[7]);
     releaseLock();
   }
 }

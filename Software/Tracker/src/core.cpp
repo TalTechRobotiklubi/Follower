@@ -335,6 +335,7 @@ int main(int argc, char** argv) {
     }
 
     c.serial.receive(&c.in_data);
+    memcpy(c.world.distance_sensors, &c.in_data, sizeof(uint8_t) * NUM_OF_DISTANCE_SENSORS);
     core_decide(&c, frameTimeSeconds);
 
     DL_task(int16_t(frame_time));

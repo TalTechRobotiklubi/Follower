@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include "vec3.h"
+#include "comm/comm_input.h"
 
 struct Detection {
   vec2 kinectPosition;
@@ -13,6 +14,7 @@ struct World {
   int32_t numDetections = 0;
   Detection detections[16];
   vec3 closestObstacle;
+  uint8_t distance_sensors[NUM_OF_DISTANCE_SENSORS];
 };
 
 struct Target {
