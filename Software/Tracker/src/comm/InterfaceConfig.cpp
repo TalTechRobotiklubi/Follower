@@ -19,15 +19,16 @@ InterfaceReceivePacket nodeInterfaceUSBReceivePacketList[3] =
 	{ &PacketDescriptorList[PacketQuaternions],     -1 }
 };
 
-InterfaceTransmitPacket nodeInterfaceUSBTransmitPacketList[3] = 
+InterfaceTransmitPacket nodeInterfaceUSBTransmitPacketList[4] = 
 {
 	{ &PacketDescriptorList[PacketMotorSpeeds],   -1, -1 },
 	{ &PacketDescriptorList[PacketCameraControl], 20, 20 },
-	{ &PacketDescriptorList[PacketRobotControl],  20, 20 }
+	{ &PacketDescriptorList[PacketRobotControl],  20, 20 },
+	{ &PacketDescriptorList[PacketVisualization], 20, 20 }
 };
 
 NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
 {
-	/* USB */ { nodeInterfaceUSBReceivePacketList, 3, nodeInterfaceUSBTransmitPacketList, 3 }
+	/* USB */ { nodeInterfaceUSBReceivePacketList, 3, nodeInterfaceUSBTransmitPacketList, 4 }
 };
 

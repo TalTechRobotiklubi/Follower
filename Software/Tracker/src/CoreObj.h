@@ -27,10 +27,18 @@ struct Target {
     : weight(weight), kinect(kinect), position(position) {}
 };
 
+enum Activity {
+  Error = 0,  // meant for Hw side, if packet not received with valid data or smt.
+  Resting = 1,  // no activity, kinect down, sleeping emoticon on tft screen
+  Searching = 2, // no target, moving and searches, emoticon with eyes looking around
+  Following = 3, // follows target, happy emoticon
+};
+
 struct TrackingState {
   int32_t activeTarget = -1;
   int32_t numTargets = 0;
   Target targets[16];
+  Activity activity;
 };
 
 struct ControlState {

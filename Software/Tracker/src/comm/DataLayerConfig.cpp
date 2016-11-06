@@ -14,7 +14,7 @@ extern "C" {
 // ----------------------------------------------------------------------------
 // Values
 // ----------------------------------------------------------------------------
-U8    pDLValueU8[8];
+U8    pDLValueU8[9];
 S8    pDLValueS8[2];
 S16   pDLValueS16[12];
 
@@ -44,7 +44,8 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* CameraRequestXDegree    */ { TypeS8,  &pDLValueS8[0]   },
 	/* CameraRequestZDegree    */ { TypeS8,  &pDLValueS8[1]   },
 	/* RequestTranslationSpeed */ { TypeS16, &pDLValueS16[10] },
-	/* RequestRotationSpeed    */ { TypeS16, &pDLValueS16[11] }
+	/* RequestRotationSpeed    */ { TypeS16, &pDLValueS16[11] },
+	/* VisualizationActivity   */ { TypeU8,  &pDLValueU8[8]   }
 };
 
 }

@@ -109,6 +109,8 @@ void SerialComm::send(const CommOutput& data) {
     int16_t w_speed = data.rotation_speed;
     set(DLParamRequestTranslationSpeed, &t_speed);
     set(DLParamRequestRotationSpeed, &w_speed);
+    uint8_t activity = data.activity;
+    set(DLParamVisualizationActivity, &activity);
     serviceSend();
   }
 }

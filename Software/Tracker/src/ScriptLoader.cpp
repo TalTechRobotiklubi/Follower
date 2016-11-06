@@ -3,6 +3,7 @@
 #include <lua.hpp>
 #include <stdio.h>
 #include <string>
+#include <iostream>
 
 static const char* const initScript = R"(
   local ffi = require("ffi")
@@ -30,10 +31,18 @@ static const char* const initScript = R"(
       vec3 position;
     } Target;
 
+    typedef enum {
+      Error = 0,
+      Resting = 1,
+      Searching = 2,
+      Following = 3,
+    } Activity;
+
     typedef struct {
       int32_t activeTarget;
       int32_t numTargets;
       Target targets[16];
+      Activity activity;
     } TrackingState;
 
     typedef struct {

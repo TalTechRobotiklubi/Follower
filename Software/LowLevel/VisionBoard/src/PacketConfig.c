@@ -84,6 +84,14 @@ const PacketParameter packetCameraControlParameterList[2] =
 };
 
 // ----------------------------------------------------------------------------
+// Packet "Visualization" parameters table
+// ----------------------------------------------------------------------------
+const PacketParameter packetVisualizationParameterList[1] = 
+{
+	{ DLParamVisualizationActivity, 0, 8 }
+};
+
+// ----------------------------------------------------------------------------
 // Packets table
 // ----------------------------------------------------------------------------
 PacketDescriptor PacketDescriptorList[NumberOfPackets] = 
@@ -94,6 +102,7 @@ PacketDescriptor PacketDescriptorList[NumberOfPackets] =
 	/* MotorSpeeds     */ { 0xD0, packetMotorSpeedsParameterList,     2, 4 },
 	/* RobotControl    */ { 0xD3, packetRobotControlParameterList,    2, 4 },
 	/* PidSetup        */ { 0xD5, packetPidSetupParameterList,        3, 6 },
-	/* CameraControl   */ { 0xE0, packetCameraControlParameterList,   2, 2 }
+	/* CameraControl   */ { 0xE0, packetCameraControlParameterList,   2, 2 },
+	/* Visualization   */ { 0xFA, packetVisualizationParameterList,   1, 1 }
 };
 
