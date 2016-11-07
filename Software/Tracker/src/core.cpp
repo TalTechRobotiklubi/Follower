@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
+#include <lua.hpp>
 #include "Clock.h"
 #include "Encode.h"
 #include "File.h"
@@ -24,6 +25,52 @@ void kinect_loop(core* c) {
 
 void core_start(core* c) {
   c->kinect_frame_thread = std::thread(kinect_loop, c);
+  fhd_image_init(&c->depthImg, 64, 128);
+  lua_State* L = c->scripts.lua;
+
+  const char* detectionScript = R"(
+    require 'nn';
+    local ffi = require("ffi");
+
+    torch.setdefaulttensortype('torch.FloatTensor')
+
+    netprops = torch.load("cpu.net")
+    net = netprops.net
+    mean = netprops.mean
+    stddev = netprops.stddev
+
+    print(mean, stddev)
+    saved = false
+
+    -- Float array of depth data!
+    function detect(depth_image)
+      local arr = ffi.cast("float*", depth_image)
+      local t = torch.Tensor(128, 64)
+      local s = t:storage()
+      for i = 1, 8192 do
+        s[i] = arr[i]
+      end
+
+      if not saved then
+        torch.save("foo.t", t)
+      end
+
+      t:add(-mean)
+      t:div(stddev)
+
+      local p = net:forward(t:view(1, 128, 64))
+      if not saved then
+        saved = true
+        print(p)
+        print(p[2] > p[1])
+      end
+      return p[2] > p[1]
+    end
+  )";
+
+  if (luaL_dostring(L, detectionScript) != 0) {
+    printf("failed to load detection script %s\n", lua_tostring(L, -1));
+  }
 }
 
 void core_decide(core* c, double dt) {
@@ -175,7 +222,8 @@ void core_update(core* c) {
   if (currentClosest > 0) {
     int x = idx % kDepthWidth;
     int y = idx / kDepthWidth;
-    fhd_vec3 p = fhd_depth_to_3d(float(currentClosest) / 1000.f, float(x), float(y));
+    fhd_vec3 p =
+        fhd_depth_to_3d(float(currentClosest) / 1000.f, float(x), float(y));
     c->world.closestObstacle = vec3(p.x, p.y, p.z);
   } else {
     c->world.closestObstacle = vec3(0.f, 0.f, 0.f);
@@ -183,12 +231,15 @@ void core_update(core* c) {
 }
 
 void core_detect(core* c, double timestamp) {
+  /*
   if (!c->classifier) {
     return;
   }
+  */
 
   fhd_run_pass(c->fhd, c->kinectFrame.depthData);
-  fhd_run_classifier(c->fhd, c->classifier);
+
+  // fhd_run_classifier(c->fhd, c->classifier);
 
   c->world.timestamp = timestamp;
   c->world.numDetections = 0;
@@ -196,20 +247,58 @@ void core_detect(core* c, double timestamp) {
   const float w = float(kDepthWidth);
   size_t numCandidates = size_t(c->fhd->candidates_len);
 
+  lua_State* L = c->scripts.lua;
+  for (size_t i = 0; i < numCandidates; i++) {
+    const fhd_candidate* candidate = &c->fhd->candidates[i];
+
+    fhd_image_region srcReg;
+    srcReg.x = 1;
+    srcReg.y = 1;
+    srcReg.width = candidate->depth.width - 2;
+    srcReg.height = candidate->depth.height - 2;
+
+    fhd_image_region dstReg;
+    dstReg.x = 0;
+    dstReg.y = 0;
+    dstReg.width = 64;
+    dstReg.height = 128;
+
+    fhd_copy_sub_image(&candidate->depth, &srcReg, &c->depthImg, &dstReg);
+
+    for (int j = 0; j < c->depthImg.len; j++) {
+      uint16_t v = c->depthImg.data[j];
+      c->depthBuffer[j] = float(v);
+    }
+
+    lua_getglobal(L, "detect");
+    lua_pushlightuserdata(L, &c->depthBuffer[0]);
+    if (lua_pcall(L, 1, 1, 0) != 0) {
+      printf("%s\n", lua_tostring(L, -1));
+    } else {
+      int h = lua_toboolean(L, -1);
+      lua_pop(L, 1);
+      if (h) {
+        vec2 kinectPos{w - candidate->kinect_position.x,
+                       candidate->kinect_position.y};
+        vec3 metricPos{candidate->metric_position.x,
+                       candidate->metric_position.y,
+                       candidate->metric_position.z};
+        c->world.detections[c->world.numDetections] =
+            Detection{kinectPos, metricPos, candidate->weight};
+        c->world.numDetections++;
+      }
+    }
+  }
+
+  /*
   // Flip the detection horizontally, Kinect 2's images have left-right
   // reversed.
   for (size_t i = 0; i < numCandidates; i++) {
     const fhd_candidate* candidate = &c->fhd->candidates[i];
     if (candidate->weight >= 1.f) {
-      vec2 kinectPos{w - candidate->kinect_position.x,
-                     candidate->kinect_position.y};
-      vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
-                     candidate->metric_position.z};
-      c->world.detections[i] =
-          Detection{kinectPos, metricPos, candidate->weight};
-      c->world.numDetections++;
     }
   }
+  */
 }
 
 void core_serial_send(core* c) {

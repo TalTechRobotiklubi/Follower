@@ -579,7 +579,7 @@ void fhd_context_init(fhd_context* fhd, int source_w, int source_h, int cell_w,
 
   fhd_image_init(&fhd->output_depth, source_w, source_h);
 
-  fhd->candidates_capacity = 8;
+  fhd->candidates_capacity = 4;
   fhd->candidates_len = 0;
   fhd->candidates =
       (fhd_candidate*)calloc(fhd->candidates_capacity, sizeof(fhd_candidate));
@@ -650,8 +650,8 @@ void fhd_run_pass(fhd_context* fhd, const uint16_t* source) {
   fhd_construct_regions(fhd);
   fhd_merge_regions(fhd);
   fhd_copy_regions(fhd);
-  fhd_calculate_hog_cells(fhd);
-  fhd_create_features(fhd);
+  //fhd_calculate_hog_cells(fhd);
+  //fhd_create_features(fhd);
 }
 
 void fhd_context_destroy(fhd_context* fhd) {
