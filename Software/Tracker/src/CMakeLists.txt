@@ -120,7 +120,7 @@ add_custom_command(
 if (WIN32)
   add_custom_command(
     TARGET follower_core POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${LUAJIT_ROOT}/lib/lua51.dll ${ARTIFACT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${LUAJIT_ROOT}/lib/libluajit.dll ${ARTIFACT_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_DIR:floatfann>/floatfann.dll ${ARTIFACT_DIR}
   )
 endif()

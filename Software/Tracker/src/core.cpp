@@ -34,13 +34,11 @@ void core_start(core* c) {
 
     torch.setdefaulttensortype('torch.FloatTensor')
 
-    netprops = torch.load("cpu.net")
+    netprops = torch.load("cpu.net", "ascii")
+		print(netprops)
     net = netprops.net
     mean = netprops.mean
     stddev = netprops.stddev
-
-    print(mean, stddev)
-    saved = false
 
     -- Float array of depth data!
     function detect(depth_image)
@@ -51,19 +49,10 @@ void core_start(core* c) {
         s[i] = arr[i]
       end
 
-      if not saved then
-        torch.save("foo.t", t)
-      end
-
       t:add(-mean)
       t:div(stddev)
 
       local p = net:forward(t:view(1, 128, 64))
-      if not saved then
-        saved = true
-        print(p)
-        print(p[2] > p[1])
-      end
       return p[2] > p[1]
     end
   )";
@@ -248,6 +237,7 @@ void core_detect(core* c, double timestamp) {
   size_t numCandidates = size_t(c->fhd->candidates_len);
 
   lua_State* L = c->scripts.lua;
+	double start = ms_now();
   for (size_t i = 0; i < numCandidates; i++) {
     const fhd_candidate* candidate = &c->fhd->candidates[i];
 
@@ -272,6 +262,7 @@ void core_detect(core* c, double timestamp) {
 
     lua_getglobal(L, "detect");
     lua_pushlightuserdata(L, &c->depthBuffer[0]);
+		
     if (lua_pcall(L, 1, 1, 0) != 0) {
       printf("%s\n", lua_tostring(L, -1));
     } else {
@@ -288,7 +279,10 @@ void core_detect(core* c, double timestamp) {
         c->world.numDetections++;
       }
     }
+
   }
+	double end = ms_now();
+	printf("Single detection: %f ms\n", (end - start));
 
   /*
   // Flip the detection horizontally, Kinect 2's images have left-right
