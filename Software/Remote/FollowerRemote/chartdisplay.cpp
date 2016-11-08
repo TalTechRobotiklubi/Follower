@@ -10,7 +10,8 @@ const int ColCount = 6;
 
 ChartDisplay::ChartDisplay(QWidget *parent) :
   QWidget(parent),
-  ui(new Ui::chartdisplay)
+  ui(new Ui::chartdisplay),
+  chartCreated_(false)
 {
   ui->setupUi(this);
   chart_ = new QChart();
@@ -23,49 +24,70 @@ ChartDisplay::ChartDisplay(QWidget *parent) :
 
   this->ui->seriesList->addItems(logAssoc_);
 
+  for (int i = 0; i < ColCount; i++)
+  {
+    QListWidgetItem *item = this->ui->seriesList->item(i);
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Unchecked);
+  }
+
   scene_ = new QGraphicsScene(this);
   scene_->setBackgroundBrush(QBrush(Qt::black));
   ui->graphicsView->setScene(scene_);
   ui->graphicsView->setRenderHint(QPainter::Antialiasing);
+
+  connect(this->ui->fileList, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(handleFileUpdate(QListWidgetItem *)));
+  connect(this->ui->seriesList, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(handleDataUpdate(QListWidgetItem*)));
 }
 
 ChartDisplay::~ChartDisplay()
 {
+  chart_->removeAllSeries();
   delete ui;
 }
 
 void ChartDisplay::drawChart(const QList<QLineSeries*>& seriesList)
 {
   chart_->removeAllSeries();
-  chart_->legend()->hide();
 
-  for (int i = 0; i < ColCount; i++)
+  for (int i = 0; i < seriesList.length(); i++)
+  {
     chart_->addSeries(seriesList.at(i));
+  }
 
-  chart_->createDefaultAxes();
-  chart_->setTitle("Test chart");
-  chart_->setSizePolicy(ui->graphicsView->sizePolicy());
-  chart_->setMinimumSize(ui->graphicsView->size());
+  if (!chartCreated_)
+  {
+    chart_->createDefaultAxes();
+    chart_->setTitle("Feedback Data");
+    chart_->setSizePolicy(ui->graphicsView->sizePolicy());
+    chart_->setMinimumSize(ui->graphicsView->size());
 
-  scene_->addItem(chart_);
+    scene_->addItem(chart_);
+
+    chartCreated_ = true;
+  }
+
   scene_->update();
 }
 
-void ChartDisplay::readFromFile(QString filePath)
+QList<QLineSeries *> ChartDisplay::readFromFile(QString fileName)
 {
-  qDebug() << "Two.";
-  QFile file(filePath);
+  QFile file(QDir::currentPath().append(QDir::separator()).append("measurements") + QDir::separator() + fileName);
   bool atData = false;
   QList<QLineSeries *> seriesList;
 
   for (int j = 0; j < ColCount; j++)
+  {
     seriesList.append(new QLineSeries);
+    seriesList.at(j)->setName(fileName + QString("-#%1").arg(j + 1));
+    seriesList.at(j)->setVisible(logWhitelist_[j]);
+  }
 
   // Try to open the file.
   if (!file.open(QIODevice::ReadOnly))
   {
     qDebug() << "Error loading chart data from file: " << file.errorString();
-    return;
+    return seriesList;
   }
 
   // Start reading the file.
@@ -78,7 +100,6 @@ void ChartDisplay::readFromFile(QString filePath)
     {
       // Measutrements start delimited with this key word.
       // Keep looking until we find it.
-      qDebug() << "No data";
       if (line.contains("Measurements"))
       {
         atData = true;
@@ -86,7 +107,6 @@ void ChartDisplay::readFromFile(QString filePath)
     }
     else
     {
-      qDebug() << "Have data";
       // We're here, so we're expecting data. 6 columns to be exact.
       // Save the array, parse it, add it to the respective data series.
       QList<QByteArray> dataList(line.split(','));
@@ -100,10 +120,7 @@ void ChartDisplay::readFromFile(QString filePath)
     }
   }
 
-  if (!atData)
-    return;
-
-  drawChart(seriesList);
+  return seriesList;
 }
 
 void ChartDisplay::showEvent(QShowEvent* event)
@@ -114,10 +131,9 @@ void ChartDisplay::showEvent(QShowEvent* event)
 
 void ChartDisplay::redrawLines()
 {
-  for (int i = 0; i < ColCount; i++)
+  for (int i = 0; i < chart_->series().length(); i++)
   {
-    chart_->series().at(i)->setVisible(logWhitelist_[i]);
-    //currentLog_[i]->setVisible();
+    chart_->series().at(i)->setVisible(logWhitelist_[i % 6]);
   }
 
   scene_->update();
@@ -129,30 +145,68 @@ void ChartDisplay::populateFileList()
 
   QString filter = "*.csv";
   QStringList measureFiles = directory.entryList(filter.split(" "));
-  measureFiles.prepend("");
 
-  this->ui->fileSelect->clear();
-  this->ui->fileSelect->addItems(measureFiles);
-  this->ui->fileSelect->setEditable(false);
-}
+  this->ui->fileList->addItems(measureFiles);
 
-void ChartDisplay::on_fileSelect_currentIndexChanged(const QString &arg1)
-{
-  if (arg1.length())
+  for (int i = 0; i < this->ui->fileList->count(); i++)
   {
-    readFromFile(QDir::currentPath().append(QDir::separator()).append("measurements") + QDir::separator() + arg1);
+    QListWidgetItem *item = this->ui->fileList->item(i);
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Unchecked);
   }
 }
 
-void ChartDisplay::on_seriesList_itemClicked(QListWidgetItem *item)
+void ChartDisplay::handleMultiChart(QStringList fileNames)
 {
-  //    logWhitelist[logAssoc.indexOf(item->text())] = item->isSelected();
-  qDebug() << "Three.";
+  if (fileNames.length() == 0)
+  {
+    chart_->removeAllSeries();
+    return;
+  }
 
-  qDebug() << this->logAssoc_.indexOf(item->text());
+  QList<QLineSeries *> lineSeries;
+  foreach (QString name, fileNames)
+  {
+    lineSeries.append(readFromFile(name));
+  }
+
+  if (lineSeries.length() == 0)
+  {
+    chart_->removeAllSeries();
+    return;
+  }
+
+  drawChart(lineSeries);
+}
+
+void ChartDisplay::on_updateFiles_clicked()
+{
+  this->ui->fileList->clear();
+  if (chart_->series().length())
+    chart_->removeAllSeries();
+
+  populateFileList();
+}
+
+void ChartDisplay::handleFileUpdate(QListWidgetItem *)
+{
+  QStringList fileNames = *new QStringList;
+  for (int i = 0; i < this->ui->fileList->count(); i++)
+  {
+    QListWidgetItem *item = this->ui->fileList->item(i);
+    if (item->checkState() == Qt::Checked)
+    {
+      fileNames.append(item->text());
+    }
+  }
+
+  handleMultiChart(fileNames);
+}
+
+void ChartDisplay::handleDataUpdate(QListWidgetItem *item)
+{
   int i = this->logAssoc_.indexOf(item->text());
-  qDebug() << this->logWhitelist_.length();
-  this->logWhitelist_[i] = !this->logWhitelist_[i];
-  qDebug() << this->logWhitelist_[i];
+  this->logWhitelist_[i] = item->checkState() == Qt::Checked;
+
   this->redrawLines();
 }

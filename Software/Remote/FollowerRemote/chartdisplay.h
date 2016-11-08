@@ -22,20 +22,24 @@ public:
     explicit ChartDisplay(QWidget *parent = 0);
     ~ChartDisplay();
 
-    void readFromFile(QString filePath);
+    QList<QLineSeries *> readFromFile(QString filePath);
 
 protected:
     void showEvent(QShowEvent* event);
 
 private slots:
-    void on_fileSelect_currentIndexChanged(const QString &arg1);
-    void on_seriesList_itemClicked(QListWidgetItem *item);
+    void on_updateFiles_clicked();
+
+    void handleFileUpdate(QListWidgetItem *item);
+    void handleDataUpdate(QListWidgetItem *item);
 
 private:
     void redrawLines();
     void populateFileList();
     void drawChart(const QList<QLineSeries*>& seriesList);
+    void handleMultiChart(QStringList fileNames);
 
+    bool chartCreated_;
     Ui::chartdisplay *ui;
     QList<bool> logWhitelist_;
     QStringList logAssoc_;
