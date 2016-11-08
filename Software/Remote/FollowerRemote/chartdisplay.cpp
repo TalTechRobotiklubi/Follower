@@ -141,6 +141,8 @@ void ChartDisplay::redrawLines()
 
 void ChartDisplay::populateFileList()
 {
+  this->ui->fileList->clear();
+
   QDir directory(QDir::currentPath().append(QDir::separator()).append("measurements"));
 
   QString filter = "*.csv";
@@ -181,7 +183,6 @@ void ChartDisplay::handleMultiChart(QStringList fileNames)
 
 void ChartDisplay::on_updateFiles_clicked()
 {
-  this->ui->fileList->clear();
   if (chart_->series().length())
     chart_->removeAllSeries();
 
