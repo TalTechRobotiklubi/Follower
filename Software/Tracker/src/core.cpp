@@ -205,7 +205,7 @@ void core_detect(core* c, double timestamp) {
                      candidate->kinect_position.y};
       vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
                      candidate->metric_position.z};
-      c->world.detections[i] =
+      c->world.detections[c->world.numDetections] =
           Detection{kinectPos, metricPos, candidate->weight};
       c->world.numDetections++;
     }
