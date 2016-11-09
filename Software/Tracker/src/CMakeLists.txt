@@ -16,6 +16,9 @@ set(CORE_SOURCES
   AsyncSerial.cpp
   BlockDiff.cpp
 
+  classifier/FHDClassifier.cpp
+  classifier/TorchClassifier.cpp
+
   core.cpp
   core_opt.cpp
 
@@ -121,8 +124,8 @@ if (WIN32)
   add_custom_command(
     TARGET follower_core POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${LUAJIT_ROOT}/lib/libluajit.dll ${ARTIFACT_DIR}
-	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_DIR:floatfann>/floatfann.dll ${ARTIFACT_DIR}
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/third_party/torch/lua ${ARTIFACT_DIR}/lua
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/third_party/torch/bin ${ARTIFACT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_DIR:floatfann>/floatfann.dll ${ARTIFACT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/third_party/torch/lua ${ARTIFACT_DIR}/lua
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/third_party/torch/bin ${ARTIFACT_DIR}
   )
 endif()

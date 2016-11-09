@@ -650,8 +650,8 @@ void fhd_run_pass(fhd_context* fhd, const uint16_t* source) {
   fhd_construct_regions(fhd);
   fhd_merge_regions(fhd);
   fhd_copy_regions(fhd);
-  //fhd_calculate_hog_cells(fhd);
-  //fhd_create_features(fhd);
+  fhd_calculate_hog_cells(fhd);
+  fhd_create_features(fhd);
 }
 
 void fhd_context_destroy(fhd_context* fhd) {
@@ -680,12 +680,4 @@ void fhd_context_destroy(fhd_context* fhd) {
   free(fhd->sampler);
   free(fhd->cell_sample_buffer);
   free(fhd->rng);
-}
-
-void fhd_run_classifier(fhd_context* fhd, const fhd_classifier* classifier) {
-  FHD_TIMED_BLOCK(&fhd->perf_records[pr_classify]);
-  for (int i = 0; i < fhd->candidates_len; i++) {
-    fhd_candidate* candidate = &fhd->candidates[i];
-    candidate->weight = fhd_classify(classifier, candidate);
-  }
 }

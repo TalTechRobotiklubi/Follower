@@ -10,7 +10,7 @@
 #include "proto/flatbuffers/flatbuffers.h"
 #include "ScriptLoader.h"
 #include "CoreObj.h"
-#include <fhd_image.h>
+#include "classifier/Classifier.h"
 
 struct core {
   double timestamp = 0.0;
@@ -37,11 +37,9 @@ struct core {
   IoVec encoded_depth;
 
   struct fhd_context* fhd = nullptr;
-  struct fhd_classifier* classifier = nullptr;
 
   flatbuffers::FlatBufferBuilder builder;
-  std::vector<float> depthBuffer = std::vector<float>(32 * 64 * 128);
-  fhd_image depthImg;
+  std::vector<std::unique_ptr<Classifier>> classifiers;
 
   core() { running = ATOMIC_VAR_INIT(true); }
   ~core();
