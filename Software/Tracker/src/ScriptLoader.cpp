@@ -5,8 +5,6 @@
 #include <string>
 
 static const char* const initScript = R"(
-	print(package.path)
-	print(package.cpath)
 	local ffi = require("ffi")
   ffi.cdef[[
     typedef struct { float x, y; } vec2;
