@@ -143,28 +143,6 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
   }
 }
 
-void core_update(core* c) {
-  uint16_t currentClosest = 0xFFFF;
-  int idx = 0;
-  for (int i = 0; i < c->kinectFrame.depthLength; i++) {
-    uint16_t v = c->kinectFrame.depthData[i];
-    if (v > kMinReliableDist && v < kMaxReliableDist && v < currentClosest) {
-      currentClosest = v;
-      idx = i;
-    }
-  }
-
-  if (currentClosest > 0) {
-    int x = idx % kDepthWidth;
-    int y = idx / kDepthWidth;
-    fhd_vec3 p =
-        fhd_depth_to_3d(float(currentClosest) / 1000.f, float(x), float(y));
-    c->world.closestObstacle = vec3(p.x, p.y, p.z);
-  } else {
-    c->world.closestObstacle = vec3(0.f, 0.f, 0.f);
-  }
-}
-
 void core_detect(core* c, double timestamp) {
   c->world.timestamp = timestamp;
   c->world.numDetections = 0;
@@ -236,9 +214,6 @@ void core_serialize(core* c) {
       c->builder, c->tracking.activeTarget, targetOffsets);
 
   proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
-  proto::Vec3 closestObstacle(c->world.closestObstacle.x,
-                              c->world.closestObstacle.y,
-                              c->world.closestObstacle.z);
 
   proto::FrameBuilder frame_builder(c->builder);
 
@@ -252,7 +227,6 @@ void core_serialize(core* c) {
   }
   frame_builder.add_detections(detectionOffsets);
   frame_builder.add_tracking(tracking);
-  frame_builder.add_closestObstacle(&closestObstacle);
 
   auto frame = frame_builder.Finish();
   auto message =
@@ -301,7 +275,6 @@ int main(int argc, char** argv) {
     c.dtMilli = float(frame_time);
 
     c.frameSource->FillFrame(&c.kinectFrame);
-    core_update(&c);
 
     if (c.writer) {
       fl_sqlite_writer_add_frame(c.writer, &c.kinectFrame);
