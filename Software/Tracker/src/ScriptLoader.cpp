@@ -20,6 +20,7 @@ static const char* const initScript = R"(
       double timestamp;
       int32_t numDetections;
       Detection detections[16];
+      uint8_t distance_sensors[8];
     } World;
 
     typedef struct {
@@ -28,10 +29,18 @@ static const char* const initScript = R"(
       vec3 position;
     } Target;
 
+    typedef enum {
+      Error = 0,
+      Resting = 1,
+      Searching = 2,
+      Following = 3,
+    } Activity;
+
     typedef struct {
       int32_t activeTarget;
       int32_t numTargets;
       Target targets[16];
+      Activity activity;
     } TrackingState;
 
     typedef struct {

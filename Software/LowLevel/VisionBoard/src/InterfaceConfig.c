@@ -26,12 +26,13 @@ InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[3] =
 	{ &PacketDescriptorList[PacketPidSetup],     -1, -1 }
 };
 
-InterfaceReceivePacket nodeInterfaceUSBReceivePacketList[4] = 
+InterfaceReceivePacket nodeInterfaceUSBReceivePacketList[5] = 
 {
 	{ &PacketDescriptorList[PacketMotorSpeeds],   -1 },
 	{ &PacketDescriptorList[PacketCameraControl], -1 },
 	{ &PacketDescriptorList[PacketRobotControl],  -1 },
-	{ &PacketDescriptorList[PacketPidSetup],      -1 }
+	{ &PacketDescriptorList[PacketPidSetup],      -1 },
+	{ &PacketDescriptorList[PacketVisualization], -1 }
 };
 
 InterfaceTransmitPacket nodeInterfaceUSBTransmitPacketList[3] = 
@@ -44,6 +45,6 @@ InterfaceTransmitPacket nodeInterfaceUSBTransmitPacketList[3] =
 NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
 {
 	/* CAN */ { nodeInterfaceCANReceivePacketList, 3, nodeInterfaceCANTransmitPacketList, 3 },
-	/* USB */ { nodeInterfaceUSBReceivePacketList, 4, nodeInterfaceUSBTransmitPacketList, 3 }
+	/* USB */ { nodeInterfaceUSBReceivePacketList, 5, nodeInterfaceUSBTransmitPacketList, 3 }
 };
 

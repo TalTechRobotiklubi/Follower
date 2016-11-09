@@ -24,7 +24,8 @@ typedef enum
 	PacketRobotControl,    // 4
 	PacketPidSetup,        // 5
 	PacketCameraControl,   // 6
-	// Count of items is 7
+	PacketVisualization,   // 7
+	// Count of items is 8
 	NumberOfPackets
 }
 Packet;

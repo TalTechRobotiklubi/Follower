@@ -41,7 +41,8 @@ typedef enum
 	DLParamPidUpdating,             // 22
 	DLParamCameraRequestXDegree,    // 23
 	DLParamCameraRequestZDegree,    // 24
-	// Count of items is 25
+	DLParamVisualizationActivity,   // 25
+	// Count of items is 26
 	DLNumberOfParams
 }
 DLParam;

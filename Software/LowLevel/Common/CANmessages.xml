@@ -353,6 +353,14 @@
       <Description>
       </Description>
     </Parameter>
+    <Parameter>
+      <Name>VisualizationActivity</Name>
+      <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
   </Parameters>
   <Packets>
     <Packet>
@@ -545,6 +553,16 @@
         </PacketParameter>
       </PacketParameters>
     </Packet>
+    <Packet>
+      <ID>250</ID>
+      <Name>Visualization</Name>
+      <NominalPeriod>0</NominalPeriod>
+      <PacketParameters>
+        <PacketParameter>
+          <Parameter>VisualizationActivity</Parameter>
+        </PacketParameter>
+      </PacketParameters>
+    </Packet>
   </Packets>
   <Nodes>
     <Node>
@@ -731,7 +749,7 @@
     </Node>
     <Node>
       <ID>0</ID>
-      <Name>Zotac</Name>
+      <Name>FollowerPC</Name>
       <Interfaces>
         <Interface>
           <Name>USB</Name>
@@ -765,6 +783,11 @@
             </TransmitPacket>
             <TransmitPacket>
               <Packet>RobotControl</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>20</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>Visualization</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>20</Period>
             </TransmitPacket>
@@ -833,6 +856,11 @@
             </ReceivePacket>
             <ReceivePacket>
               <Packet>PidSetup</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>Visualization</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>

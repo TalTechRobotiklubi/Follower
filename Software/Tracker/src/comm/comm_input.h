@@ -5,25 +5,14 @@
 #include <stdint.h>
 #include "vec2.h"
 
+#define NUM_OF_DISTANCE_SENSORS 8
+
 struct CommInput {
-  uint8_t distance_sensor1;
-  uint8_t distance_sensor2;
-  uint8_t distance_sensor3;
-  uint8_t distance_sensor4;
-  uint8_t distance_sensor5;
-  uint8_t distance_sensor6;
-  uint8_t distance_sensor7;
-  uint8_t distance_sensor8;
+  uint8_t distance_sensor[NUM_OF_DISTANCE_SENSORS];
 
   CommInput() {
-    distance_sensor1 = 0;
-    distance_sensor2 = 0;
-    distance_sensor3 = 0;
-    distance_sensor4 = 0;
-    distance_sensor5 = 0;
-    distance_sensor6 = 0;
-    distance_sensor7 = 0;
-    distance_sensor8 = 0;
+    for (int i = 0; i < NUM_OF_DISTANCE_SENSORS; ++i)
+        distance_sensor[i] = 0;
   }
 };
 

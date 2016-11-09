@@ -58,6 +58,8 @@ add_executable(
   ${CORE_SOURCES}
 )
 
+set(HEADERS_ONLY CoreObj.h fl_constants.h Clock.h)
+
 add_executable(
   follower_client
   client.cpp
@@ -72,6 +74,8 @@ add_executable(
   ui/Console.cpp
 
   parg/parg.c
+
+  ${HEADERS_ONLY}
 )
 
 if (WIN32)

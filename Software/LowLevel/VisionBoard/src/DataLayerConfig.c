@@ -13,7 +13,7 @@
 // Values
 // ----------------------------------------------------------------------------
 Bool  pDLValueBool[1];
-U8    pDLValueU8[9];
+U8    pDLValueU8[10];
 S8    pDLValueS8[2];
 S16   pDLValueS16[12];
 Float pDLValueFloat[1];
@@ -47,6 +47,7 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* PidValue                */ { TypeFloat, &pDLValueFloat[0] },
 	/* PidUpdating             */ { TypeBool,  &pDLValueBool[0]  },
 	/* CameraRequestXDegree    */ { TypeS8,    &pDLValueS8[0]    },
-	/* CameraRequestZDegree    */ { TypeS8,    &pDLValueS8[1]    }
+	/* CameraRequestZDegree    */ { TypeS8,    &pDLValueS8[1]    },
+	/* VisualizationActivity   */ { TypeU8,    &pDLValueU8[9]    }
 };
 
