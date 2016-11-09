@@ -15,6 +15,10 @@
 #include <omp.h>
 #endif
 
+namespace {
+  const int fhd_max_region_points = 4096;
+}
+
 static fhd_edge construct_depth_edge(int idx_a, float weight_a, int idx_b,
                                      float weight_b) {
   return fhd_edge{idx_a, idx_b, fabsf(weight_a - weight_b)};
@@ -201,6 +205,9 @@ void fhd_construct_regions(fhd_context* fhd) {
       fhd_region_point rp = {x, y, *p};
       if (it != regions.end()) {
         fhd_region* r = &it->second;
+        if (r->points_len >= fhd_max_region_points) {
+          continue;
+        }
         if (p->x < r->sx) r->sx = p->x;
         if (p->x > r->ex) r->ex = p->x;
         if (p->y > r->sy) r->sy = p->y;
@@ -229,8 +236,12 @@ void fhd_construct_regions(fhd_context* fhd) {
         r.points_len = 1;
         r.points = (fhd_region_point*)fhd_block_allocator_acquire(
             fhd->point_allocator);
-        r.points[0] = rp;
-        regions.insert(std::make_pair(key, r));
+        if (r.points) {
+          r.points[0] = rp;
+          regions.insert(std::make_pair(key, r));
+        } else {
+          printf("point allocator out of memory; skipped new region\n");
+        }
       }
     }
   }
@@ -547,7 +558,7 @@ void fhd_context_init(fhd_context* fhd, int source_w, int source_h, int cell_w,
   fhd->normal_segmentation_threshold = 4.f;
 
   fhd->point_allocator =
-      fhd_block_allocator_create(sizeof(fhd_region_point) * 2048, 1024);
+      fhd_block_allocator_create(sizeof(fhd_region_point) * fhd_max_region_points, 1024);
 
   fhd_image_init(&fhd->normalized_source, source_w, source_h);
   fhd->downscaled_depth = (uint16_t*)calloc(fhd->cells_len, sizeof(uint16_t));
