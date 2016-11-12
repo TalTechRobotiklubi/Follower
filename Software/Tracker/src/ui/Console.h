@@ -1,15 +1,18 @@
 #pragma once
 #include <imgui.h>
+#include <vector>
+#include <string>
 
 struct Console {
   char InputBuf[512];
-  ImVector<char*> Items;
+  std::vector<std::string> Items;
   bool ScrollToBottom;
   ImVector<char*> History;
   int HistoryPos;  // -1: new line, 0..History.Size-1 browsing history.
   ImVector<const char*> Commands;
   ImGuiTextFilter filter;
   char* lastCommand = nullptr;
+	size_t maxLines = 512;
 
   Console();
   ~Console();
