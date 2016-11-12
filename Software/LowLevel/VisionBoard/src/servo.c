@@ -32,7 +32,7 @@ void Servo_task()
 		servoXT = 45;
 	else if (servoXT < -45)
 		servoXT = -45;
-	servoX = servoXT ;
+	servoX = servoXT;
 
 
 	DL_getData(DLParamCameraRequestZDegree, &servoYT);
@@ -123,7 +123,7 @@ void TIM1_BRK_TIM9_IRQHandler()
 	if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET)
 	{
 		TIM9->CCR1 = CENTER_POINT + servoY;
-		TIM9->CCR2 = CENTER_POINT + servoX;
+		TIM9->CCR2 = CENTER_POINT + (-1 * servoX);
 		TIM_ClearITPendingBit(TIM9, TIM_IT_Update);
 	}
 }

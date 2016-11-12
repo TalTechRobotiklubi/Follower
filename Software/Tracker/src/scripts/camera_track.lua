@@ -35,8 +35,18 @@ function find_closest_detection(detections, n, point)
   return closest_detection
 end
 
+local decide_init = true
 local target = nil
+local curr_camera_x = 0.0
+local default_camera_y = 20.0
+local curr_camera_y = default_camera_y
 function decide(dt, world, state, tracking)
+  if decide_init == true then
+    curr_camera_y = default_camera_y
+    state.camera.y = curr_camera_y
+    decide_init = false
+  end
+
   if target ~= nil then
     target.timeToLive = target.timeToLive - dt
     if target.timeToLive < 0.0 then
@@ -91,21 +101,42 @@ function decide(dt, world, state, tracking)
     t.weight = target.timeToLive / MAX_TTL
 
     local angle = math.deg(math.atan(-target.position.x / target.position.z))
+    -- target.position.y is float. 0 point is in the middle
+    --remote_log("target: y %f, angle %d\n", target.position.y, angle)
+    
+    local camera_x_acc = 0.25  -- change it depending on how fast is human detection
+    local camera_y_acc = 0.25
+    local max_degrees = 45
 
-    if angle > 10.0 then
-      state.rotationSpeed = rspeed
-      state.speed = 0.0
-    elseif angle < -10.0 then
-      state.rotationSpeed = -rspeed
-      state.speed = 0.0
-    else 
-      state.rotationSpeed = 0.0
-      if target.position.z > 1.4 then
-        state.speed = 200.0
-      else
-        state.speed = 0.0
+    if angle > 4 then
+      curr_camera_x = curr_camera_x + camera_x_acc
+      if curr_camera_x > max_degrees then
+        curr_camera_x = max_degrees
       end
+      state.camera.x = curr_camera_x
+    elseif angle < -4 then
+      curr_camera_x = curr_camera_x - camera_x_acc
+      if curr_camera_x < -max_degrees then
+        curr_camera_x = -max_degrees
+      end
+      state.camera.x = curr_camera_x
     end
+    
+    -- range -1.2 ... 1.2
+    if target.position.y > 0.14 then
+      curr_camera_y = curr_camera_y + camera_y_acc
+      if curr_camera_y > max_degrees then
+        curr_camera_y = max_degrees
+      end
+      state.camera.y = curr_camera_y
+    elseif target.position.y < -0.14 then
+      curr_camera_y = curr_camera_y - camera_y_acc
+      if curr_camera_y < -max_degrees then
+        curr_camera_y = -max_degrees
+      end
+      state.camera.y = curr_camera_y
+    end
+   remote_log("target: y %f, camera set %d\n", target.position.y, curr_camera_y)
   else
     tracking.numTargets = 0
     tracking.activeTarget = -1
@@ -113,5 +144,5 @@ function decide(dt, world, state, tracking)
     state.speed = 0.0
   end
 
-  state.camera.y = 20.0
+  
 end
