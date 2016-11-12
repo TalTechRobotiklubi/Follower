@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <algorithm>
 
 #ifdef _MSC_VER
 #pragma warning (disable: 4996)
@@ -58,8 +59,7 @@ Console::~Console() {
 }
 
 void Console::ClearLog() {
-  for (int i = 0; i < Items.Size; i++) free(Items[i]);
-  Items.clear();
+	Items.clear();
   ScrollToBottom = true;
 }
 
@@ -70,7 +70,15 @@ void Console::AddLog(const char* fmt, ...) {
   vsnprintf(buf, IM_ARRAYSIZE(buf), fmt, args);
   buf[IM_ARRAYSIZE(buf) - 1] = 0;
   va_end(args);
-  Items.push_back(Strdup(buf));
+
+	if (Items.size() >= maxLines) {
+		std::rotate(Items.begin(), Items.begin() + 1, Items.end());
+		Items.back() = buf;
+	}
+	else {
+		Items.emplace_back(buf);
+	}
+
   ScrollToBottom = true;
 }
 
@@ -118,8 +126,8 @@ const char* Console::Draw(const char* title, float w, float h) {
   // to allow random-seeking into your list.
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
                       ImVec2(4, 1));  // Tighten spacing
-  for (int i = 0; i < Items.Size; i++) {
-    const char* item = Items[i];
+  for (size_t i = 0; i < Items.size(); i++) {
+    const char* item = Items[i].c_str();
     if (!filter.PassFilter(item)) continue;
     ImVec4 col =
         ImVec4(1.f, 1.f, 1.f, 1.0f);  // A better implementation may store

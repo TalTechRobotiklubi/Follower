@@ -3,11 +3,23 @@
 #include <lua.hpp>
 #include <stdio.h>
 #include <string>
-#include <iostream>
+
+static int RemoteLog(lua_State* L) {
+	ScriptLoader* s = (ScriptLoader*)lua_topointer(L, lua_upvalueindex(1));
+	const char* text = lua_tostring(L, -1);
+
+	if (text && s->log) {
+		s->log(text, s->user);
+	}
+	
+	lua_pop(L, 1);
+	return 0;
+}
 
 static const char* const initScript = R"(
   local ffi = require("ffi")
   ffi.cdef[[
+		
     typedef struct { float x, y; } vec2;
     typedef struct { float x, y, z; } vec3;
 
@@ -52,7 +64,10 @@ static const char* const initScript = R"(
     } ControlState;
   ]]
 
-  context = {}
+	function remote_log(fmt, ...)
+		local r = string.format(fmt, ...)
+		remote_log_internal(r)
+	end
 
   function do_decide(dt, world, state, tracking)
     world = ffi.cast("World*", world)
@@ -81,6 +96,10 @@ bool ScriptLoaderInit(ScriptLoader* loader) {
            lua_tostring(loader->lua, -1));
     return false;
   }
+
+	lua_pushlightuserdata(loader->lua, loader);
+	lua_pushcclosure(loader->lua, RemoteLog, 1);
+	lua_setglobal(loader->lua, "remote_log_internal");
 
   return true;
 }
@@ -120,6 +139,11 @@ bool ScriptLoaderExecFile(ScriptLoader* loader, const char* file) {
 
 bool ScriptLoaderExec(ScriptLoader* loader, const char* script) {
   return luaL_dostring(loader->lua, script) == 0;
+}
+
+void ScriptLoaderSetLogCallback(ScriptLoader* loader, void(*cb)(const char*, void*), void* user) {
+	loader->log = cb;
+	loader->user = user;
 }
 
 const char* ScriptLoaderGetError(ScriptLoader* loader) {

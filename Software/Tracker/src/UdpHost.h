@@ -11,6 +11,6 @@ struct NetAddress {
 };
 
 UdpHost* UdpHostCreate(const char* hostAddress, int port);
-void UdpHostBroadcast(UdpHost* udp, const uint8_t* data, int len);
+void UdpHostBroadcast(UdpHost* udp, const uint8_t* data, int len, bool reliable);
 const IoVec* UdpHostPoll(UdpHost* udp);
 void UdpHostDestroy(UdpHost* udp);

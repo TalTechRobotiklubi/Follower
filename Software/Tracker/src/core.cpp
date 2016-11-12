@@ -22,10 +22,6 @@ void kinect_loop(core* c) {
   }
 }
 
-void core_start(core* c) {
-  c->kinect_frame_thread = std::thread(kinect_loop, c);
-}
-
 void core_decide(core* c, double dt) {
   ScriptLoaderUpdate(&c->scripts, dt, &c->world, &c->state, &c->tracking);
 }
@@ -37,7 +33,14 @@ void core_send_status_message(core* c, const char* message) {
       builder, proto::Payload_StatusMessage,
       proto::CreateStatusMessage(builder, content).Union());
   builder.Finish(m);
-  UdpHostBroadcast(c->udp, builder.GetBufferPointer(), builder.GetSize());
+  UdpHostBroadcast(c->udp, builder.GetBufferPointer(), builder.GetSize(), true);
+}
+
+void core_start(core* c) {
+	ScriptLoaderSetLogCallback(&c->scripts, [](const char* s, void* user) {
+		core_send_status_message((core*)user, s);
+	}, c);
+	c->kinect_frame_thread = std::thread(kinect_loop, c);
 }
 
 void core_stop_actions(core* c) {
@@ -350,7 +353,7 @@ int main(int argc, char** argv) {
 
     if (timeUntilBroadCast <= 0.0) {
       UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(),
-                       c.builder.GetSize());
+                       c.builder.GetSize(), false);
       timeUntilBroadCast = broadcastInterval;
     } else {
       timeUntilBroadCast -= frameTimeSeconds;
