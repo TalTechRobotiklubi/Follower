@@ -34,11 +34,11 @@ Configure::~Configure()
   delete ui;
 }
 
-void Configure::onNewFeedbackData(const QList<uint8_t>& list)
+void Configure::onNewFeedbackData(const QList<int16_t>& list)
 {
   if (activeFile_.isOpen())
   {
-    foreach(const uint8_t d, list)
+    foreach(const int16_t d, list)
     {
       *fileStream_ << d;
       *fileStream_ << ",";

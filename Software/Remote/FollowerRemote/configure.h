@@ -29,7 +29,7 @@ signals:
   void routineStatus(bool running);
 
 public slots:
-  void onNewFeedbackData(const QList<uint8_t>& list);
+  void onNewFeedbackData(const QList<int16_t>& list);
 
 private slots:
   void on_button_send_clicked();

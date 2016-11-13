@@ -155,7 +155,7 @@ void FollowerUi::newUiData()
 
   calcAndWriteEulerAnglesToUI(qw, qx, qy, qz);
 
-  QList<uint8_t> data = {0,0,0,0};
+  QList<int16_t> data = {0,0,0,0};
   bool newData = dataLayer_->DL_getData(DLParamRobotFeedback1, &data[0]);
   newData |= dataLayer_->DL_getData(DLParamRobotFeedback2, &data[1]);
   newData |= dataLayer_->DL_getData(DLParamRobotFeedback3, &data[2]);
