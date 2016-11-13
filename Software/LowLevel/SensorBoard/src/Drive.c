@@ -25,14 +25,14 @@ typedef struct
 	float roll;
 } Euler;
 
-static float kpX = 0.5f;
+static float kpX = 1.5f;
 static float kiX = 0.5f;
-static float kdX = 0.5f;
-static float kpW = 0.3f;
+static float kdX = 0.6f;
+static float kpW = 0.9f;
 static float kiW = 0.3f;
-static float kdW = 0.3f;
+static float kdW = 0.25f;
 static float accX = 2.0f;
-static float accW = 1.0f;
+static float accW = 3.6f;
 
 static float kpX_t = 0.0f;  // temporary fields
 static float kiX_t = 0.0f;
@@ -49,12 +49,16 @@ static float priv_speedX = 0;
 static float priv_speedW = 0;
 static float priv_gyroZ = 0;
 
+static int packetFailSafeCounter = 0;
+
 static uint8_t updateParameters();
 static void readEncoders();
 static void stop();
 static void readRequestedSpeeds();
 static void readTurningSpeeds();
 static void drive();
+
+
 
 #define maxI 1000
 
@@ -144,10 +148,21 @@ void stop()
 void readRequestedSpeeds()
 {
 	int16_t read;
-	DL_getData(DLParamRequestTranslationSpeed, &read);
-	priv_speedX = (float)read/10.0;
-	DL_getData(DLParamRequestRotationSpeed, &read);
+	int res1 = DL_getData(DLParamRequestTranslationSpeed, &read);
+	priv_speedX = (float)read * 0.1;
+	int res2 = DL_getData(DLParamRequestRotationSpeed, &read);
 	priv_speedW = (float)read;
+
+
+	if (res1 && res2)
+	{
+		packetFailSafeCounter = 100; // 20*20ms = 400ms
+	}
+	else
+	{
+		if (packetFailSafeCounter > 0)
+			packetFailSafeCounter--;
+	}
 }
 
 void readTurningSpeeds()
@@ -236,7 +251,7 @@ void drive()
 
 	// Linear acceleration, TODO - do not allow negative
 
-	if (GPIO_inputValue(STOP_BUTTON) == INPUT_OFF)
+	if (GPIO_inputValue(STOP_BUTTON) == INPUT_OFF) //|| (!packetFailSafeCounter))
 	{
 		rightSpeedOld = 0,
 		leftSpeedOld = 0;
@@ -259,24 +274,30 @@ void drive()
 		return;
 	}
 
-	if (priv_speedX < 0)
+
+	if (priv_speedX == 0)
+	{
+		fwd_speed = priv_speedX;
+	}
+	else if (priv_speedX > 0)
 	{
 
 		if (fwd_speed != priv_speedX)
 		{
 			if (priv_speedX < fwd_speed)
 			{
-				fwd_speed += accX*2;
+				fwd_speed -= accX;
 			}
 			else
 			{
-				fwd_speed += accX*0.25;
+				fwd_speed += accX;
 			}
 
-			if (fwd_speed > priv_speedX)
+			/*if (fwd_speed > priv_speedX)
 			{
 				fwd_speed = priv_speedX;
 			}
+			*/
 		}
 	}
 	else
@@ -289,13 +310,16 @@ void drive()
 			}
 			else
 			{
-				fwd_speed -= accX*2;
+				fwd_speed += accX;
 			}
 
+			/*
 			if (fwd_speed < priv_speedX)
 			{
 				fwd_speed = priv_speedX;
 			}
+			*/
+
 		}
 	}
 
@@ -328,10 +352,24 @@ void drive()
 	*/
 	// Rotational acceleration
 	if(turn_speed < priv_speedW)
+	{
 		turn_speed += accW;
+
+		if (turn_speed > priv_speedW)
+		{
+			turn_speed = priv_speedW;
+		}
+
+	}
 	else if(turn_speed > priv_speedW)
+	{
 		turn_speed -= accW;
 
+		if (turn_speed < priv_speedW)
+		{
+			turn_speed = priv_speedW;
+		}
+	}
 
 //	if (priv_speedW > 0)
 //	{
@@ -364,7 +402,7 @@ void drive()
 		temp_gyro = 0;
 	}
 
-	errW = temp_gyro + priv_speedW;
+	errW = temp_gyro + turn_speed;
 	iW += errW * 0.02 * kiW ;
 	dW = (errW-LasterrW)*50;
 	LasterrW = errW;
@@ -437,7 +475,7 @@ void drive()
 /*	rightSpeedOld = 0;
 	leftSpeedOld = 0;
 */
-	int16_t speedL = (int) (leftSpeedOld + turnSpeedOld);
+	int16_t speedL = (int) (leftSpeedOld  + turnSpeedOld);
 	int16_t speedR = (int) (rightSpeedOld - turnSpeedOld);
 	// Set motor speeds
 	{
@@ -457,13 +495,13 @@ void drive()
 
 		//priv_leftEncoder - (float)priv_rightEncoder
 
-			int16_t temp = (int)encspeed;
+			int16_t temp = (int)(encspeed * 10.0);
 			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback1, &temp);
-			temp = (int)(errW);
-			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback2, &priv_leftEncoder);
-			temp = (int)priv_gyroZ;
-			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback3, &priv_rightEncoder);
-			temp = (int)dLX;
+			temp = (int)(fwd_speed * 10.0);
+			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback2, &temp);
+			temp = (int)(-temp_gyro * 10.0);
+			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback3, &temp);
+			temp = (int)(turn_speed * 10.0);
 			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback4, &temp);
 //		}
 	}
