@@ -8,6 +8,7 @@ const char* const detectionScript = R"(
     require 'nn';
     local ffi = require("ffi");
     torch.setdefaulttensortype('torch.FloatTensor')
+    print("Torch threads: " .. torch.getnumthreads())
 
     function load_torch_classifier(name)
       local netprops = torch.load(name, "ascii")
