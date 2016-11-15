@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+const int kCandidateWidth = 64;
+const int kCandidateHeight = 128;
 const int kDepthWidth = 512;
 const int kDeptHeight = 424;
 

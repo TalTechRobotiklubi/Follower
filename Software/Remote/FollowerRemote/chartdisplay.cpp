@@ -55,9 +55,12 @@ void ChartDisplay::drawChart(const QList<QLineSeries*>& seriesList)
     chart_->addSeries(seriesList.at(i));
   }
 
+  chart_->createDefaultAxes();
+
   if (!chartCreated_)
   {
-    chart_->createDefaultAxes();
+
+
     chart_->setTitle("Feedback Data");
     chart_->setSizePolicy(ui->graphicsView->sizePolicy());
     chart_->setMinimumSize(ui->graphicsView->size());

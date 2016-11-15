@@ -34,7 +34,7 @@ protected:
 signals:
   void startCommunication(QString nPort);
   void stopCommunication(void);
-  void feedbackReceived(const QList<uint8_t> list);
+  void feedbackReceived(const QList<int16_t> list);
 
 public slots:
   void connectSpine();

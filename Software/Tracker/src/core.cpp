@@ -1,10 +1,10 @@
 #include "core.h"
 #include <fhd.h>
-#include <fhd_classifier.h>
 #include <fhd_kinect.h>
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
+#include <lua.hpp>
 #include "Clock.h"
 #include "Encode.h"
 #include "File.h"
@@ -40,30 +40,20 @@ void core_start(core* c) {
 	ScriptLoaderSetLogCallback(&c->scripts, [](const char* s, void* user) {
 		core_send_status_message((core*)user, s);
 	}, c);
+
 	c->kinect_frame_thread = std::thread(kinect_loop, c);
+
+	c->classifiers.erase(
+		std::remove_if(c->classifiers.begin(), c->classifiers.end(),
+			[](const std::unique_ptr<Classifier>& classifier) {
+		return !classifier->Init();
+	}),
+		c->classifiers.end());
 }
 
 void core_stop_actions(core* c) {
   ScriptLoaderExec(&c->scripts, "decide = nil");
   c->state = ControlState();
-}
-
-bool core_set_classifier(core* c, const char* name, const uint8_t* classifier,
-                         size_t len) {
-  if (c->classifier) {
-    fhd_classifier_destroy(c->classifier);
-    c->classifier = nullptr;
-  }
-
-  // Clunky libfann API. Can't load from memory.
-  if (!SaveFile(name, classifier, len)) {
-    return false;
-  }
-
-  c->classifier = fhd_classifier_create(name);
-  printf("loaded classifier %s\n", name);
-
-  return c->classifier != nullptr;
 }
 
 void core_handle_command(core* c, const proto::Command* command) {
@@ -149,14 +139,7 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
       break;
     }
     case proto::Payload_Classifier: {
-      auto classifierMsg = (const proto::Classifier*)message->payload();
-      if (core_set_classifier(c, classifierMsg->name()->c_str(),
-                              (const uint8_t*)classifierMsg->content()->data(),
-                              classifierMsg->content()->size())) {
-        core_send_status_message(c, "loaded classifier");
-      } else {
-        core_send_status_message(c, "failed to load classifier");
-      }
+      core_send_status_message(c, "unsupported operation");
       break;
     }
     default:
@@ -164,46 +147,28 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
   }
 }
 
-void core_update(core* c) {
-  uint16_t currentClosest = 0xFFFF;
-  int idx = 0;
-  for (int i = 0; i < c->kinectFrame.depthLength; i++) {
-    uint16_t v = c->kinectFrame.depthData[i];
-    if (v > kMinReliableDist && v < kMaxReliableDist && v < currentClosest) {
-      currentClosest = v;
-      idx = i;
-    }
-  }
-
-  if (currentClosest > 0) {
-    int x = idx % kDepthWidth;
-    int y = idx / kDepthWidth;
-    fhd_vec3 p = fhd_depth_to_3d(float(currentClosest) / 1000.f, float(x), float(y));
-    c->world.closestObstacle = vec3(p.x, p.y, p.z);
-  } else {
-    c->world.closestObstacle = vec3(0.f, 0.f, 0.f);
-  }
-}
-
 void core_detect(core* c, double timestamp) {
-  if (!c->classifier) {
-    return;
-  }
-
-  fhd_run_pass(c->fhd, c->kinectFrame.depthData);
-  fhd_run_classifier(c->fhd, c->classifier);
-
   c->world.timestamp = timestamp;
   c->world.numDetections = 0;
 
+  fhd_run_pass(c->fhd, c->kinectFrame.depthData);
+
+
   const float w = float(kDepthWidth);
   size_t numCandidates = size_t(c->fhd->candidates_len);
+  const size_t requiredPasses = std::max<size_t>(c->classifiers.size(), 1);
 
-  // Flip the detection horizontally, Kinect 2's images have left-right
-  // reversed.
   for (size_t i = 0; i < numCandidates; i++) {
     const fhd_candidate* candidate = &c->fhd->candidates[i];
-    if (candidate->weight >= 1.f) {
+
+    size_t passed = 0;
+    for (const std::unique_ptr<Classifier>& classifier : c->classifiers) {
+      if (classifier->Classify(candidate)) {
+        passed++;
+      }
+    }
+
+    if (passed >= requiredPasses) {
       vec2 kinectPos{w - candidate->kinect_position.x,
                      candidate->kinect_position.y};
       vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
@@ -253,9 +218,6 @@ void core_serialize(core* c) {
       c->builder, c->tracking.activeTarget, targetOffsets);
 
   proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
-  proto::Vec3 closestObstacle(c->world.closestObstacle.x,
-                              c->world.closestObstacle.y,
-                              c->world.closestObstacle.z);
 
   proto::FrameBuilder frame_builder(c->builder);
 
@@ -269,7 +231,6 @@ void core_serialize(core* c) {
   }
   frame_builder.add_detections(detectionOffsets);
   frame_builder.add_tracking(tracking);
-  frame_builder.add_closestObstacle(&closestObstacle);
 
   auto frame = frame_builder.Finish();
   auto message =
@@ -318,7 +279,6 @@ int main(int argc, char** argv) {
     c.dtMilli = float(frame_time);
 
     c.frameSource->FillFrame(&c.kinectFrame);
-    core_update(&c);
 
     if (c.writer) {
       fl_sqlite_writer_add_frame(c.writer, &c.kinectFrame);
