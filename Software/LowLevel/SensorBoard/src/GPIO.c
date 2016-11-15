@@ -35,8 +35,8 @@ const GPIO_Struct GPIO_table[] = {
 	{CAN1_Tx,				GPIOD,	GPIO_Pin_1,		RCC_AHB1Periph_GPIOD,	EXTI_Line1, 	EXTI_PortSourceGPIOD,	GPIO_PinSource1,	CAN1_TX_IRQn},  //PD1
 	{CAN1_Rx,				GPIOD,	GPIO_Pin_0,		RCC_AHB1Periph_GPIOD,	EXTI_Line0, 	EXTI_PortSourceGPIOD,	GPIO_PinSource0,	CAN1_RX0_IRQn},  //PD0
 /*USART2*/
-	{USART2_Tx,				GPIOA,	GPIO_Pin_2,		RCC_AHB1Periph_GPIOA,	EXTI_Line2, 	EXTI_PortSourceGPIOA,	GPIO_PinSource2,	USART2_IRQn},  //PC10
-	{USART2_Rx,				GPIOA,	GPIO_Pin_3,		RCC_AHB1Periph_GPIOA,	EXTI_Line3, 	EXTI_PortSourceGPIOA,	GPIO_PinSource3,	USART2_IRQn},  //PC11
+	{USART2_Tx,				GPIOA,	GPIO_Pin_2,		RCC_AHB1Periph_GPIOA,	EXTI_Line2, 	EXTI_PortSourceGPIOA,	GPIO_PinSource2,	USART2_IRQn},  //PA2
+	{USART2_Rx,				GPIOA,	GPIO_Pin_3,		RCC_AHB1Periph_GPIOA,	EXTI_Line3, 	EXTI_PortSourceGPIOA,	GPIO_PinSource3,	USART2_IRQn},  //PA3
 /*I2C (Power)*/
 	{I2C3_SCL,				GPIOA,  GPIO_Pin_8, 	RCC_AHB1Periph_GPIOA,   EXTI_Line8,     EXTI_PortSourceGPIOA,	EXTI_PinSource8,	I2C3_EV_IRQn},
 	{I2C3_SDA,				GPIOC,  GPIO_Pin_9, 	RCC_AHB1Periph_GPIOC,   EXTI_Line9,     EXTI_PortSourceGPIOC,	EXTI_PinSource9,	I2C3_EV_IRQn},

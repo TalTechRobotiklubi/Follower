@@ -18,6 +18,9 @@ const GPIO_Struct GPIO_table[] = {
 	{CAN1_Tx,				GPIOD,	GPIO_Pin_1,		RCC_AHB1Periph_GPIOD,	EXTI_Line1, 	EXTI_PortSourceGPIOD,	GPIO_PinSource1,	CAN1_TX_IRQn},  //PD1
 	{CAN1_Rx,				GPIOD,	GPIO_Pin_0,		RCC_AHB1Periph_GPIOD,	EXTI_Line0, 	EXTI_PortSourceGPIOD,	GPIO_PinSource0,	CAN1_RX0_IRQn},  //PD0
 /*Servo (PE5, PE6)*/
+	/*USART2*/
+	{USART2_Tx,				GPIOA,	GPIO_Pin_2,		RCC_AHB1Periph_GPIOA,	EXTI_Line2, 	EXTI_PortSourceGPIOA,	GPIO_PinSource2,	USART2_IRQn},  //PA2
+	{USART2_Rx,				GPIOA,	GPIO_Pin_3,		RCC_AHB1Periph_GPIOA,	EXTI_Line3, 	EXTI_PortSourceGPIOA,	GPIO_PinSource3,	USART2_IRQn},  //PA3
 };
 
 
@@ -113,17 +116,11 @@ void GPIO_task(void)
 	if (state == 0)
 	{
 		GPIO_outputOn(LED_RED);
-		/*GPIO_outputOn(LED_BLUE);
-		GPIO_outputOn(LED_GREEN);
-		GPIO_outputOn(LED_ORANGE);*/
 		state = 1;
 	}
 	else
 	{
 		GPIO_outputOff(LED_RED);
-		/*GPIO_outputOff(LED_BLUE);
-		GPIO_outputOff(LED_GREEN);
-		GPIO_outputOff(LED_ORANGE);*/
 		state = 0;
 	}
 }
