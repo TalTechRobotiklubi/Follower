@@ -17,7 +17,7 @@ static int RemoteLog(lua_State* L) {
 }
 
 static const char* const initScript = R"(
-  local ffi = require("ffi")
+	local ffi = require("ffi")
   ffi.cdef[[
 		
     typedef struct { float x, y; } vec2;
@@ -33,7 +33,6 @@ static const char* const initScript = R"(
       double timestamp;
       int32_t numDetections;
       Detection detections[16];
-      vec3 closestObstacle;
       uint8_t distance_sensors[8];
     } World;
 

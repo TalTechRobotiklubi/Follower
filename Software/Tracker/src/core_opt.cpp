@@ -2,13 +2,15 @@
 #include <fhd.h>
 #include <fhd_classifier.h>
 #include <stdio.h>
-#include "ScriptLoader.h"
-#include "UdpHost.h"
-#include "core.h"
-#include "fl_constants.h"
 #include "KinectLiveFrameSource.h"
 #include "KinectNullFrameSource.h"
 #include "KinectSqliteFrameSource.h"
+#include "ScriptLoader.h"
+#include "UdpHost.h"
+#include "classifier/FHDClassifier.h"
+#include "classifier/TorchClassifier.h"
+#include "core.h"
+#include "fl_constants.h"
 #include "parg/parg.h"
 
 int parse_opt(core* c, int argc, char** argv) {
@@ -18,7 +20,7 @@ int parse_opt(core* c, int argc, char** argv) {
   int res = -1;
   const char* host = "127.0.0.1";
   uint16_t port = 9001;
-  while ((res = parg_getopt(&args, argc, argv, "i:c:d:h:p:s:")) != -1) {
+  while ((res = parg_getopt(&args, argc, argv, "i:c:d:h:p:s:t:")) != -1) {
     switch (res) {
       case 'd':
         c->frameSource = new KinectSqliteFrameSource(args.optarg);
@@ -29,17 +31,18 @@ int parse_opt(core* c, int argc, char** argv) {
         printf("serial %s\n", args.optarg);
         break;
       case 'c': {
-        fhd_classifier* classifier = fhd_classifier_create(args.optarg);
-        if (classifier) {
-          c->classifier = classifier;
-          printf("using classifier - %s\n", args.optarg);
-        } else {
-          printf("could not open classifier: %s\n", args.optarg);
-        }
+        c->classifiers.push_back(
+            std::unique_ptr<Classifier>(new FHDClassifier(args.optarg)));
         break;
       }
       case 'h': {
         host = args.optarg;
+        break;
+      }
+      case 't': {
+        printf("using torch classifier: %s\n", args.optarg);
+        c->classifiers.push_back(
+            std::unique_ptr<Classifier>(new TorchClassifier(args.optarg)));
         break;
       }
       case 'p': {

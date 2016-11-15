@@ -41,6 +41,8 @@ Encoder* EncoderCreate(int w, int h) {
     printf("%s\n", vpx_codec_iface_name(codecIface));
     e->encoderCfg.g_threads = 2;
     e->encoderCfg.g_lag_in_frames = 0;
+    e->encoderCfg.g_error_resilient = VPX_ERROR_RESILIENT_DEFAULT;
+    e->encoderCfg.rc_end_usage = VPX_CBR;
     e->encoderCfg.rc_target_bitrate = 192;
     e->encoderCfg.g_w = e->dstWidth;
     e->encoderCfg.g_h = e->dstHeight;
@@ -50,7 +52,6 @@ Encoder* EncoderCreate(int w, int h) {
     e->encoderCfg.rc_max_quantizer = 30;
     e->encoderCfg.g_pass = VPX_RC_ONE_PASS;
     e->codecIface = codecIface;
-    e->encoderCfg.g_profile = 2;
   }
 
   printf("vp8 encoder\n\tg_threads: %d\n", e->encoderCfg.g_threads);
@@ -69,7 +70,6 @@ Encoder* EncoderCreate(int w, int h) {
   printf("\tkf control: %d\n", e->encoderCfg.kf_mode);
   printf("\tmin quant: %d, max quant: %d\n", e->encoderCfg.rc_min_quantizer,
          e->encoderCfg.rc_max_quantizer);
-  printf("\tg_profile: %d\n", e->encoderCfg.g_profile);
 
   if (vpx_codec_enc_init(&e->codec, e->codecIface, &e->encoderCfg, 0)) {
     printf("Failed to initialize codec\n");
@@ -106,8 +106,8 @@ IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, const ActiveMap* map) {
 
   const vpx_codec_err_t res =
       vpx_codec_encode(&encoder->codec, &encoder->rawImage,
-                       int64_t((encoder->tsMs - encoder->tsBegin) / 1000.0), 1, 0,
-                       VPX_DL_REALTIME);
+                       int64_t((encoder->tsMs - encoder->tsBegin) / 1000.0), 1,
+                       0, VPX_DL_REALTIME);
   if (res != VPX_CODEC_OK) {
     printf("failed to encode: %s\n", vpx_codec_err_to_string(res));
     printf("%s\n", vpx_codec_error_detail(&encoder->codec));
