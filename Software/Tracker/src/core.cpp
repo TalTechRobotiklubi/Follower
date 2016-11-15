@@ -158,6 +158,7 @@ void core_detect(core* c, double timestamp) {
   size_t numCandidates = size_t(c->fhd->candidates_len);
   const size_t requiredPasses = std::max<size_t>(c->classifiers.size(), 1);
 
+
   for (size_t i = 0; i < numCandidates; i++) {
     const fhd_candidate* candidate = &c->fhd->candidates[i];
 
