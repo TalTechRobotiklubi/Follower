@@ -175,16 +175,16 @@ void FollowerUi::keyPressEvent(QKeyEvent * event)
 
   switch(key)
   {
-    case Qt::Key_Left:
+    case Qt::Key_A:
       kinematics_->setSpeeds(tSpeed, -wSpeed);
       break;
-    case Qt::Key_Right:
+    case Qt::Key_D:
       kinematics_->setSpeeds(tSpeed, wSpeed);
       break;
-    case Qt::Key_Up:
+    case Qt::Key_W:
       kinematics_->setSpeeds(tSpeed, wSpeed);
       break;
-    case Qt::Key_Down:
+    case Qt::Key_Z:
       kinematics_->setSpeeds(-tSpeed, wSpeed);
       break;
     case Qt::Key_S:
