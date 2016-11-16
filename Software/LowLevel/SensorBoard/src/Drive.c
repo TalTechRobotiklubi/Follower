@@ -306,11 +306,11 @@ void drive()
 		{
 			if (priv_speedX > fwd_speed)
 			{
-				fwd_speed -= accX;
+				fwd_speed += accX;
 			}
 			else
 			{
-				fwd_speed += accX;
+				fwd_speed -= accX;
 			}
 
 			/*
