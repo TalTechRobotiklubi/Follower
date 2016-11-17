@@ -40,7 +40,11 @@ local target = nil
 local curr_camera_x = 0.0
 local default_camera_y = 20.0
 local curr_camera_y = default_camera_y
+local curr_rotation_speed = 0
+
 function decide(dt, world, state, tracking)
+  remote_log("d1: %d, d2: %d, d3: %d, d4: %d\n", world.distance_sensors[0], world.distance_sensors[1],
+              world.distance_sensors[2], world.distance_sensors[3])
   if decide_init == true then
     curr_camera_y = default_camera_y
     state.camera.y = curr_camera_y
@@ -101,13 +105,12 @@ function decide(dt, world, state, tracking)
     t.weight = target.timeToLive / MAX_TTL
 
     local angle = math.deg(math.atan(-target.position.x / target.position.z))
-    -- target.position.y is float. 0 point is in the middle
-    --remote_log("target: y %f, angle %d\n", target.position.y, angle)
     
     local camera_x_acc = 0.25  -- change it depending on how fast is human detection
     local camera_y_acc = 0.25
     local max_degrees = 45
 
+    -- range -45 ... 45
     if angle > 4 then
       curr_camera_x = curr_camera_x + camera_x_acc
       if curr_camera_x > max_degrees then
@@ -136,7 +139,23 @@ function decide(dt, world, state, tracking)
       end
       state.camera.y = curr_camera_y
     end
-   remote_log("target: y %f, camera set %d\n", target.position.y, curr_camera_y)
+  --remote_log("target: y %f, camera set %d\n", target.position.y, curr_camera_y)
+  
+    local rotate_acc = 4
+    local max_rot = 40
+    if curr_camera_x > 4 then
+      curr_rotation_speed = curr_rotation_speed + rotate_acc
+      if curr_rotation_speed > max_rot then
+        curr_rotation_speed = max_rot
+      end
+      state.rotationSpeed = curr_rotation_speed
+    elseif curr_camera_x < 4 then
+      curr_rotation_speed = curr_rotation_speed - rotate_acc
+      if curr_rotation_speed < -max_rot then
+        curr_rotation_speed = -max_rot
+      end
+      state.rotationSpeed = curr_rotation_speed
+    end
   else
     tracking.numTargets = 0
     tracking.activeTarget = -1
