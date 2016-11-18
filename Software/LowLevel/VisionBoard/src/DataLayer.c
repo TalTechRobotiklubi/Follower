@@ -230,7 +230,7 @@ void markNewAsyncMessageReadyForSending(DLParam param)
 				int k;
 				for (k = 0; k < packet->parameterCount; k++)
 				{
-					if ((packet->parameterList + j)->param == param)
+					if ((packet->parameterList + k)->param == param)
 					{
 						transmitPacket->period = PACKET_NEW;
 						packetFound = 1;
