@@ -22,8 +22,8 @@ const char* const detectionScript = R"(
         local h = 128
         local t = torch.Tensor(h, w)
         local s = t:storage()
-        for i = 1, w*h do
-          s[i] = arr[i]
+        for i = 1, s:size() do
+          s[i] = arr[i - 1]
         end
 
         t:add(-mean)
