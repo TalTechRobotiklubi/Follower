@@ -16,9 +16,9 @@
 #include "fl_sqlite_writer.h"
 #include "proto/message_generated.h"
 #include <libyuv.h>
+#include "png/lodepng.h"
 
 void CopyRgbaSubImage(const KinectFrame* frame, int x, int y, int w, int h, RgbaImage* dst) {
-	assert(dst->width == w && dst->height == h);
 	const int stride = frame->rgbaWidth * 4;
 	const int offset = y * stride + x * 4;
 	libyuv::ARGBScale(&frame->rgbaData[offset], stride, w, h,
@@ -253,15 +253,34 @@ void core_serialize(core* c) {
 		proto::Vec2i br(detection.depthBotRight.x, detection.depthBotRight.y);
 		proto::Vec3 metric(detection.metricPosition.x, detection.metricPosition.y,
 			detection.metricPosition.z);
-		detections.push_back(proto::CreateDetection(
-			c->builder,
-			&tl,
-			&br,
-			&metric,
-			detection.weight,
-			debugging ? c->builder.CreateVector(detection.histogram, sizeof(detection.histogram) / sizeof(detection.histogram[0])) : 0,
-			debugging ? c->builder.CreateVector(detection.color.data, detection.color.bytes) : 0
-		));
+
+		if (debugging) {
+			unsigned char* png = nullptr;
+			size_t pngSize = 0;
+			unsigned res = lodepng_encode32(&png, &pngSize, detection.color.data, detection.color.width, detection.color.height);
+
+			detections.push_back(proto::CreateDetection(
+				c->builder,
+				&tl,
+				&br,
+				&metric,
+				detection.weight,
+				c->builder.CreateVector(detection.histogram, sizeof(detection.histogram) / sizeof(detection.histogram[0])),
+				res ? 0 : c->builder.CreateVector(png, pngSize)
+			));
+
+			free(png);
+		}
+		else {
+			detections.push_back(proto::CreateDetection(
+				c->builder,
+				&tl,
+				&br,
+				&metric,
+				detection.weight
+			));
+		}
+
   }
 
   for (int32_t i = 0; i < c->tracking.numTargets; i++) {
@@ -271,11 +290,13 @@ void core_serialize(core* c) {
                       proto::Vec3(t.position.x, t.position.y, t.position.z)));
   }
 
+	auto detectionOffsets = c->builder.CreateVector(detections);
   auto targetOffsets = c->builder.CreateVectorOfStructs(targets);
   auto tracking = proto::CreateTrackingState(
       c->builder, c->tracking.activeTarget, targetOffsets);
 
   proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
+
   proto::FrameBuilder frame_builder(c->builder);
 
   frame_builder.add_timestamp(c->timestamp);
@@ -286,7 +307,7 @@ void core_serialize(core* c) {
   if (c->sendVideo) {
     frame_builder.add_depth(depth);
   }
-  frame_builder.add_detections(c->builder.CreateVector(detections));
+  frame_builder.add_detections(detectionOffsets);
   frame_builder.add_tracking(tracking);
 
   auto frame = frame_builder.Finish();

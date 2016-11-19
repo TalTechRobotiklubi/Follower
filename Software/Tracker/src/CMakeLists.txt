@@ -10,7 +10,9 @@ if (OPENMP_FOUND)
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-add_definitions(-DGLFW_INCLUDE_GLEXT)
+add_definitions(-DGLFW_INCLUDE_GLEXT -DLODEPNG_NO_COMPILE_CPP)
+
+add_library(lodepng png/lodepng.cpp)
 
 set(CORE_SOURCES
   AsyncSerial.cpp
@@ -92,6 +94,7 @@ target_link_libraries(
   glfw
   ${VPX_LIBRARY}
   yuv
+  lodepng
   ${GLFW_LIBRARIES}
   ${CMAKE_DL_LIBS}
   ${WINSOCK}
@@ -110,6 +113,7 @@ target_link_libraries(
   sqlite
   enet
   fhd
+  lodepng
   floatfann
   ${VPX_LIBRARY}
   ${CMAKE_DL_LIBS}

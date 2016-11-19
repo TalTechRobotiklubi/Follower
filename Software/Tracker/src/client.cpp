@@ -17,6 +17,7 @@
 #include "parg/parg.h"
 #include "proto/message_generated.h"
 #include "ui/Console.h"
+#include "png/lodepng.h"
 
 struct ClientOptions {
   const char* host = "127.0.0.1";
@@ -284,11 +285,17 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
 			std::copy(d->histogram()->begin(), d->histogram()->end(), &local->histogram[0]);
 		}
 
-		if (d->png()) {
-			if (i >= c->candidateImages.size()) {
-				c->candidateImages.push_back(Texture());
+		if (d->png() && i < kMaxCandidates) {
+			unsigned char* raw = nullptr;
+			unsigned width = 0, height = 0;
+			unsigned error = lodepng_decode32(&raw, &width, &height, d->png()->data(), d->png()->size());
+			if (!error) {
+				TextureUpdate(&c->candidateImages[i], raw, width, height);
+				free(raw);
+			} else {
+				c->console->AddLog("Failed to decode PNG: %s", lodepng_error_text(error));
 			}
-			TextureUpdate(&c->candidateImages[i], d->png()->data(), kCandidateWidth, kCandidateHeight);
+
 		}
   }
 
@@ -433,9 +440,7 @@ int main(int argc, char** argv) {
   ClientOptions options = ParseOptions(argc, argv);
   Client client;
 
-	for (int i = 0; i < 8; i++) {
-		client.candidateImages.push_back(TextureAllocate(kCandidateWidth, kCandidateHeight));
-	}
+	client.candidateImages.resize(kMaxCandidates);
 
   if (!ClientStart(&client, &options)) {
     return 1;
@@ -532,7 +537,7 @@ int main(int argc, char** argv) {
 
 		if (client.debugWindow) {
 			ImGui::Begin("Debug", &client.debugWindow, ImVec2(500.f, 800.f));
-			for (int i = 0; i < client.world->numDetections; i++) {
+			for (int i = 0; i < std::min(kMaxCandidates, client.world->numDetections); i++) {
 				Texture& t = client.candidateImages[i];
 				ImGui::Image(t.PtrHandle(), ImVec2(float(kCandidateWidth) * 2.f, float(kCandidateHeight) * 2.f));
 				ImGui::SameLine();

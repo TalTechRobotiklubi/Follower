@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 
+const int kMaxCandidates = 8;
 const int kCandidateWidth = 64;
 const int kCandidateHeight = 128;
 const int kDepthWidth = 512;
