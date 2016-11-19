@@ -153,7 +153,6 @@ void core_detect(core* c, double timestamp) {
 
   fhd_run_pass(c->fhd, c->kinectFrame.depthData);
 
-
   const float w = float(kDepthWidth);
   size_t numCandidates = size_t(c->fhd->candidates_len);
   const size_t requiredPasses = std::max<size_t>(c->classifiers.size(), 1);
@@ -278,17 +277,18 @@ int main(int argc, char** argv) {
     c.timestamp += frame_time;
     c.dtMilli = float(frame_time);
 
-    c.frameSource->FillFrame(&c.kinectFrame);
+    int sourceFrameNum = c.frameSource->FrameNumber();
+    if (sourceFrameNum != c.frameNum) {
+      c.frameNum = sourceFrameNum;
+      c.frameSource->FillFrame(&c.kinectFrame);
 
-    if (c.writer) {
-      fl_sqlite_writer_add_frame(c.writer, &c.kinectFrame);
+      if (c.writer) {
+        fl_sqlite_writer_add_frame(c.writer, &c.kinectFrame);
+      }
     }
 
-    memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
-
-    core_detect(&c, current_time);
-
     if (c.sendVideo && timeUntilBroadCast <= 0.0) {
+      memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
       depth_to_rgba(c.kinectFrame.depthData, c.kinectFrame.depthLength,
                     &c.rgba_depth);
       BlockDiff(c.prev_rgba_depth.data, c.rgba_depth.data, kDepthWidth,
@@ -299,11 +299,12 @@ int main(int argc, char** argv) {
 
     c.serial.receive(&c.in_data);
     memcpy(c.world.distance_sensors, &c.in_data, sizeof(uint8_t) * NUM_OF_DISTANCE_SENSORS);
+
+    core_detect(&c, current_time);
     core_decide(&c, frameTimeSeconds);
 
     DL_task(int16_t(frame_time));
     core_serial_send(&c);
-    core_serialize(&c);
 
     const IoVec* received = UdpHostPoll(c.udp);
 
@@ -312,6 +313,7 @@ int main(int argc, char** argv) {
     }
 
     if (timeUntilBroadCast <= 0.0) {
+      core_serialize(&c);
       UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(),
                        c.builder.GetSize(), false);
       timeUntilBroadCast = broadcastInterval;

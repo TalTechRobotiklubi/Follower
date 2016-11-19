@@ -25,6 +25,7 @@ struct core {
   SerialComm serial;
   std::thread kinect_frame_thread;
   std::atomic_bool running;
+  int frameNum = 0;
   KinectFrame kinectFrame;
   struct KinectFrameSource* frameSource = nullptr;
   struct UdpHost* udp = nullptr;

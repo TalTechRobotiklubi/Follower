@@ -77,7 +77,8 @@ bool ReadRgbData(KinectLiveFrameSource* source) {
 }
 }
 
-KinectLiveFrameSource::KinectLiveFrameSource() {
+KinectLiveFrameSource::KinectLiveFrameSource()
+  : frameNumber(0) {
   HRESULT hr = GetDefaultKinectSensor(&kinect);
   if (FAILED(hr)) {
     fprintf(stderr, "Failed to get the kinect sensor\n");
@@ -130,6 +131,7 @@ const KinectFrame* KinectLiveFrameSource::GetFrame() {
     currentFrame.rgbaHeight = 240;
     currentFrame.rgbaData = kinectRgbaBuf;
     currentFrame.rgbaLength = int(kinectRgbaBufLen);
+    frameNumber += 1;
 
     return &currentFrame;
   }
@@ -141,4 +143,8 @@ void KinectLiveFrameSource::FillFrame(KinectFrame* dst) {
   if (currentFrame.depthData) {
     CopyKinectFrame(&currentFrame, dst);
   }
+}
+
+int KinectLiveFrameSource::FrameNumber() const {
+  return frameNumber.load(); 
 }
