@@ -1,5 +1,4 @@
 #pragma once
-#include <atomic>
 #include <thread>
 #include "comm/serial_comm.h"
 #include "comm/comm_input.h"
@@ -24,7 +23,6 @@ struct core {
   CommOutput out_data;
   SerialComm serial;
   std::thread kinect_frame_thread;
-  std::atomic_bool running;
   int frameNum = 0;
   KinectFrame kinectFrame;
   struct KinectFrameSource* frameSource = nullptr;
@@ -42,7 +40,7 @@ struct core {
   flatbuffers::FlatBufferBuilder builder;
   std::vector<std::unique_ptr<Classifier>> classifiers;
 
-  core() { running = ATOMIC_VAR_INIT(true); }
+	core();
   ~core();
 };
 

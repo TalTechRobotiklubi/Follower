@@ -11,4 +11,5 @@ struct KinectFrame {
   uint8_t* rgbaData = nullptr;
 };
 
+void KinectFrameInit(KinectFrame* frame, int width, int height);
 void CopyKinectFrame(const KinectFrame* src, KinectFrame* dst);

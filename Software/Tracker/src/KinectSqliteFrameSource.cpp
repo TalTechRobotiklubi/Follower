@@ -76,9 +76,7 @@ const KinectFrame* KinectSqliteFrameSource::GetFrame() {
 
 void KinectSqliteFrameSource::FillFrame(KinectFrame* dst) {
   std::lock_guard<std::mutex> lock(frameLock);
-  if (kframe.depthData) {
-    CopyKinectFrame(&kframe, dst);
-  }
+  CopyKinectFrame(&kframe, dst);
 }
 
 int KinectSqliteFrameSource::FrameNumber() const {

@@ -141,9 +141,7 @@ const KinectFrame* KinectLiveFrameSource::GetFrame() {
 }
 
 void KinectLiveFrameSource::FillFrame(KinectFrame* dst) {
-  if (currentFrame.depthData) {
-    CopyKinectFrame(&currentFrame, dst);
-  }
+  CopyKinectFrame(&currentFrame, dst);
 }
 
 int KinectLiveFrameSource::FrameNumber() const {

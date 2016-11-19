@@ -17,7 +17,7 @@
 #include "proto/message_generated.h"
 
 void kinect_loop(core* c) {
-  while (c->running) {
+  for (;;) {
     c->frameSource->GetFrame();
   }
 }
@@ -237,6 +237,17 @@ void core_serialize(core* c) {
   c->builder.Finish(message);
 }
 
+core::core()
+	: encoder(EncoderCreate(kDepthWidth, kDeptHeight))
+	, fhd((fhd_context*)calloc(1, sizeof(fhd_context))) {
+	KinectFrameInit(&kinectFrame, kDepthWidth, kDeptHeight);
+	rgba_image_init(&rgba_depth, kDepthWidth, kDeptHeight);
+	rgba_image_init(&prev_rgba_depth, kDepthWidth, kDeptHeight);
+	ActiveMapReset(&rgba_depth_diff, kDepthWidth, kDeptHeight);
+
+	fhd_context_init(fhd, kDepthWidth, kDeptHeight, 8, 8);
+}
+
 core::~core() {
   if (kinect_frame_thread.joinable()) kinect_frame_thread.join();
   if (writer) fl_sqlite_writer_destroy(writer);
@@ -249,16 +260,6 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  c.kinectFrame.depthData = (uint16_t*)calloc(kDepthWidth * kDeptHeight, 2);
-  c.kinectFrame.depthLength = kDepthWidth * kDeptHeight;
-  rgba_image_init(&c.rgba_depth, kDepthWidth, kDeptHeight);
-  rgba_image_init(&c.prev_rgba_depth, kDepthWidth, kDeptHeight);
-  ActiveMapReset(&c.rgba_depth_diff, kDepthWidth, kDeptHeight);
-
-  c.encoder = EncoderCreate(kDepthWidth, kDeptHeight);
-  c.fhd = (fhd_context*)calloc(1, sizeof(fhd_context));
-  fhd_context_init(c.fhd, kDepthWidth, kDeptHeight, 8, 8);
-
   if (!parse_opt(&c, argc, argv)) {
     return 1;
   }
@@ -269,7 +270,7 @@ int main(int argc, char** argv) {
   double prev_time = current_time;
   const double broadcastInterval = 0.03;
   double timeUntilBroadCast = broadcastInterval;
-  while (c.running) {
+  for (;;) {
     prev_time = current_time;
     current_time = ms_now();
     const double frame_time = current_time - prev_time;
