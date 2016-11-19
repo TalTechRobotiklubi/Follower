@@ -14,7 +14,7 @@ struct Console {
   char* lastCommand = nullptr;
 	size_t maxLines = 512;
 
-  Console();
+	Console(const std::vector<const char*>& commands = {});
   ~Console();
 
   void ClearLog();

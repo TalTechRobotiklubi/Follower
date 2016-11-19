@@ -116,6 +116,16 @@ void core_handle_command(core* c, const proto::Command* command) {
       core_send_status_message(c, "ok");
       break;
     }
+		case proto::CommandType_StartDebug: {
+			c->sendDebugData = true;
+			core_send_status_message(c, "ok");
+			break;
+		}
+		case proto::CommandType_StopDebug: {
+			c->sendDebugData = false;
+			core_send_status_message(c, "ok");
+			break;
+		}
     default: {
       core_send_status_message(c, "unknown command");
       break;
@@ -234,6 +244,8 @@ void core_serialize(core* c) {
   detections.reserve(c->world->numDetections);
   targets.reserve(c->tracking.numTargets);
 
+	bool debugging = c->sendDebugData;
+
   for (int32_t i = 0; i < c->world->numDetections; i++) {
     const Detection& detection = c->world->detections[i];
 
@@ -247,8 +259,8 @@ void core_serialize(core* c) {
 			&br,
 			&metric,
 			detection.weight,
-			c->builder.CreateVector(detection.histogram, sizeof(detection.histogram) / sizeof(detection.histogram[0])),
-			c->builder.CreateVector(detection.color.data, detection.color.bytes)
+			debugging ? c->builder.CreateVector(detection.histogram, sizeof(detection.histogram) / sizeof(detection.histogram[0])) : 0,
+			debugging ? c->builder.CreateVector(detection.color.data, detection.color.bytes) : 0
 		));
   }
 

@@ -76,12 +76,13 @@ struct Client {
   Texture decodedDepth;
   double coreTimestamp = 0.0;
   bool connected = false;
+	bool debugWindow = false;
   const ClientOptions* options;
   Console* console = nullptr;
   std::vector<float> speedHistory = std::vector<float>(512, 0.f);
   std::vector<float> rotationSpeedHistory = std::vector<float>(512, 0.f);
   std::vector<float> frameTimeHistory = std::vector<float>(256, 0.f);
-	const int maxCandidateImages = 8;
+	std::vector<float> frameSizeHistory = std::vector<float>(256, 0.f);
 	std::vector<Texture> candidateImages;
 
 	Client();
@@ -159,7 +160,13 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
     SendCommand(c, proto::CommandType_RecordDepth, nullptr);
   } else if (command == "stoprecord") {
     SendCommand(c, proto::CommandType_StopRecord, nullptr);
-  } else if (command == "setclassifier") {
+	} else if (command == "startdebug") {
+		SendCommand(c, proto::CommandType_StartDebug, nullptr);
+		c->debugWindow = true;
+	} else if (command == "stopdebug") {
+		SendCommand(c, proto::CommandType_StopDebug, nullptr);
+		c->debugWindow = false;
+	} else if (command == "setclassifier") {
     if (needArg(1)) return;
 
     const std::string& inputFile = tokens[1];
@@ -278,6 +285,9 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
 		}
 
 		if (d->png()) {
+			if (i >= c->candidateImages.size()) {
+				c->candidateImages.push_back(Texture());
+			}
 			TextureUpdate(&c->candidateImages[i], d->png()->data(), kCandidateWidth, kCandidateHeight);
 		}
   }
@@ -329,6 +339,7 @@ void ClientUpdate(Client* c) {
         break;
       case ENET_EVENT_TYPE_RECEIVE: {
         ClientHandleMessage(c, event.packet->data, event.packet->dataLength);
+				ShiftPush(c->frameSizeHistory, float(event.packet->dataLength) / 1000.f);
         enet_packet_destroy(event.packet);
         break;
       }
@@ -422,7 +433,7 @@ int main(int argc, char** argv) {
   ClientOptions options = ParseOptions(argc, argv);
   Client client;
 
-	for (int i = 0; i < client.maxCandidateImages; i++) {
+	for (int i = 0; i < 8; i++) {
 		client.candidateImages.push_back(TextureAllocate(kCandidateWidth, kCandidateHeight));
 	}
 
@@ -430,7 +441,20 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  client.console = new Console();
+	client.console = new Console({
+		"startscript",
+		"stop",
+		"speed",
+		"rot",
+		"stopvideo",
+		"startvideo",
+		"record",
+		"stoprecord",
+		"setclassifier",
+		"startdebug",
+		"stopdebug"
+	});
+
   while (!glfwWindowShouldClose(window)) {
     ClientUpdate(&client);
     glfwPollEvents();
@@ -481,7 +505,7 @@ int main(int argc, char** argv) {
 
     ImGui::SameLine();
 
-    const ImVec2 plotSize(240.f, 80.f);
+    const ImVec2 plotSize(300.f, 100.f);
     ImGui::BeginGroup();
     ImGui::PlotLines("##rotationSpeed", client.rotationSpeedHistory.data(),
                      client.rotationSpeedHistory.size(), 0, "rotation speed",
@@ -492,6 +516,7 @@ int main(int argc, char** argv) {
     ImGui::PlotLines("##coreFrameTime", client.frameTimeHistory.data(),
                      client.frameTimeHistory.size(), 0, "core frame time (ms)",
                      0.f, 100.f, plotSize);
+		ImGui::PlotLines("##frameSize", client.frameSizeHistory.data(), client.frameSizeHistory.size(), 0, "frame size (KB)", FLT_MAX, FLT_MAX, plotSize);
     ImGui::EndGroup();
 
     ImGui::Begin("##consolewindow", &showConsole, ImVec2(600.f, 400.f));
@@ -505,17 +530,18 @@ int main(int argc, char** argv) {
     }
     ImGui::End();
 
-		ImGui::Begin("##debugwindow", &showConsole, ImVec2(500.f, 800.f));
-
-		for (int i = 0; i < client.world->numDetections; i++) {
-			Texture& t = client.candidateImages[i];
-			ImGui::Image(t.PtrHandle(),ImVec2(float(kCandidateWidth) * 2.f, float(kCandidateHeight) * 2.f));
-			ImGui::SameLine();
-			ImGui::PushID(i);
-			ImGui::PlotHistogram("##hh", &client.world->detections[i].histogram[0], 3 * 256, 0, nullptr, FLT_MAX, FLT_MAX, ImVec2(768.f, 256.f));
-			ImGui::PopID();
+		if (client.debugWindow) {
+			ImGui::Begin("Debug", &client.debugWindow, ImVec2(500.f, 800.f));
+			for (int i = 0; i < client.world->numDetections; i++) {
+				Texture& t = client.candidateImages[i];
+				ImGui::Image(t.PtrHandle(), ImVec2(float(kCandidateWidth) * 2.f, float(kCandidateHeight) * 2.f));
+				ImGui::SameLine();
+				ImGui::PushID(i);
+				ImGui::PlotHistogram("##histo", &client.world->detections[i].histogram[0], 3 * 256, 0, nullptr, FLT_MAX, FLT_MAX, ImVec2(768.f, 256.f));
+				ImGui::PopID();
+			}
+			ImGui::End();
 		}
-		ImGui::End();
 
     ImGui::End();
 

@@ -37,20 +37,15 @@ static char* Strdup(const char* str) {
   return (char*)memcpy(buff, (const void*)str, len);
 }
 
-Console::Console() {
+Console::Console(const std::vector<const char*>& commands) {
   ClearLog();
   memset(InputBuf, 0, sizeof(InputBuf));
   HistoryPos = -1;
   Commands.push_back("help");
-  Commands.push_back("startscript");
-  Commands.push_back("stop");
-  Commands.push_back("speed");
-  Commands.push_back("rot");
-  Commands.push_back("stopvideo");
-  Commands.push_back("startvideo");
-  Commands.push_back("record");
-  Commands.push_back("stoprecord");
-  Commands.push_back("setclassifier");
+
+	for (const char* c : commands) {
+		Commands.push_back(c);
+	}
 }
 
 Console::~Console() {
