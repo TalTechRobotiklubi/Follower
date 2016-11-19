@@ -51,7 +51,6 @@ bool ReadRgbData(KinectLiveFrameSource* source) {
   IColorFrame* frame = nullptr;
 
   HRESULT hr = source->colorReader->AcquireLatestFrame(&frame);
-
   if (SUCCEEDED(hr)) {
     IFrameDescription* frameDesc;
     frame->get_FrameDescription(&frameDesc);
@@ -105,6 +104,7 @@ KinectLiveFrameSource::KinectLiveFrameSource()
 
     if (SUCCEEDED(hr)) {
       hr = colorSource->OpenReader(&colorReader);
+			printf("opened color reader\n");
       kinectRgbaBufLen = kDepthWidth * kDeptHeight * 4;
     }
 

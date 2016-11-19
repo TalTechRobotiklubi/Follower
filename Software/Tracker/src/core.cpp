@@ -177,6 +177,16 @@ void core_detect(core* c, double timestamp) {
                      candidate->metric_position.z};
       c->world.detections[c->world.numDetections] =
           Detection{tl, br, metricPos, candidate->weight};
+
+			ColorAreaFill(
+			  &c->candidateColors[c->world.numDetections],
+				&c->kinectFrame,
+				candidate->depth_position.x,
+				candidate->depth_position.y,
+				candidate->depth_position.width,
+				candidate->depth_position.height
+			);
+
       c->world.numDetections++;
     }
   }
@@ -222,6 +232,21 @@ void core_serialize(core* c) {
 
   proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
 
+	std::vector<flatbuffers::Offset<proto::ColorArea>> areas;
+
+	for (int32_t i = 0; i < c->world.numDetections; i++) {
+		const ColorArea& area = c->candidateColors[i];
+		areas.push_back(
+			proto::CreateColorArea(
+				c->builder, area.image.width, area.image.height,
+				c->builder.CreateVector(area.image.data, area.image.bytes),
+				c->builder.CreateVector(&area.histogram[0][0], 3 * 256)
+			)
+		);
+	}
+	
+	auto debugFrame = proto::CreateDebugFrame(c->builder, c->builder.CreateVector(areas));
+	
   proto::FrameBuilder frame_builder(c->builder);
 
   frame_builder.add_timestamp(c->timestamp);
@@ -234,6 +259,9 @@ void core_serialize(core* c) {
   }
   frame_builder.add_detections(detectionOffsets);
   frame_builder.add_tracking(tracking);
+
+	// TODO: Conditional!
+	frame_builder.add_debug(debugFrame);
 
   auto frame = frame_builder.Finish();
   auto message =
@@ -250,6 +278,11 @@ core::core()
   ActiveMapReset(&rgba_depth_diff, kDepthWidth, kDeptHeight);
 
   fhd_context_init(fhd, kDepthWidth, kDeptHeight, 8, 8);
+
+	candidateColors.resize(fhd->candidates_capacity);
+	for (ColorArea& a : candidateColors) {
+		ColorAreaInit(&a);
+	}
 }
 
 core::~core() {
@@ -285,6 +318,7 @@ int main(int argc, char** argv) {
     int sourceFrameNum = c.frameSource->FrameNumber();
     if (sourceFrameNum != c.frameNum) {
       c.frameNum = sourceFrameNum;
+
       c.frameSource->FillFrame(&c.kinectFrame);
 
       if (c.writer) {

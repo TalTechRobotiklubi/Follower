@@ -10,6 +10,17 @@ enum CommandType : byte {
   StopRecord
 }
 
+table ColorArea {
+  width:int;
+  height:int;
+  png:[ubyte];
+  histogram:[float];
+}
+
+table DebugFrame {
+  detectionImages:[ColorArea];
+}
+
 table Command {
   type:CommandType;
   arg:string;
@@ -58,6 +69,7 @@ table Frame {
   depth:[ubyte];
   detections:[Detection];
   tracking:TrackingState;
+  debug:DebugFrame;
 }
 
 table LuaMainScript {

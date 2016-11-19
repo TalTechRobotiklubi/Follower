@@ -10,6 +10,7 @@
 #include "ScriptLoader.h"
 #include "CoreObj.h"
 #include "classifier/Classifier.h"
+#include "ColorArea.h"
 
 struct core {
   double timestamp = 0.0;
@@ -39,6 +40,7 @@ struct core {
 
   flatbuffers::FlatBufferBuilder builder;
   std::vector<std::unique_ptr<Classifier>> classifiers;
+	std::vector<ColorArea> candidateColors;
 
 	core();
   ~core();

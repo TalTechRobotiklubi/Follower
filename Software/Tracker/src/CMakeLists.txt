@@ -19,6 +19,8 @@ set(CORE_SOURCES
   classifier/FHDClassifier.cpp
   classifier/TorchClassifier.cpp
 
+  ColorArea.cpp
+
   core.cpp
   core_opt.cpp
 

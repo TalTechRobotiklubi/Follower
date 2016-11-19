@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 void KinectFrameInit(KinectFrame* frame, int width, int height) {
 	int len = width * height;
@@ -10,8 +11,8 @@ void KinectFrameInit(KinectFrame* frame, int width, int height) {
 
 	frame->rgbaWidth = width;
 	frame->rgbaHeight = height;
-	frame->rgbaLength = len;
-	frame->rgbaData = (uint8_t*)calloc(len, 4);
+	frame->rgbaLength = len * 4;
+	frame->rgbaData = (uint8_t*)calloc(frame->rgbaLength, 1);
 }
 
 void CopyKinectFrame(const KinectFrame* src, KinectFrame* dst) {
@@ -19,8 +20,8 @@ void CopyKinectFrame(const KinectFrame* src, KinectFrame* dst) {
   if (src->depthData) {
     memcpy(dst->depthData, src->depthData, src->depthLength * sizeof(uint16_t));
   }
-
+	
 	if (src->rgbaData) {
-		memcpy(dst->rgbaData, src->rgbaData, src->rgbaLength * 4);
+		memcpy(dst->rgbaData, src->rgbaData, src->rgbaLength);
 	}
 }

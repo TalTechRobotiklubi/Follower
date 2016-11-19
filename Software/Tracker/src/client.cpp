@@ -17,6 +17,7 @@
 #include "parg/parg.h"
 #include "proto/message_generated.h"
 #include "ui/Console.h"
+#include "ColorArea.h"
 
 struct ClientOptions {
   const char* host = "127.0.0.1";
@@ -82,6 +83,10 @@ struct Client {
   std::vector<float> speedHistory = std::vector<float>(512, 0.f);
   std::vector<float> rotationSpeedHistory = std::vector<float>(512, 0.f);
   std::vector<float> frameTimeHistory = std::vector<float>(256, 0.f);
+	const int maxCandidateImages = 8;
+	int candidateImagesReceived = 0;
+	std::vector<Texture> candidateImages;
+	std::vector<float[3][256]> candidateHistograms;
 
   ~Client();
 };
@@ -278,6 +283,15 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
         Target(t->weight(), vec2{t->kinect().x(), t->kinect().y()},
                vec3{t->position().x(), t->position().y(), t->position().z()});
   }
+
+	if (frame->debug()) {
+		c->candidateImagesReceived = int(frame->debug()->detectionImages()->size());
+		for (uint32_t i = 0; i < frame->debug()->detectionImages()->size(); i++) {
+			auto img = frame->debug()->detectionImages()->Get(i);
+			TextureUpdate(&c->candidateImages[i], img->png()->data(), img->width(), img->height());
+			memcpy(&c->candidateHistograms[i], img->histogram()->data(), img->histogram()->size() * sizeof(float));
+		}
+	}
 }
 
 void ClientHandleStatusMessage(Client* c, const proto::StatusMessage* message) {
@@ -406,6 +420,12 @@ int main(int argc, char** argv) {
 
   ClientOptions options = ParseOptions(argc, argv);
   Client client;
+
+	for (int i = 0; i < client.maxCandidateImages; i++) {
+		client.candidateImages.push_back(TextureAllocate(kCandidateWidth, kCandidateHeight));
+	}
+	client.candidateHistograms = std::vector<float[3][256]>(client.maxCandidateImages);
+
   if (!ClientStart(&client, &options)) {
     return 1;
   }
@@ -425,7 +445,8 @@ int main(int argc, char** argv) {
 
     ImGuiWindowFlags flags =
         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar;
+        ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar |
+				ImGuiWindowFlags_NoBringToFrontOnFocus;
 
     ImGui::Begin("follower", &showWindow,
                  ImVec2(float(displayWidth), float(displayHeight)), -1.f,
@@ -482,6 +503,18 @@ int main(int argc, char** argv) {
       }
     }
     ImGui::End();
+
+		ImGui::Begin("##debugwindow", &showConsole, ImVec2(500.f, 800.f));
+
+		for (int i = 0; i < client.candidateImagesReceived; i++) {
+			Texture& t = client.candidateImages[i];
+			ImGui::Image(t.PtrHandle(),ImVec2(float(kCandidateWidth) * 2.f, float(kCandidateHeight) * 2.f));
+			ImGui::SameLine();
+			ImGui::PushID(i);
+			ImGui::PlotHistogram("##hh", &client.candidateHistograms[i][0][0], 3 * 256, 0, nullptr, FLT_MAX, FLT_MAX, ImVec2(768.f, 256.f));
+			ImGui::PopID();
+		}
+		ImGui::End();
 
     ImGui::End();
 
