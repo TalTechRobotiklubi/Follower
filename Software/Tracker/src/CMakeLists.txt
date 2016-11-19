@@ -58,7 +58,7 @@ add_executable(
   ${CORE_SOURCES}
 )
 
-set(HEADERS_ONLY CoreObj.h fl_constants.h Clock.h)
+set(HEADERS_ONLY CoreObj.h Constants.h Clock.h)
 
 add_executable(
   follower_client

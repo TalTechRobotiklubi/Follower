@@ -4,6 +4,7 @@
 #include "Clock.h"
 #include "KinectLiveFrameSource.h"
 #include "fl_yuy2_convert.h"
+#include "Constants.h"
 
 namespace {
 
@@ -84,7 +85,7 @@ KinectLiveFrameSource::KinectLiveFrameSource()
     fprintf(stderr, "Failed to get the kinect sensor\n");
   }
 
-  yuy2Converter = fl_yuy2_convert_create(1920, 1080, 320, 240);
+  yuy2Converter = fl_yuy2_convert_create(1920, 1080, kDepthWidth, kDeptHeight);
 
   if (kinect) {
     hr = kinect->Open();
@@ -104,7 +105,7 @@ KinectLiveFrameSource::KinectLiveFrameSource()
 
     if (SUCCEEDED(hr)) {
       hr = colorSource->OpenReader(&colorReader);
-      kinectRgbaBufLen = 320 * 240 * 4;
+      kinectRgbaBufLen = kDepthWidth * kDeptHeight * 4;
     }
 
     InterfaceRelease(depthSource);
@@ -127,8 +128,8 @@ const KinectFrame* KinectLiveFrameSource::GetFrame() {
 
     currentFrame.depthData = depthBuffer.data();
     currentFrame.depthLength = int(depthBuffer.size());
-    currentFrame.rgbaWidth = 320;
-    currentFrame.rgbaHeight = 240;
+    currentFrame.rgbaWidth = kDepthWidth;
+    currentFrame.rgbaHeight = kDeptHeight;
     currentFrame.rgbaData = kinectRgbaBuf;
     currentFrame.rgbaLength = int(kinectRgbaBufLen);
     frameNumber += 1;
