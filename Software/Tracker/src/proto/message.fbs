@@ -20,6 +20,11 @@ struct Vec2 {
   y:float;
 }
 
+struct Vec2i {
+  x:int;
+  y:int;
+}
+
 struct Vec3 {
   x:float;
   y:float;
@@ -33,7 +38,8 @@ struct Target {
 }
 
 struct Detection {
-  position:Vec2;
+  depthTopLeft:Vec2i;
+  depthBotRight:Vec2i;
   metricPosition:Vec3;
   weight:float;
 }

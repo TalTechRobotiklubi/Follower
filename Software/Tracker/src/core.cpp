@@ -6,13 +6,13 @@
 #include <cmath>
 #include <lua.hpp>
 #include "Clock.h"
+#include "Constants.h"
 #include "Encode.h"
 #include "File.h"
 #include "KinectFrameSource.h"
 #include "UdpHost.h"
 #include "comm/datalayer.h"
 #include "core_opt.h"
-#include "Constants.h"
 #include "fl_sqlite_writer.h"
 #include "proto/message_generated.h"
 
@@ -37,18 +37,20 @@ void core_send_status_message(core* c, const char* message) {
 }
 
 void core_start(core* c) {
-	ScriptLoaderSetLogCallback(&c->scripts, [](const char* s, void* user) {
-		core_send_status_message((core*)user, s);
-	}, c);
+  ScriptLoaderSetLogCallback(&c->scripts,
+                             [](const char* s, void* user) {
+                               core_send_status_message((core*)user, s);
+                             },
+                             c);
 
-	c->kinect_frame_thread = std::thread(kinect_loop, c);
+  c->kinect_frame_thread = std::thread(kinect_loop, c);
 
-	c->classifiers.erase(
-		std::remove_if(c->classifiers.begin(), c->classifiers.end(),
-			[](const std::unique_ptr<Classifier>& classifier) {
-		return !classifier->Init();
-	}),
-		c->classifiers.end());
+  c->classifiers.erase(
+      std::remove_if(c->classifiers.begin(), c->classifiers.end(),
+                     [](const std::unique_ptr<Classifier>& classifier) {
+                       return !classifier->Init();
+                     }),
+      c->classifiers.end());
 }
 
 void core_stop_actions(core* c) {
@@ -153,7 +155,6 @@ void core_detect(core* c, double timestamp) {
 
   fhd_run_pass(c->fhd, c->kinectFrame.depthData);
 
-  const float w = float(kDepthWidth);
   size_t numCandidates = size_t(c->fhd->candidates_len);
   const size_t requiredPasses = std::max<size_t>(c->classifiers.size(), 1);
 
@@ -168,12 +169,14 @@ void core_detect(core* c, double timestamp) {
     }
 
     if (passed >= requiredPasses) {
-      vec2 kinectPos{w - candidate->kinect_position.x,
-                     candidate->kinect_position.y};
+      vec2i tl{kDepthWidth - candidate->depth_position.x - candidate->depth_position.width,
+               candidate->depth_position.y};
+      vec2i br{tl.x + candidate->depth_position.width,
+               tl.y + candidate->depth_position.height};
       vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
                      candidate->metric_position.z};
       c->world.detections[c->world.numDetections] =
-          Detection{kinectPos, metricPos, candidate->weight};
+          Detection{tl, br, metricPos, candidate->weight};
       c->world.numDetections++;
     }
   }
@@ -198,7 +201,8 @@ void core_serialize(core* c) {
   for (int32_t i = 0; i < c->world.numDetections; i++) {
     const Detection& detection = c->world.detections[i];
     detections.push_back(proto::Detection(
-        proto::Vec2(detection.kinectPosition.x, detection.kinectPosition.y),
+        proto::Vec2i(detection.depthTopLeft.x, detection.depthTopLeft.y),
+        proto::Vec2i(detection.depthBotRight.x, detection.depthBotRight.y),
         proto::Vec3(detection.metricPosition.x, detection.metricPosition.y,
                     detection.metricPosition.z),
         detection.weight));
@@ -238,14 +242,14 @@ void core_serialize(core* c) {
 }
 
 core::core()
-	: encoder(EncoderCreate(kDepthWidth, kDeptHeight))
-	, fhd((fhd_context*)calloc(1, sizeof(fhd_context))) {
-	KinectFrameInit(&kinectFrame, kDepthWidth, kDeptHeight);
-	rgba_image_init(&rgba_depth, kDepthWidth, kDeptHeight);
-	rgba_image_init(&prev_rgba_depth, kDepthWidth, kDeptHeight);
-	ActiveMapReset(&rgba_depth_diff, kDepthWidth, kDeptHeight);
+    : encoder(EncoderCreate(kDepthWidth, kDeptHeight)),
+      fhd((fhd_context*)calloc(1, sizeof(fhd_context))) {
+  KinectFrameInit(&kinectFrame, kDepthWidth, kDeptHeight);
+  rgba_image_init(&rgba_depth, kDepthWidth, kDeptHeight);
+  rgba_image_init(&prev_rgba_depth, kDepthWidth, kDeptHeight);
+  ActiveMapReset(&rgba_depth_diff, kDepthWidth, kDeptHeight);
 
-	fhd_context_init(fhd, kDepthWidth, kDeptHeight, 8, 8);
+  fhd_context_init(fhd, kDepthWidth, kDeptHeight, 8, 8);
 }
 
 core::~core() {
@@ -299,7 +303,8 @@ int main(int argc, char** argv) {
     }
 
     c.serial.receive(&c.in_data);
-    memcpy(c.world.distance_sensors, &c.in_data, sizeof(uint8_t) * NUM_OF_DISTANCE_SENSORS);
+    memcpy(c.world.distance_sensors, &c.in_data,
+           sizeof(uint8_t) * NUM_OF_DISTANCE_SENSORS);
 
     core_detect(&c, current_time);
     core_decide(&c, frameTimeSeconds);
@@ -315,8 +320,8 @@ int main(int argc, char** argv) {
 
     if (timeUntilBroadCast <= 0.0) {
       core_serialize(&c);
-      UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(),
-                       c.builder.GetSize(), false);
+      UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize(),
+                       false);
       timeUntilBroadCast = broadcastInterval;
     } else {
       timeUntilBroadCast -= frameTimeSeconds;

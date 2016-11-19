@@ -4,7 +4,8 @@
 #include "comm/comm_input.h"
 
 struct Detection {
-  vec2 kinectPosition;
+  vec2i depthTopLeft;
+  vec2i depthBotRight;
   vec3 metricPosition;
   float weight;
 };

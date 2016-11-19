@@ -5,12 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Constants.h"
 #include "CoreObj.h"
 #include "Decode.h"
 #include "File.h"
 #include "Style.h"
 #include "Texture.h"
-#include "Constants.h"
 #include "fl_math.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -258,9 +258,10 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   for (uint32_t i = 0; i < detections->size(); i++) {
     const proto::Detection* d = detections->Get(i);
     Detection local;
-    const proto::Vec2 position = d->position();
-    local.kinectPosition.x = position.x();
-    local.kinectPosition.y = position.y();
+    local.depthTopLeft.x = d->depthTopLeft().x();
+    local.depthTopLeft.y = d->depthTopLeft().y();
+    local.depthBotRight.x = d->depthBotRight().x();
+    local.depthBotRight.y = d->depthBotRight().y();
     const proto::Vec3 metric = d->metricPosition();
     local.metricPosition = vec3(metric.x(), metric.y(), metric.z());
     local.weight = d->weight();
@@ -349,7 +350,9 @@ void RenderOverview(Client* client) {
   for (const Detection& detection : client->detections) {
     const float d =
         fl_map_range(detection.metricPosition.z, 0.f, 4.5f, 0.f, height);
-    const float tx = s * detection.kinectPosition.x / w;
+    const float centerX =
+        float(detection.depthBotRight.x - detection.depthTopLeft.x);
+    const float tx = s * centerX / w;
     drawList->AddCircle(ImVec2(c.x + w * tx, robot.y - d), radius,
                         ImColor(0x66, 0xA2, 0xC6), 32);
   }
@@ -364,7 +367,7 @@ void RenderOverview(Client* client) {
   for (int32_t i = 0; i < tracking->numTargets; i++) {
     const Target& t = tracking->targets[i];
     ImVec2 renderCoord = TargetToRenderCoords(t);
-    drawList->AddCircleFilled(renderCoord, t.weight * radius,
+    drawList->AddCircleFilled(renderCoord, t.weight * radius * 0.9f,
                               ImColor(0xFF, 0xA2, 0xC6), 32);
   }
 
@@ -441,9 +444,14 @@ int main(int argc, char** argv) {
                  ImVec2(0, 1));
 
     for (Detection& d : client.detections) {
-      draw_list->AddCircleFilled(
-          ImVec2(cursor.x + d.kinectPosition.x, cursor.y + d.kinectPosition.y),
-          20.f, ImColor(255, 0, 0));
+      ImVec2 a =
+          ImVec2(cursor.x + d.depthTopLeft.x, cursor.y + d.depthTopLeft.y);
+      ImVec2 b =
+          ImVec2(cursor.x + d.depthBotRight.x, cursor.y + d.depthBotRight.y);
+      draw_list->AddRect(a, b, ImColor(255, 0, 0), 0.f, 0x0F, 2.f);
+      draw_list->AddRectFilled(ImVec2(a.x + 1.f, a.y + 1.f),
+                               ImVec2(b.x - 1.f, b.y - 1.f),
+                               ImColor(255, 0, 255, 20));
     }
     ImGui::SameLine();
 

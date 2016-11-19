@@ -21,10 +21,12 @@ static const char* const initScript = R"(
   ffi.cdef[[
 		
     typedef struct { float x, y; } vec2;
+    typedef struct { int x, y; } vec2i;
     typedef struct { float x, y, z; } vec3;
 
     typedef struct {
-      vec2 kinectPosition;
+      vec2i depthTopLeft;
+      vec2i depthBotRight;
       vec3 metricPosition;
       float weight;
     } Detection;

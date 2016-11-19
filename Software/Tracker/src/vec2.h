@@ -1,8 +1,15 @@
 #pragma once
 
+struct vec2i {
+  vec2i() : x(0), y(0) {}
+  vec2i(int x, int y) : x(x), y(y) {}
+  int x;
+  int y;
+};
+
 struct vec2 {
   vec2() : x(0.f), y(0.f) {}
-  vec2(float x, float y): x(x), y(y) {}
+  vec2(float x, float y) : x(x), y(y) {}
   float x;
   float y;
 };

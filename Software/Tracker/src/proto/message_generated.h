@@ -11,6 +11,8 @@ struct Command;
 
 struct Vec2;
 
+struct Vec2i;
+
 struct Vec3;
 
 struct Target;
@@ -84,6 +86,22 @@ MANUALLY_ALIGNED_STRUCT(4) Vec2 FLATBUFFERS_FINAL_CLASS {
 };
 STRUCT_END(Vec2, 8);
 
+MANUALLY_ALIGNED_STRUCT(4) Vec2i FLATBUFFERS_FINAL_CLASS {
+ private:
+  int32_t x_;
+  int32_t y_;
+
+ public:
+  Vec2i() { memset(this, 0, sizeof(Vec2i)); }
+  Vec2i(const Vec2i &_o) { memcpy(this, &_o, sizeof(Vec2i)); }
+  Vec2i(int32_t _x, int32_t _y)
+    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)) { }
+
+  int32_t x() const { return flatbuffers::EndianScalar(x_); }
+  int32_t y() const { return flatbuffers::EndianScalar(y_); }
+};
+STRUCT_END(Vec2i, 8);
+
 MANUALLY_ALIGNED_STRUCT(4) Vec3 FLATBUFFERS_FINAL_CLASS {
  private:
   float x_;
@@ -122,21 +140,23 @@ STRUCT_END(Target, 24);
 
 MANUALLY_ALIGNED_STRUCT(4) Detection FLATBUFFERS_FINAL_CLASS {
  private:
-  Vec2 position_;
+  Vec2i depthTopLeft_;
+  Vec2i depthBotRight_;
   Vec3 metricPosition_;
   float weight_;
 
  public:
   Detection() { memset(this, 0, sizeof(Detection)); }
   Detection(const Detection &_o) { memcpy(this, &_o, sizeof(Detection)); }
-  Detection(const Vec2 &_position, const Vec3 &_metricPosition, float _weight)
-    : position_(_position), metricPosition_(_metricPosition), weight_(flatbuffers::EndianScalar(_weight)) { }
+  Detection(const Vec2i &_depthTopLeft, const Vec2i &_depthBotRight, const Vec3 &_metricPosition, float _weight)
+    : depthTopLeft_(_depthTopLeft), depthBotRight_(_depthBotRight), metricPosition_(_metricPosition), weight_(flatbuffers::EndianScalar(_weight)) { }
 
-  const Vec2 &position() const { return position_; }
+  const Vec2i &depthTopLeft() const { return depthTopLeft_; }
+  const Vec2i &depthBotRight() const { return depthBotRight_; }
   const Vec3 &metricPosition() const { return metricPosition_; }
   float weight() const { return flatbuffers::EndianScalar(weight_); }
 };
-STRUCT_END(Detection, 24);
+STRUCT_END(Detection, 32);
 
 struct Command FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {

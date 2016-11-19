@@ -20,7 +20,6 @@ struct fhd_candidate {
   float* features;
 
   float weight;
-  fhd_vec2 kinect_position;
   fhd_vec3 metric_position;
 };
 

@@ -47,11 +47,12 @@ function decide(dt, world, state, tracking)
   if target == nil then
     local closest = find_closest_detection(world.detections, world.numDetections, {x = 0.0, z = 0.0})
     if closest ~= nil then
-      local k = closest.kinectPosition
+      local tl = closest.depthTopLeft
+      local br = closest.depthBotRight
       local p = closest.metricPosition
       target = {
         timeToLive = MAX_TTL,
-        kinect = {x = k.x, y = k.y},
+        kinect = {x = br.x - tl.x, y = br.y - tl.y},
         position = {x = p.x, y = p.y, z = p.z}
       }
     end
@@ -72,9 +73,10 @@ function decide(dt, world, state, tracking)
         end
       end
       if closest_index ~= -1 then
-        local k = world.detections[closest_index].kinectPosition
+        local tl = world.detections[closest_index].depthTopLeft
+        local br = world.detections[closest_index].depthBotRight
         local p = world.detections[closest_index].metricPosition
-        target.kinect = {x = k.x, y = k.y}
+        target.kinect = {x = br.x - tl.x, y = br.y - tl.y}
         target.position = {x = p.x, y = p.y, z = p.z}
         target.timeToLive = MAX_TTL
       end
