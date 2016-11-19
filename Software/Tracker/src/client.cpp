@@ -17,7 +17,6 @@
 #include "parg/parg.h"
 #include "proto/message_generated.h"
 #include "ui/Console.h"
-#include "ColorArea.h"
 
 struct ClientOptions {
   const char* host = "127.0.0.1";
@@ -70,12 +69,11 @@ void ShiftPush(std::vector<float>& container, float v) {
 struct Client {
   ControlState state;
   TrackingState tracking;
-  World world;
+  World* world = nullptr;
   Decoder* decoder = nullptr;
   ENetHost* udpClient = nullptr;
   ENetPeer* peer = nullptr;
   Texture decodedDepth;
-  std::vector<Detection> detections;
   double coreTimestamp = 0.0;
   bool connected = false;
   const ClientOptions* options;
@@ -84,10 +82,9 @@ struct Client {
   std::vector<float> rotationSpeedHistory = std::vector<float>(512, 0.f);
   std::vector<float> frameTimeHistory = std::vector<float>(256, 0.f);
 	const int maxCandidateImages = 8;
-	int candidateImagesReceived = 0;
 	std::vector<Texture> candidateImages;
-	std::vector<float[3][256]> candidateHistograms;
 
+	Client();
   ~Client();
 };
 
@@ -189,6 +186,9 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
   }
 }
 
+Client::Client()
+	: world((World*)calloc(1, sizeof(World))) {}
+
 Client::~Client() {
   enet_host_destroy(udpClient);
   enet_deinitialize();
@@ -251,26 +251,35 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   ShiftPush(c->speedHistory, frame->speed());
 
   if (frame->depth()) {
-    rgba_image img;
+    RgbaImage img;
     if (DecodeFrame(c->decoder, frame->depth()->Data(), frame->depth()->size(),
                     kDepthWidth, kDeptHeight, &img)) {
       TextureUpdate(&c->decodedDepth, img.data, img.width, img.height);
     }
   }
 
-  c->detections.clear();
+	World* world = c->world;
+	world->numDetections = int32_t(frame->detections()->size());
+	
   auto detections = frame->detections();
   for (uint32_t i = 0; i < detections->size(); i++) {
-    const proto::Detection* d = detections->Get(i);
-    Detection local;
-    local.depthTopLeft.x = d->depthTopLeft().x();
-    local.depthTopLeft.y = d->depthTopLeft().y();
-    local.depthBotRight.x = d->depthBotRight().x();
-    local.depthBotRight.y = d->depthBotRight().y();
-    const proto::Vec3 metric = d->metricPosition();
-    local.metricPosition = vec3(metric.x(), metric.y(), metric.z());
-    local.weight = d->weight();
-    c->detections.push_back(local);
+		const proto::Detection* d = detections->Get(i);
+		Detection* local = &world->detections[i];
+    local->depthTopLeft.x = d->depthTopLeft()->x();
+    local->depthTopLeft.y = d->depthTopLeft()->y();
+    local->depthBotRight.x = d->depthBotRight()->x();
+    local->depthBotRight.y = d->depthBotRight()->y();
+    const proto::Vec3* metric = d->metricPosition();
+    local->metricPosition = vec3(metric->x(), metric->y(), metric->z());
+    local->weight = d->weight();
+
+		if (d->histogram()) {
+			std::copy(d->histogram()->begin(), d->histogram()->end(), &local->histogram[0]);
+		}
+
+		if (d->png()) {
+			TextureUpdate(&c->candidateImages[i], d->png()->data(), kCandidateWidth, kCandidateHeight);
+		}
   }
 
   auto tracking = frame->tracking();
@@ -283,15 +292,6 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
         Target(t->weight(), vec2{t->kinect().x(), t->kinect().y()},
                vec3{t->position().x(), t->position().y(), t->position().z()});
   }
-
-	if (frame->debug()) {
-		c->candidateImagesReceived = int(frame->debug()->detectionImages()->size());
-		for (uint32_t i = 0; i < frame->debug()->detectionImages()->size(); i++) {
-			auto img = frame->debug()->detectionImages()->Get(i);
-			TextureUpdate(&c->candidateImages[i], img->png()->data(), img->width(), img->height());
-			memcpy(&c->candidateHistograms[i], img->histogram()->data(), img->histogram()->size() * sizeof(float));
-		}
-	}
 }
 
 void ClientHandleStatusMessage(Client* c, const proto::StatusMessage* message) {
@@ -361,11 +361,12 @@ void RenderOverview(Client* client) {
                     ImColor(0xC6, 0xC7, 0xC5), 10.f);
 
   const float radius = 12.f;
-  for (const Detection& detection : client->detections) {
+	for (int i = 0; i < client->world->numDetections; i++) {
+		const Detection* detection = &client->world->detections[i];
     const float d =
-        fl_map_range(detection.metricPosition.z, 0.f, 4.5f, 0.f, height);
+        fl_map_range(detection->metricPosition.z, 0.f, 4.5f, 0.f, height);
     const float centerX =
-        float(detection.depthBotRight.x - detection.depthTopLeft.x);
+        float(detection->depthBotRight.x - detection->depthTopLeft.x);
     const float tx = s * centerX / w;
     drawList->AddCircle(ImVec2(c.x + w * tx, robot.y - d), radius,
                         ImColor(0x66, 0xA2, 0xC6), 32);
@@ -424,7 +425,6 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < client.maxCandidateImages; i++) {
 		client.candidateImages.push_back(TextureAllocate(kCandidateWidth, kCandidateHeight));
 	}
-	client.candidateHistograms = std::vector<float[3][256]>(client.maxCandidateImages);
 
   if (!ClientStart(&client, &options)) {
     return 1;
@@ -464,11 +464,12 @@ int main(int argc, char** argv) {
                  ImVec2(float(kDepthWidth), float(kDeptHeight)), ImVec2(1, 0),
                  ImVec2(0, 1));
 
-    for (Detection& d : client.detections) {
+		for (int i = 0; i < client.world->numDetections; i++) {
+			const Detection* d = &client.world->detections[i];
       ImVec2 a =
-          ImVec2(cursor.x + d.depthTopLeft.x, cursor.y + d.depthTopLeft.y);
+          ImVec2(cursor.x + d->depthTopLeft.x, cursor.y + d->depthTopLeft.y);
       ImVec2 b =
-          ImVec2(cursor.x + d.depthBotRight.x, cursor.y + d.depthBotRight.y);
+          ImVec2(cursor.x + d->depthBotRight.x, cursor.y + d->depthBotRight.y);
       draw_list->AddRect(a, b, ImColor(255, 0, 0), 0.f, 0x0F, 2.f);
       draw_list->AddRectFilled(ImVec2(a.x + 1.f, a.y + 1.f),
                                ImVec2(b.x - 1.f, b.y - 1.f),
@@ -506,12 +507,12 @@ int main(int argc, char** argv) {
 
 		ImGui::Begin("##debugwindow", &showConsole, ImVec2(500.f, 800.f));
 
-		for (int i = 0; i < client.candidateImagesReceived; i++) {
+		for (int i = 0; i < client.world->numDetections; i++) {
 			Texture& t = client.candidateImages[i];
 			ImGui::Image(t.PtrHandle(),ImVec2(float(kCandidateWidth) * 2.f, float(kCandidateHeight) * 2.f));
 			ImGui::SameLine();
 			ImGui::PushID(i);
-			ImGui::PlotHistogram("##hh", &client.candidateHistograms[i][0][0], 3 * 256, 0, nullptr, FLT_MAX, FLT_MAX, ImVec2(768.f, 256.f));
+			ImGui::PlotHistogram("##hh", &client.world->detections[i].histogram[0], 3 * 256, 0, nullptr, FLT_MAX, FLT_MAX, ImVec2(768.f, 256.f));
 			ImGui::PopID();
 		}
 		ImGui::End();

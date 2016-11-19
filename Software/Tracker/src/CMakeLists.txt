@@ -19,8 +19,6 @@ set(CORE_SOURCES
   classifier/FHDClassifier.cpp
   classifier/TorchClassifier.cpp
 
-  ColorArea.cpp
-
   core.cpp
   core_opt.cpp
 
@@ -38,7 +36,7 @@ set(CORE_SOURCES
   fl_sqlite_writer.cpp
   File.cpp
 
-  image.cpp
+  Image.cpp
 
   KinectFrame.cpp
   KinectSqliteFrameSource.cpp
@@ -68,7 +66,7 @@ add_executable(
   Decode.cpp
   File.cpp
   fl_math.cpp
-  image.cpp
+  Image.cpp
   Style.cpp
   Texture.cpp
   vec2.cpp

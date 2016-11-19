@@ -1,9 +1,9 @@
 #pragma once
 
-#include "image.h"
+#include "Image.h"
 
 struct Decoder;
 
 Decoder* DecoderCreate();
 bool DecodeFrame(Decoder* dc, const uint8_t* data, int len, int targetWidth,
-                 int targetHeight, rgba_image* out);
+                 int targetHeight, RgbaImage* out);

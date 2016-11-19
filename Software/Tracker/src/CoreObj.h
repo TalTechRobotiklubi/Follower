@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "Image.h"
 #include "vec3.h"
 #include "comm/comm_input.h"
 
@@ -8,6 +9,8 @@ struct Detection {
   vec2i depthBotRight;
   vec3 metricPosition;
   float weight;
+	float histogram[768];
+	RgbaImage color;
 };
 
 struct World {

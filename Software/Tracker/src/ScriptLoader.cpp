@@ -24,11 +24,22 @@ static const char* const initScript = R"(
     typedef struct { int x, y; } vec2i;
     typedef struct { float x, y, z; } vec3;
 
+		typedef struct {
+			int width;
+			int height;
+			int channels;
+			int stride;
+			int bytes;
+			uint8_t* data;
+		} RgbaImage;
+
     typedef struct {
       vec2i depthTopLeft;
       vec2i depthBotRight;
       vec3 metricPosition;
       float weight;
+			float histogram[768];
+			RgbaImage color;
     } Detection;
 
     typedef struct {

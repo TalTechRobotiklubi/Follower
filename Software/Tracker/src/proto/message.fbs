@@ -10,17 +10,6 @@ enum CommandType : byte {
   StopRecord
 }
 
-table ColorArea {
-  width:int;
-  height:int;
-  png:[ubyte];
-  histogram:[float];
-}
-
-table DebugFrame {
-  detectionImages:[ColorArea];
-}
-
 table Command {
   type:CommandType;
   arg:string;
@@ -48,11 +37,13 @@ struct Target {
   position:Vec3;
 }
 
-struct Detection {
+table Detection {
   depthTopLeft:Vec2i;
   depthBotRight:Vec2i;
   metricPosition:Vec3;
   weight:float;
+  histogram:[float];
+  png:[ubyte];
 }
 
 table TrackingState {
@@ -69,7 +60,6 @@ table Frame {
   depth:[ubyte];
   detections:[Detection];
   tracking:TrackingState;
-  debug:DebugFrame;
 }
 
 table LuaMainScript {
