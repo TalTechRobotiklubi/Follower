@@ -660,8 +660,10 @@ void fhd_run_pass(fhd_context* fhd, const uint16_t* source) {
   fhd_construct_regions(fhd);
   fhd_merge_regions(fhd);
   fhd_copy_regions(fhd);
+#if FHD_HOG
   fhd_calculate_hog_cells(fhd);
   fhd_create_features(fhd);
+#endif
 }
 
 void fhd_context_destroy(fhd_context* fhd) {
