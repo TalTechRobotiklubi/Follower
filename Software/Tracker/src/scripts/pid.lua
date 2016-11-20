@@ -2,7 +2,7 @@ local M = {}
 
 local PID = {}
 
-function PID:update(self, actual, expected, dt)
+function PID:update(actual, expected, dt)
   dt = dt or 1.0
   local err = expected - actual;
   self.intErr = self.intErr + err;
