@@ -2,5 +2,5 @@
 #include "imgui.h"
 
 namespace Style {
-  ImGuiStyle Bright();
+ImGuiStyle Bright();
 };

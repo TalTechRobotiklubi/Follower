@@ -1,16 +1,16 @@
 #include "Console.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <algorithm>
 
 #ifdef _MSC_VER
-#pragma warning (disable: 4996)
+#pragma warning(disable : 4996)
 #define snprintf _snprintf
 #endif
 
-#define IM_ARRAYSIZE(_A) ((size_t)(sizeof(_A)/sizeof(*_A)))
+#define IM_ARRAYSIZE(_A) ((size_t)(sizeof(_A) / sizeof(*_A)))
 
 static int Stricmp(const char* str1, const char* str2) {
   int d;
@@ -43,9 +43,9 @@ Console::Console(const std::vector<const char*>& commands) {
   HistoryPos = -1;
   Commands.push_back("help");
 
-	for (const char* c : commands) {
-		Commands.push_back(c);
-	}
+  for (const char* c : commands) {
+    Commands.push_back(c);
+  }
 }
 
 Console::~Console() {
@@ -54,7 +54,7 @@ Console::~Console() {
 }
 
 void Console::ClearLog() {
-	Items.clear();
+  Items.clear();
   ScrollToBottom = true;
 }
 
@@ -66,19 +66,19 @@ void Console::AddLog(const char* fmt, ...) {
   buf[IM_ARRAYSIZE(buf) - 1] = 0;
   va_end(args);
 
-	if (Items.size() >= maxLines) {
-		std::rotate(Items.begin(), Items.begin() + 1, Items.end());
-		Items.back() = buf;
-	}
-	else {
-		Items.emplace_back(buf);
-	}
+  if (Items.size() >= maxLines) {
+    std::rotate(Items.begin(), Items.begin() + 1, Items.end());
+    Items.back() = buf;
+  } else {
+    Items.emplace_back(buf);
+  }
 
   ScrollToBottom = true;
 }
 
 const char* Console::Draw(const char* title, float w, float h) {
-  if (!ImGui::BeginChild(title, ImVec2(w, h), true, ImGuiWindowFlags_NoScrollbar)) {
+  if (!ImGui::BeginChild(title, ImVec2(w, h), true,
+                         ImGuiWindowFlags_NoScrollbar)) {
     ImGui::End();
     return nullptr;
   }
@@ -126,8 +126,8 @@ const char* Console::Draw(const char* title, float w, float h) {
     if (!filter.PassFilter(item)) continue;
     ImVec4 col =
         ImVec4(1.f, 1.f, 1.f, 1.0f);  // A better implementation may store
-                                         // a type per-item. For the sample
-                                         // let's just parse the text.
+                                      // a type per-item. For the sample
+                                      // let's just parse the text.
     if (strstr(item, "[error]"))
       col = ImColor(221, 87, 81);
     else if (strncmp(item, "# ", 2) == 0)

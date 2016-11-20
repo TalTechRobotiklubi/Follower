@@ -2,8 +2,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <mutex>
 #include <atomic>
+#include <mutex>
 #include "KinectFrame.h"
 #include "KinectFrameSource.h"
 

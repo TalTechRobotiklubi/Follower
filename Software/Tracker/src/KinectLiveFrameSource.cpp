@@ -1,10 +1,10 @@
+#include "KinectLiveFrameSource.h"
 #include <Kinect.h>
 #include <assert.h>
 #include <float.h>
 #include "Clock.h"
-#include "KinectLiveFrameSource.h"
-#include "fl_yuy2_convert.h"
 #include "Constants.h"
+#include "fl_yuy2_convert.h"
 
 namespace {
 
@@ -77,8 +77,7 @@ bool ReadRgbData(KinectLiveFrameSource* source) {
 }
 }
 
-KinectLiveFrameSource::KinectLiveFrameSource()
-  : frameNumber(0) {
+KinectLiveFrameSource::KinectLiveFrameSource() : frameNumber(0) {
   HRESULT hr = GetDefaultKinectSensor(&kinect);
   if (FAILED(hr)) {
     fprintf(stderr, "Failed to get the kinect sensor\n");
@@ -104,7 +103,7 @@ KinectLiveFrameSource::KinectLiveFrameSource()
 
     if (SUCCEEDED(hr)) {
       hr = colorSource->OpenReader(&colorReader);
-			printf("opened color reader\n");
+      printf("opened color reader\n");
       kinectRgbaBufLen = kDepthWidth * kDeptHeight * 4;
     }
 
@@ -144,6 +143,4 @@ void KinectLiveFrameSource::FillFrame(KinectFrame* dst) {
   CopyKinectFrame(&currentFrame, dst);
 }
 
-int KinectLiveFrameSource::FrameNumber() const {
-  return frameNumber.load(); 
-}
+int KinectLiveFrameSource::FrameNumber() const { return frameNumber.load(); }

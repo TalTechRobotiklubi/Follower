@@ -13,15 +13,15 @@
 #ifdef WIN32
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma warning(push)
-#pragma warning(disable: 4005)
+#pragma warning(disable : 4005)
 #endif
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <boost/thread.hpp>
-#include <boost/utility.hpp>
 #include <boost/function.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/thread.hpp>
+#include <boost/utility.hpp>
 
 #ifdef WIN32
 #pragma warning(pop)

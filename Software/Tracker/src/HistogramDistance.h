@@ -7,5 +7,5 @@
 #endif
 
 extern "C" {
-	DLL_EXPORT float HistogramDistance(const float* a, const float* b, int length);
+DLL_EXPORT float HistogramDistance(const float* a, const float* b, int length);
 }

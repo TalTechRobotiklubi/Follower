@@ -15,9 +15,9 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "parg/parg.h"
+#include "png/lodepng.h"
 #include "proto/message_generated.h"
 #include "ui/Console.h"
-#include "png/lodepng.h"
 
 struct ClientOptions {
   const char* host = "127.0.0.1";
@@ -77,16 +77,16 @@ struct Client {
   Texture decodedDepth;
   double coreTimestamp = 0.0;
   bool connected = false;
-	bool debugWindow = false;
+  bool debugWindow = false;
   const ClientOptions* options;
   Console* console = nullptr;
   std::vector<float> speedHistory = std::vector<float>(512, 0.f);
   std::vector<float> rotationSpeedHistory = std::vector<float>(512, 0.f);
   std::vector<float> frameTimeHistory = std::vector<float>(256, 0.f);
-	std::vector<float> frameSizeHistory = std::vector<float>(256, 0.f);
-	std::vector<Texture> candidateImages;
+  std::vector<float> frameSizeHistory = std::vector<float>(256, 0.f);
+  std::vector<Texture> candidateImages;
 
-	Client();
+  Client();
   ~Client();
 };
 
@@ -161,13 +161,13 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
     SendCommand(c, proto::CommandType_RecordDepth, nullptr);
   } else if (command == "stoprecord") {
     SendCommand(c, proto::CommandType_StopRecord, nullptr);
-	} else if (command == "startdebug") {
-		SendCommand(c, proto::CommandType_StartDebug, nullptr);
-		c->debugWindow = true;
-	} else if (command == "stopdebug") {
-		SendCommand(c, proto::CommandType_StopDebug, nullptr);
-		c->debugWindow = false;
-	} else if (command == "setclassifier") {
+  } else if (command == "startdebug") {
+    SendCommand(c, proto::CommandType_StartDebug, nullptr);
+    c->debugWindow = true;
+  } else if (command == "stopdebug") {
+    SendCommand(c, proto::CommandType_StopDebug, nullptr);
+    c->debugWindow = false;
+  } else if (command == "setclassifier") {
     if (needArg(1)) return;
 
     const std::string& inputFile = tokens[1];
@@ -194,8 +194,7 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
   }
 }
 
-Client::Client()
-	: world((World*)calloc(1, sizeof(World))) {}
+Client::Client() : world((World*)calloc(1, sizeof(World))) {}
 
 Client::~Client() {
   enet_host_destroy(udpClient);
@@ -266,13 +265,13 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
     }
   }
 
-	World* world = c->world;
-	world->numDetections = int32_t(frame->detections()->size());
-	
+  World* world = c->world;
+  world->numDetections = int32_t(frame->detections()->size());
+
   auto detections = frame->detections();
   for (uint32_t i = 0; i < detections->size(); i++) {
-		const proto::Detection* d = detections->Get(i);
-		Detection* local = &world->detections[i];
+    const proto::Detection* d = detections->Get(i);
+    Detection* local = &world->detections[i];
     local->depthTopLeft.x = d->depthTopLeft()->x();
     local->depthTopLeft.y = d->depthTopLeft()->y();
     local->depthBotRight.x = d->depthBotRight()->x();
@@ -281,22 +280,24 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
     local->metricPosition = vec3(metric->x(), metric->y(), metric->z());
     local->weight = d->weight();
 
-		if (d->histogram()) {
-			std::copy(d->histogram()->begin(), d->histogram()->end(), &local->histogram[0]);
-		}
+    if (d->histogram()) {
+      std::copy(d->histogram()->begin(), d->histogram()->end(),
+                &local->histogram[0]);
+    }
 
-		if (d->png() && i < kMaxCandidates) {
-			unsigned char* raw = nullptr;
-			unsigned width = 0, height = 0;
-			unsigned error = lodepng_decode32(&raw, &width, &height, d->png()->data(), d->png()->size());
-			if (!error) {
-				TextureUpdate(&c->candidateImages[i], raw, width, height);
-				free(raw);
-			} else {
-				c->console->AddLog("Failed to decode PNG: %s", lodepng_error_text(error));
-			}
-
-		}
+    if (d->png() && i < kMaxCandidates) {
+      unsigned char* raw = nullptr;
+      unsigned width = 0, height = 0;
+      unsigned error = lodepng_decode32(&raw, &width, &height, d->png()->data(),
+                                        d->png()->size());
+      if (!error) {
+        TextureUpdate(&c->candidateImages[i], raw, width, height);
+        free(raw);
+      } else {
+        c->console->AddLog("Failed to decode PNG: %s",
+                           lodepng_error_text(error));
+      }
+    }
   }
 
   auto tracking = frame->tracking();
@@ -346,7 +347,8 @@ void ClientUpdate(Client* c) {
         break;
       case ENET_EVENT_TYPE_RECEIVE: {
         ClientHandleMessage(c, event.packet->data, event.packet->dataLength);
-				ShiftPush(c->frameSizeHistory, float(event.packet->dataLength) / 1000.f);
+        ShiftPush(c->frameSizeHistory,
+                  float(event.packet->dataLength) / 1000.f);
         enet_packet_destroy(event.packet);
         break;
       }
@@ -378,8 +380,8 @@ void RenderOverview(Client* client) {
                     ImColor(0xC6, 0xC7, 0xC5), 10.f);
 
   const float radius = 12.f;
-	for (int i = 0; i < client->world->numDetections; i++) {
-		const Detection* detection = &client->world->detections[i];
+  for (int i = 0; i < client->world->numDetections; i++) {
+    const Detection* detection = &client->world->detections[i];
     const float d =
         fl_map_range(detection->metricPosition.z, 0.f, 4.5f, 0.f, height);
     const float centerX =
@@ -438,25 +440,15 @@ int main(int argc, char** argv) {
   ClientOptions options = ParseOptions(argc, argv);
   Client client;
 
-	client.candidateImages.resize(kMaxCandidates);
+  client.candidateImages.resize(kMaxCandidates);
 
   if (!ClientStart(&client, &options)) {
     return 1;
   }
 
-	client.console = new Console({
-		"startscript",
-		"stop",
-		"speed",
-		"rot",
-		"stopvideo",
-		"startvideo",
-		"record",
-		"stoprecord",
-		"setclassifier",
-		"startdebug",
-		"stopdebug"
-	});
+  client.console = new Console(
+      {"startscript", "stop", "speed", "rot", "stopvideo", "startvideo",
+       "record", "stoprecord", "setclassifier", "startdebug", "stopdebug"});
 
   while (!glfwWindowShouldClose(window)) {
     ClientUpdate(&client);
@@ -473,7 +465,7 @@ int main(int argc, char** argv) {
     ImGuiWindowFlags flags =
         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar |
-				ImGuiWindowFlags_NoBringToFrontOnFocus;
+        ImGuiWindowFlags_NoBringToFrontOnFocus;
 
     ImGui::Begin("follower", &showWindow,
                  ImVec2(float(displayWidth), float(displayHeight)), -1.f,
@@ -491,8 +483,8 @@ int main(int argc, char** argv) {
                  ImVec2(float(kDepthWidth), float(kDeptHeight)), ImVec2(1, 0),
                  ImVec2(0, 1));
 
-		for (int i = 0; i < client.world->numDetections; i++) {
-			const Detection* d = &client.world->detections[i];
+    for (int i = 0; i < client.world->numDetections; i++) {
+      const Detection* d = &client.world->detections[i];
       ImVec2 a =
           ImVec2(cursor.x + d->depthTopLeft.x, cursor.y + d->depthTopLeft.y);
       ImVec2 b =
@@ -519,7 +511,9 @@ int main(int argc, char** argv) {
     ImGui::PlotLines("##coreFrameTime", client.frameTimeHistory.data(),
                      client.frameTimeHistory.size(), 0, "core frame time (ms)",
                      0.f, 100.f, plotSize);
-		ImGui::PlotLines("##frameSize", client.frameSizeHistory.data(), client.frameSizeHistory.size(), 0, "frame size (KB)", FLT_MAX, FLT_MAX, plotSize);
+    ImGui::PlotLines("##frameSize", client.frameSizeHistory.data(),
+                     client.frameSizeHistory.size(), 0, "frame size (KB)",
+                     FLT_MAX, FLT_MAX, plotSize);
     ImGui::EndGroup();
 
     ImGui::Begin("##consolewindow", &showConsole, ImVec2(600.f, 400.f));
@@ -533,18 +527,22 @@ int main(int argc, char** argv) {
     }
     ImGui::End();
 
-		if (client.debugWindow) {
-			ImGui::Begin("Debug", &client.debugWindow, ImVec2(500.f, 800.f));
-			for (int i = 0; i < std::min(kMaxCandidates, client.world->numDetections); i++) {
-				Texture& t = client.candidateImages[i];
-				ImGui::Image(t.PtrHandle(), ImVec2(float(kCandidateWidth) * 2.f, float(kCandidateHeight) * 2.f));
-				ImGui::SameLine();
-				ImGui::PushID(i);
-				ImGui::PlotHistogram("##histo", &client.world->detections[i].histogram[0], 3 * 256, 0, nullptr, FLT_MAX, FLT_MAX, ImVec2(768.f, 256.f));
-				ImGui::PopID();
-			}
-			ImGui::End();
-		}
+    if (client.debugWindow) {
+      ImGui::Begin("Debug", &client.debugWindow, ImVec2(500.f, 800.f));
+      for (int i = 0; i < std::min(kMaxCandidates, client.world->numDetections);
+           i++) {
+        Texture& t = client.candidateImages[i];
+        ImGui::Image(t.PtrHandle(), ImVec2(float(kCandidateWidth) * 2.f,
+                                           float(kCandidateHeight) * 2.f));
+        ImGui::SameLine();
+        ImGui::PushID(i);
+        ImGui::PlotHistogram(
+            "##histo", &client.world->detections[i].histogram[0], 3 * 256, 0,
+            nullptr, FLT_MAX, FLT_MAX, ImVec2(768.f, 256.f));
+        ImGui::PopID();
+      }
+      ImGui::End();
+    }
 
     ImGui::End();
 

@@ -1,6 +1,7 @@
 #include "core.h"
 #include <fhd.h>
 #include <fhd_kinect.h>
+#include <libyuv.h>
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
@@ -14,18 +15,15 @@
 #include "comm/datalayer.h"
 #include "core_opt.h"
 #include "fl_sqlite_writer.h"
-#include "proto/message_generated.h"
-#include <libyuv.h>
 #include "png/lodepng.h"
+#include "proto/message_generated.h"
 
-void CopyRgbaSubImage(const KinectFrame* frame, int x, int y, int w, int h, RgbaImage* dst) {
-	const int stride = frame->rgbaWidth * 4;
-	const int offset = y * stride + x * 4;
-	libyuv::ARGBScale(&frame->rgbaData[offset], stride, w, h,
-		dst->data, dst->stride,
-		dst->width, dst->height,
-		libyuv::kFilterNone
-	);
+void CopyRgbaSubImage(const KinectFrame* frame, int x, int y, int w, int h,
+                      RgbaImage* dst) {
+  const int stride = frame->rgbaWidth * 4;
+  const int offset = y * stride + x * 4;
+  libyuv::ARGBScale(&frame->rgbaData[offset], stride, w, h, dst->data,
+                    dst->stride, dst->width, dst->height, libyuv::kFilterNone);
 }
 
 void kinect_loop(core* c) {
@@ -116,16 +114,16 @@ void core_handle_command(core* c, const proto::Command* command) {
       core_send_status_message(c, "ok");
       break;
     }
-		case proto::CommandType_StartDebug: {
-			c->sendDebugData = true;
-			core_send_status_message(c, "ok");
-			break;
-		}
-		case proto::CommandType_StopDebug: {
-			c->sendDebugData = false;
-			core_send_status_message(c, "ok");
-			break;
-		}
+    case proto::CommandType_StartDebug: {
+      c->sendDebugData = true;
+      core_send_status_message(c, "ok");
+      break;
+    }
+    case proto::CommandType_StopDebug: {
+      c->sendDebugData = false;
+      core_send_status_message(c, "ok");
+      break;
+    }
     default: {
       core_send_status_message(c, "unknown command");
       break;
@@ -172,7 +170,7 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
 }
 
 void core_detect(core* c, double timestamp) {
-	World* world = c->world;
+  World* world = c->world;
   world->timestamp = timestamp;
   world->numDetections = 0;
 
@@ -192,36 +190,33 @@ void core_detect(core* c, double timestamp) {
     }
 
     if (passed >= requiredPasses) {
-      vec2i tl{kDepthWidth - candidate->depth_position.x - candidate->depth_position.width,
+      vec2i tl{kDepthWidth - candidate->depth_position.x -
+                   candidate->depth_position.width,
                candidate->depth_position.y};
       vec2i br{tl.x + candidate->depth_position.width,
                tl.y + candidate->depth_position.height};
       vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
                      candidate->metric_position.z};
-			Detection* d = &world->detections[world->numDetections];
-			d->depthTopLeft = tl;
-			d->depthBotRight = br;
-			d->metricPosition = metricPos;
-			d->weight = candidate->weight;
-			CopyRgbaSubImage(
-				&c->kinectFrame,
-				candidate->depth_position.x,
-				candidate->depth_position.y,
-				candidate->depth_position.width,
-				candidate->depth_position.height,
-				&d->color
-			);
+      Detection* d = &world->detections[world->numDetections];
+      d->depthTopLeft = tl;
+      d->depthBotRight = br;
+      d->metricPosition = metricPos;
+      d->weight = candidate->weight;
+      CopyRgbaSubImage(&c->kinectFrame, candidate->depth_position.x,
+                       candidate->depth_position.y,
+                       candidate->depth_position.width,
+                       candidate->depth_position.height, &d->color);
 
-			memset(d->histogram, 0, sizeof(d->histogram));
+      memset(d->histogram, 0, sizeof(d->histogram));
 
-			for (int i = 0; i < d->color.bytes; i += 4) {
-				uint8_t r = d->color.data[i];
-				uint8_t g = d->color.data[i + 1];
-				uint8_t b = d->color.data[i + 2];
-				d->histogram[r] += 1.f;
-				d->histogram[256 + g] += 1.f;
-				d->histogram[512 + b] += 1.f;
-			}
+      for (int i = 0; i < d->color.bytes; i += 4) {
+        uint8_t r = d->color.data[i];
+        uint8_t g = d->color.data[i + 1];
+        uint8_t b = d->color.data[i + 2];
+        d->histogram[r] += 1.f;
+        d->histogram[256 + g] += 1.f;
+        d->histogram[512 + b] += 1.f;
+      }
 
       world->numDetections++;
     }
@@ -244,43 +239,35 @@ void core_serialize(core* c) {
   detections.reserve(c->world->numDetections);
   targets.reserve(c->tracking.numTargets);
 
-	bool debugging = c->sendDebugData;
+  bool debugging = c->sendDebugData;
 
   for (int32_t i = 0; i < c->world->numDetections; i++) {
     const Detection& detection = c->world->detections[i];
 
-		proto::Vec2i tl(detection.depthTopLeft.x, detection.depthTopLeft.y);
-		proto::Vec2i br(detection.depthBotRight.x, detection.depthBotRight.y);
-		proto::Vec3 metric(detection.metricPosition.x, detection.metricPosition.y,
-			detection.metricPosition.z);
+    proto::Vec2i tl(detection.depthTopLeft.x, detection.depthTopLeft.y);
+    proto::Vec2i br(detection.depthBotRight.x, detection.depthBotRight.y);
+    proto::Vec3 metric(detection.metricPosition.x, detection.metricPosition.y,
+                       detection.metricPosition.z);
 
-		if (debugging) {
-			unsigned char* png = nullptr;
-			size_t pngSize = 0;
-			unsigned res = lodepng_encode32(&png, &pngSize, detection.color.data, detection.color.width, detection.color.height);
+    if (debugging) {
+      unsigned char* png = nullptr;
+      size_t pngSize = 0;
+      unsigned res =
+          lodepng_encode32(&png, &pngSize, detection.color.data,
+                           detection.color.width, detection.color.height);
 
-			detections.push_back(proto::CreateDetection(
-				c->builder,
-				&tl,
-				&br,
-				&metric,
-				detection.weight,
-				c->builder.CreateVector(detection.histogram, sizeof(detection.histogram) / sizeof(detection.histogram[0])),
-				res ? 0 : c->builder.CreateVector(png, pngSize)
-			));
+      detections.push_back(proto::CreateDetection(
+          c->builder, &tl, &br, &metric, detection.weight,
+          c->builder.CreateVector(
+              detection.histogram,
+              sizeof(detection.histogram) / sizeof(detection.histogram[0])),
+          res ? 0 : c->builder.CreateVector(png, pngSize)));
 
-			free(png);
-		}
-		else {
-			detections.push_back(proto::CreateDetection(
-				c->builder,
-				&tl,
-				&br,
-				&metric,
-				detection.weight
-			));
-		}
-
+      free(png);
+    } else {
+      detections.push_back(proto::CreateDetection(c->builder, &tl, &br, &metric,
+                                                  detection.weight));
+    }
   }
 
   for (int32_t i = 0; i < c->tracking.numTargets; i++) {
@@ -290,7 +277,7 @@ void core_serialize(core* c) {
                       proto::Vec3(t.position.x, t.position.y, t.position.z)));
   }
 
-	auto detectionOffsets = c->builder.CreateVector(detections);
+  auto detectionOffsets = c->builder.CreateVector(detections);
   auto targetOffsets = c->builder.CreateVectorOfStructs(targets);
   auto tracking = proto::CreateTrackingState(
       c->builder, c->tracking.activeTarget, targetOffsets);
@@ -318,18 +305,18 @@ void core_serialize(core* c) {
 
 core::core()
     : world((World*)calloc(1, sizeof(World))),
-			encoder(EncoderCreate(kDepthWidth, kDeptHeight)),
+      encoder(EncoderCreate(kDepthWidth, kDeptHeight)),
       fhd((fhd_context*)calloc(1, sizeof(fhd_context))) {
   KinectFrameInit(&kinectFrame, kDepthWidth, kDeptHeight);
   RgbaImageInit(&rgba_depth, kDepthWidth, kDeptHeight);
-	RgbaImageInit(&prev_rgba_depth, kDepthWidth, kDeptHeight);
+  RgbaImageInit(&prev_rgba_depth, kDepthWidth, kDeptHeight);
   ActiveMapReset(&rgba_depth_diff, kDepthWidth, kDeptHeight);
 
   fhd_context_init(fhd, kDepthWidth, kDeptHeight, 8, 8);
 
-	for (Detection& d : world->detections) {
-		RgbaImageInit(&d.color, kCandidateWidth, kCandidateHeight);
-	}
+  for (Detection& d : world->detections) {
+    RgbaImageInit(&d.color, kCandidateWidth, kCandidateHeight);
+  }
 }
 
 core::~core() {
@@ -376,7 +363,7 @@ int main(int argc, char** argv) {
     if (c.sendVideo && timeUntilBroadCast <= 0.0) {
       memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
       DepthToRgba(c.kinectFrame.depthData, c.kinectFrame.depthLength,
-                    &c.rgba_depth);
+                  &c.rgba_depth);
       BlockDiff(c.prev_rgba_depth.data, c.rgba_depth.data, kDepthWidth,
                 kDeptHeight, &c.rgba_depth_diff);
       c.encoded_depth =

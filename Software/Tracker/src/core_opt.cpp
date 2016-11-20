@@ -2,6 +2,7 @@
 #include <fhd.h>
 #include <fhd_classifier.h>
 #include <stdio.h>
+#include "Constants.h"
 #include "KinectLiveFrameSource.h"
 #include "KinectNullFrameSource.h"
 #include "KinectSqliteFrameSource.h"
@@ -10,7 +11,6 @@
 #include "classifier/FHDClassifier.h"
 #include "classifier/TorchClassifier.h"
 #include "core.h"
-#include "Constants.h"
 #include "parg/parg.h"
 
 int parse_opt(core* c, int argc, char** argv) {

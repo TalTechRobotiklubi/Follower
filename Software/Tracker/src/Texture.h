@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdint.h>
 #include <GLFW/glfw3.h>
+#include <stdint.h>
 
 struct Texture {
   GLuint handle = 0;
@@ -15,5 +15,6 @@ struct Texture {
 };
 
 Texture TextureAllocate(int width, int height);
-void TextureUpdate(Texture* texture, const uint8_t* data, int width, int height);
+void TextureUpdate(Texture* texture, const uint8_t* data, int width,
+                   int height);
 void TextureDestroy(Texture* texture);
