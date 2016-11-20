@@ -8,7 +8,8 @@
 #include "fl_math.h"
 #include "sqlite3/sqlite3.h"
 
-KinectSqliteFrameSource::KinectSqliteFrameSource(const char* database) {
+KinectSqliteFrameSource::KinectSqliteFrameSource(const char* database)
+    : currentFrameNum(1) {
   int res = sqlite3_open_v2(database, &db, SQLITE_OPEN_READONLY, nullptr);
   if (res != SQLITE_OK) {
     printf("failed to open %s: %s\n", database, sqlite3_errmsg(db));
@@ -50,7 +51,7 @@ const KinectFrame* KinectSqliteFrameSource::GetFrame() {
 
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   sqlite3_reset(frameQuery);
-  sqlite3_bind_int(frameQuery, 1, currentFrameNum);
+  sqlite3_bind_int(frameQuery, 1, currentFrameNum.load());
 
   int res = sqlite3_step(frameQuery);
   if (res == SQLITE_ROW) {
@@ -75,7 +76,9 @@ const KinectFrame* KinectSqliteFrameSource::GetFrame() {
 
 void KinectSqliteFrameSource::FillFrame(KinectFrame* dst) {
   std::lock_guard<std::mutex> lock(frameLock);
-  if (kframe.depthData) {
-    CopyKinectFrame(&kframe, dst);
-  }
+  CopyKinectFrame(&kframe, dst);
+}
+
+int KinectSqliteFrameSource::FrameNumber() const {
+  return currentFrameNum.load();
 }

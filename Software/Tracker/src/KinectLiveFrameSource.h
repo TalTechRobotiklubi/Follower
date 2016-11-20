@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <mutex>
 #include <vector>
+#include <atomic>
 #include "KinectFrame.h"
 #include "KinectFrameSource.h"
 
@@ -17,6 +18,7 @@ struct KinectLiveFrameSource : KinectFrameSource {
 
   const KinectFrame* GetFrame() override;
   void FillFrame(KinectFrame* dst) override;
+  int FrameNumber() const override;
 
   IKinectSensor* kinect = nullptr;
   IDepthFrameReader* depthReader = nullptr;
@@ -27,6 +29,7 @@ struct KinectLiveFrameSource : KinectFrameSource {
 
   uint8_t* kinectRgbaBuf = nullptr;
   size_t kinectRgbaBufLen = 0;
+  std::atomic<int> frameNumber;
 
   KinectFrame currentFrame;
   std::mutex frameLock;
