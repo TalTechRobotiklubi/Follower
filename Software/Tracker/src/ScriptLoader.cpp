@@ -17,6 +17,7 @@ static int RemoteLog(lua_State* L) {
 }
 
 static const char* const initScript = R"(
+  package.path = package.path .. ";./scripts/?.lua"
 	local ffi = require("ffi")
   ffi.cdef[[
 		float HistogramDistance(const float* a, const float* b, int length);
