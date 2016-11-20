@@ -84,6 +84,7 @@ struct Client {
   std::vector<float> rotationSpeedHistory = std::vector<float>(512, 0.f);
   std::vector<float> frameTimeHistory = std::vector<float>(256, 0.f);
   std::vector<float> frameSizeHistory = std::vector<float>(256, 0.f);
+	std::vector<float> cameraXDegreesHistory = std::vector<float>(256, 0.f);
   std::vector<Texture> candidateImages;
 
   Client();
@@ -256,6 +257,7 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   ShiftPush(c->frameTimeHistory, frame->coreDtMs());
   ShiftPush(c->rotationSpeedHistory, frame->rotationSpeed());
   ShiftPush(c->speedHistory, frame->speed());
+	ShiftPush(c->cameraXDegreesHistory, cam->x());
 
   if (frame->depth()) {
     RgbaImage img;
@@ -502,6 +504,9 @@ int main(int argc, char** argv) {
 
     const ImVec2 plotSize(300.f, 100.f);
     ImGui::BeginGroup();
+		ImGui::PlotLines("##camx", client.cameraXDegreesHistory.data(),
+			client.cameraXDegreesHistory.size(), 0, "camera x deg",
+			-45.f, 45.f, plotSize);
     ImGui::PlotLines("##rotationSpeed", client.rotationSpeedHistory.data(),
                      client.rotationSpeedHistory.size(), 0, "rotation speed",
                      -360.f, 360.f, plotSize);
