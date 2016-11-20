@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local MAX_TTL = 1.5
 
 function filter(a, f)

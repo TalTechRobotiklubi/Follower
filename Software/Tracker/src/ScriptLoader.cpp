@@ -19,7 +19,7 @@ static int RemoteLog(lua_State* L) {
 static const char* const initScript = R"(
 	local ffi = require("ffi")
   ffi.cdef[[
-		
+		float HistogramDistance(const float* a, const float* b, int length);
     typedef struct { float x, y; } vec2;
     typedef struct { int x, y; } vec2i;
     typedef struct { float x, y, z; } vec3;
@@ -75,6 +75,8 @@ static const char* const initScript = R"(
       float speed;
     } ControlState;
   ]]
+
+	HIST_SIZE = 768
 
 	function remote_log(fmt, ...)
 		local r = string.format(fmt, ...)

@@ -37,7 +37,7 @@ set(CORE_SOURCES
   fl_yuy2_convert.cpp
   fl_sqlite_writer.cpp
   File.cpp
-
+  HistogramDistance.cpp
   Image.cpp
 
   KinectFrame.cpp
