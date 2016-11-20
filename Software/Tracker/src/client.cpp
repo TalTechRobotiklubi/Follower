@@ -357,9 +357,8 @@ void ClientUpdate(Client* c) {
 }
 
 void RenderOverview(Client* client) {
-  const float s = 1.25f;
-  const float w = float(kDepthWidth) * s;
-  const float h = float(kDeptHeight) * s;
+  const float w = float(kDepthWidth);
+  const float h = float(kDeptHeight);
   ImDrawList* drawList = ImGui::GetWindowDrawList();
   ImVec2 c = ImGui::GetCursorScreenPos();
   ImVec2 end = ImVec2(c.x + w, c.y + h);
@@ -384,16 +383,15 @@ void RenderOverview(Client* client) {
     const float d =
         fl_map_range(detection->metricPosition.z, 0.f, 4.5f, 0.f, height);
     const float centerX =
-        float(detection->depthBotRight.x - detection->depthTopLeft.x);
-    const float tx = s * centerX / w;
-    drawList->AddCircle(ImVec2(c.x + w * tx, robot.y - d), radius,
+        float(detection->depthBotRight.x + detection->depthTopLeft.x) * 0.5f;
+    drawList->AddCircle(ImVec2(c.x + centerX, robot.y - d), radius,
                         ImColor(0x66, 0xA2, 0xC6), 32);
   }
 
   const TrackingState* tracking = &client->tracking;
   const auto TargetToRenderCoords = [&](const Target& t) {
     const float d = fl_map_range(t.position.z, 0.f, 4.5f, 0.f, height);
-    const float tx = s * t.kinect.x / w;
+    const float tx = t.kinect.x / w;
     return ImVec2(c.x + w * tx, robot.y - d);
   };
 
