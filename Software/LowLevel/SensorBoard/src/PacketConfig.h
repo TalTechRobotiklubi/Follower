@@ -25,8 +25,9 @@ typedef enum
 	PacketDistanceSensors, // 5
 	PacketRobotFeedback,   // 6
 	PacketQuaternions,     // 7
-	PacketGyro,            // 8
-	// Count of items is 9
+	PacketEmergency,       // 8
+	PacketGyro,            // 9
+	// Count of items is 10
 	NumberOfPackets
 }
 Packet;

@@ -17,6 +17,8 @@ typedef enum
 	BTN_START,
 	BTN_STOP,
 	LED,
+	USART2_TX,
+	USART2_RX,
 	NUM_OF_GPIOS
 }
 GPIO_IdDef;

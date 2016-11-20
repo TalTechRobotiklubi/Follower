@@ -20,42 +20,83 @@
 #include "TaskHandler.h"
 #include "drawing.h"
 #include "fonts/verdana9.h"
+#include "USART.h"
+#include "DataLayer.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
+#define MENU_X 0
+#define MENU_Y 20
+#define MENU_ITEM_WIDTH 145
+#define MENU_ITEM_HEIGHT 16
+#define MENU_ITEM_COLOR COLOR_GREEN
+#define MENU_ITEM_SELECTED_COLOR COLOR_BLUE
+#define MENU_ARROW_SIZE 8
+
+#define MENU_REMOTE_CONTROL 0
+#define MENU_EMERGENCY 1
+
+typedef struct
+{
+	int16_t x0;
+	int16_t y0;
+	int16_t x1;
+	int16_t y1;
+} MenuItem;
+
 static uint32_t Uptime = 0;
 static uint32_t ShutDownDelay;
 
+const static MenuItem menuItems[] = {
+	//  x0 ,              y,                     x1,                   			y1
+	{MENU_X, 			        MENU_Y, MENU_X + MENU_ITEM_WIDTH, 					 MENU_ITEM_HEIGHT + MENU_Y},
+	{MENU_X, MENU_ITEM_HEIGHT + MENU_Y, MENU_X + MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT + MENU_ITEM_HEIGHT + MENU_Y}
+};
+
+static int16_t numOfMenuItems = sizeof(menuItems)/sizeof(menuItems[0]);
+
+static void drawUiContent();
+static void drawMenuItem(int index, char* txt, uint16_t color);
+static void markMenuItemSelected(int index);
+static void markMenuItemsDeactivated();
 /* Private functions ---------------------------------------------------------*/
 
-void DrawNeedle(uint32_t Angle)
+void drawUiContent()
 {
-  uint32_t r = 35;
-  uint32_t x1, y1, x2, y2;
-  static uint32_t oldX, oldY;
-  uint32_t a;
+	drawString(3, 3, COLOR_WHITE, &verdana9ptFontInfo, "Follower");
+	drawMenuItem(MENU_EMERGENCY, "Emergency switch", MENU_ITEM_COLOR);
+	drawMenuItem(MENU_REMOTE_CONTROL, "Remote control", MENU_ITEM_SELECTED_COLOR);
+}
 
-  a = DEGREES_TO_FIX32(Angle);
-  
-  x1 = 80 << 16;
-  y1 = 64 << 16;
-  
-  x2 = x1 + ((r * (cosine(a))));
-  y2 = y1 + ((r * (sine(a))));
-    
-  //x2 = 120 << 16;
-  //y2 = ((20 + Angle) << 16);
-  
-  /*
-  LCD_SetColor(0, 0, 0);
-  LCD_DrawLine(x1 >> 16, y1 >> 16, oldX >> 16, oldY >> 16);
-  LCD_SetColor(255, 0, 0);
-  LCD_DrawLine(x1 >> 16, y1 >> 16, x2 >> 16, y2 >> 16);
-  */
-  oldX = x2;
-  oldY = y2;
+void drawMenuItem(int index, char* txt, uint16_t color)
+{
+	drawRectangle(menuItems[index].x0, menuItems[index].y0, menuItems[index].x1, menuItems[index].y1, color);
+	drawString(menuItems[index].x0 + 3, menuItems[index].y0 + 2, COLOR_WHITE, &verdana9ptFontInfo, txt);
+}
+
+void markMenuItemSelected(int index)
+{
+	int i;
+	if (index >= numOfMenuItems || index < 0)
+		return;
+
+	for (i = 0; i < numOfMenuItems; ++i)
+		drawRectangle(menuItems[i].x0, menuItems[i].y0, menuItems[i].x1, menuItems[i].y1, MENU_ITEM_COLOR);
+	drawRectangle(menuItems[index].x0, menuItems[index].y0, menuItems[index].x1,
+			 	  menuItems[index].y1, MENU_ITEM_SELECTED_COLOR);
+}
+
+void markMenuItemActivated(int index)
+{
+	if (index >= numOfMenuItems || index < 0)
+		return;
+
+	drawArrow(menuItems[index].x1 + MENU_ARROW_SIZE + 3, menuItems[index].y1 - MENU_ITEM_HEIGHT / 2, MENU_ARROW_SIZE, DRAW_DIRECTION_RIGHT, COLOR_WHITE);
+}
+
+void markMenuItemsDeactivated()
+{
+	int i;
+	for (i = 0; i < numOfMenuItems; ++i)
+		drawArrow(menuItems[i].x1 + MENU_ARROW_SIZE + 3, menuItems[i].y1 - MENU_ITEM_HEIGHT / 2, MENU_ARROW_SIZE, DRAW_DIRECTION_RIGHT, COLOR_BLACK);
 }
 
 /**
@@ -66,8 +107,7 @@ void Logic_Init(void)
 {    
 	drawFill(COLOR_BLACK);
 	drawRectangle(0, 0, 159, 127, COLOR_GREEN);
-	drawLine(0, 16, 100, 16, COLOR_GREEN);
-	drawString(3, 3, COLOR_WHITE, &verdana9ptFontInfo, "Follower remote");
+	drawUiContent();
 }
 
 
@@ -125,12 +165,12 @@ void DisplayBattery(uint32_t Period)
   /* Display charging or display status */
   if (isCharging)
   {
-//    for (y = 0; y <= BatteryHeight; y++)
-//    {
-//      drawLine(BatteryLocationX, BatteryLocationY + BatteryHeight - y,
-//        BatteryLocationX + BatteryWidth, BatteryLocationY + BatteryHeight - y,
-//        ((y > charging_level) ? COLOR_BLACK : COLOR_RED));
-//    }
+    for (y = 0; y <= BatteryHeight; y++)
+    {
+      drawLine(BatteryLocationX, BatteryLocationY + BatteryHeight - y,
+        BatteryLocationX + BatteryWidth, BatteryLocationY + BatteryHeight - y,
+        ((y > charging_level) ? COLOR_BLACK : COLOR_RED));
+    }
     
     /* Move charging indicator every 200ms */
     charging_timer += Period;
@@ -146,12 +186,12 @@ void DisplayBattery(uint32_t Period)
   }  
   else
   {
-//    for (y = 0; y <= BatteryHeight; y++)
-//    {
-//      drawLine(BatteryLocationX, BatteryLocationY + BatteryHeight - y,
-//        BatteryLocationX + BatteryWidth, BatteryLocationY + BatteryHeight - y,
-//        ((y > battery_level) ? COLOR_BLACK : COLOR_GREEN));
-//    }
+    for (y = 0; y <= BatteryHeight; y++)
+    {
+      drawLine(BatteryLocationX, BatteryLocationY + BatteryHeight - y,
+        BatteryLocationX + BatteryWidth, BatteryLocationY + BatteryHeight - y,
+        ((y > battery_level) ? COLOR_BLACK : COLOR_GREEN));
+    }
   }
 }
 
@@ -282,60 +322,15 @@ static char Files[64][12];
   */
 void Logic_Task()
 {
-  int8_t Thrust;
-  int8_t Steer;
-  uint8_t Fire;
-  int i;
-  static int dirScroll = 0;
-  char text[32];
+  static int selectedMenuIndex = 0;
+  static uint8_t isInGeneralMenuMode = 1;
   
   uint32_t period = TaskHandler_tableOfTasks[TASK_LOGIC].period;
   Uptime += period;
   
   DisplayClock(period);
-//  DisplayBattery(period);
-//  DisplayAccelerometer();
-//  DisplayMagnetomoter();
-  /*DisplayGPS();*/
-  
-  
-  if (Button_IsPressed(BTN_LEFT))
-  {    
-	  //Speaker_Beep(1000, 30, 50);
-    /*
-    for (i = 0; i < 10; i++)
-    {
-      Files[i] = malloc(20);
-    }
-    */
-//    drawRectangleFilled(70, 20, 158, 128, COLOR_GRAY_30);
-//
-//    i = Storage_GetDirectoryFiles("", Files, 64);
-//
-//    snprintf(text, 20, "Files: %d", i);
-//    drawString(70, 20, COLOR_WHITE, &verdana9ptFontInfo, text);
-//
-//    for (i = 0; i < 6; i++)
-//    {
-//      drawString(70, 35 + i * 12, COLOR_WHITE, &verdana9ptFontInfo, Files[i]);
-//    }
-  }
-  
-  if (Button_IsPressed(BTN_STOP))
-  {
-//    dirScroll++;
-//    drawRectangleFilled(70, 35, 158, 128, COLOR_GRAY_30);
-//    for (i = 0; i < 6; i++)
-//    {
-//      drawString(70, 35 + i * 12, COLOR_WHITE, &verdana9ptFontInfo, Files[dirScroll + i]);
-//    }
-  }
-  
-  if (Button_IsPressed(BTN_RIGHT))
-  {
-    //Storage_OpenReadFile("DCIM", "TEST~1.DOC", 
-  }
-  
+  DisplayBattery(period);
+
   if (Button_IsDown(BTN_LEFT) && Button_IsDown(BTN_RIGHT))
   {
     ShutDownDelay += period;
@@ -349,35 +344,53 @@ void Logic_Task()
     ShutDownDelay = 0;
   }
   
-  // Ship control
-  if (Button_IsDown(BTN_START))
+  if (isInGeneralMenuMode)
   {
-    Thrust = 100;
+	  if (Button_IsPressed(BTN_STOP)) // down in menu
+	  {
+		  ++selectedMenuIndex;
+		  if (selectedMenuIndex >= numOfMenuItems)
+			  selectedMenuIndex = numOfMenuItems - 1;
+		  markMenuItemSelected(selectedMenuIndex);
+	  }
+
+	  if (Button_IsPressed(BTN_START)) // up in menu
+	  {
+		  --selectedMenuIndex;
+		  if (selectedMenuIndex < numOfMenuItems)
+			  selectedMenuIndex = 0;
+		  markMenuItemSelected(selectedMenuIndex);
+	  }
+
+	  if (Button_IsPressed(BTN_RIGHT))  // activate mode
+	  {
+		  isInGeneralMenuMode = 0;
+		  markMenuItemActivated(selectedMenuIndex);
+	  }
   }
   else
   {
-    Thrust = 0;
-  }
-  
-  if (Button_IsDown(BTN_STOP))
-  {
-    //Speaker_Beep(2000, 100, 50);
-    Fire = 1;
-  }
-  else    
-  {      
-    Fire = 0;
-  }
-  
-  Steer = 0;
-  if (Button_IsDown(BTN_LEFT))
-  {
-    Steer -= 90;
-  }  
-  if (Button_IsDown(BTN_RIGHT))
-  {
-    Steer += 90;
-  }  
-}
+	  if (Button_IsPressed(BTN_LEFT))  // exit mode
+	  {
+		  isInGeneralMenuMode = 1;
+		  markMenuItemsDeactivated();
+	  }
 
+	  if (selectedMenuIndex == MENU_EMERGENCY)
+	  {
+		  uint8_t activate = 1;
+		  uint8_t deactivate = 0;
+		  if (Button_IsPressed(BTN_START)) // set emergency situation
+		  {
+			  DL_setDataWithForcedAsyncSend(DLParamEmergencySetEvent, &activate);
+			  DL_setDataWithForcedAsyncSend(DLParamEmergencyClearEvent, &deactivate);
+		  }
+		  if (Button_IsPressed(BTN_STOP)) // clear emergency situation
+		  {
+			  DL_setDataWithForcedAsyncSend(DLParamEmergencySetEvent, &deactivate);
+			  DL_setDataWithForcedAsyncSend(DLParamEmergencyClearEvent, &activate);
+		  }
+	  }
+  }
+}
 

@@ -28,11 +28,12 @@ InterfaceTransmitPacket nodeInterfaceCANTransmitPacketList[4] =
 	{ &PacketDescriptorList[PacketQuaternions],     100, 100 }
 };
 
-InterfaceReceivePacket nodeInterfaceUART_RemoteReceivePacketList[3] = 
+InterfaceReceivePacket nodeInterfaceUART_RemoteReceivePacketList[4] = 
 {
 	{ &PacketDescriptorList[PacketMotorSpeeds],  -1 },
 	{ &PacketDescriptorList[PacketRobotControl], -1 },
-	{ &PacketDescriptorList[PacketPidSetup],     -1 }
+	{ &PacketDescriptorList[PacketPidSetup],     -1 },
+	{ &PacketDescriptorList[PacketEmergency],    -1 }
 };
 
 InterfaceTransmitPacket nodeInterfaceUART_RemoteTransmitPacketList[3] = 
@@ -51,7 +52,7 @@ InterfaceReceivePacket nodeInterfaceUART_IMUReceivePacketList[2] =
 NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
 {
 	/* CAN         */ { nodeInterfaceCANReceivePacketList,         4, nodeInterfaceCANTransmitPacketList,         4 },
-	/* UART_Remote */ { nodeInterfaceUART_RemoteReceivePacketList, 3, nodeInterfaceUART_RemoteTransmitPacketList, 3 },
+	/* UART_Remote */ { nodeInterfaceUART_RemoteReceivePacketList, 4, nodeInterfaceUART_RemoteTransmitPacketList, 3 },
 	/* UART_IMU    */ { nodeInterfaceUART_IMUReceivePacketList,    2, 0,                                          0 }
 };
 

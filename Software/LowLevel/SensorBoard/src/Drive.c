@@ -56,9 +56,9 @@ static void readEncoders();
 static void stop();
 static void readRequestedSpeeds();
 static void readTurningSpeeds();
+static float limitVal(float val,float max);
+static uint8_t isEmergencySituation();
 static void drive();
-
-
 
 #define maxI 1000
 
@@ -172,7 +172,7 @@ void readTurningSpeeds()
 	priv_gyroZ = (float)gz * 2000.0 / 32767.0;
 }
 
-float LimitVal(float val,float max)
+float limitVal(float val,float max)
 {
 	if (val > max)
 	{
@@ -220,8 +220,6 @@ float filterGyroInput(float in)
 	}
 
 	return sum / 6;
-
-
 }
 
 void controlRangeLimit(float *val,float min,float max)
@@ -236,22 +234,35 @@ void controlRangeLimit(float *val,float min,float max)
 	}
 }
 
+uint8_t isEmergencySituation()
+{
+	static uint8_t isEmergency = 0;
+	uint8_t emergencyClearEvent;
+	uint8_t emergencySetEvent;
+
+	DL_getData(DLParamEmergencyClearEvent,&emergencyClearEvent);
+	DL_getData(DLParamEmergencySetEvent, &emergencySetEvent);
+	if (emergencyClearEvent)
+		isEmergency = 0;
+	if (emergencySetEvent)
+		isEmergency = 1;
+	return isEmergency;
+}
+
 void drive()
 {
 	static float fwd_speed = 0, turn_speed = 0;
 	static int16_t rightSpeedOld = 0, leftSpeedOld = 0;
-	float posX = 0, posW = 0;
-	float errLX, errRX, errW;
+	static float turnSpeedOld = 0;
 	static float iLX = 0,iRX = 0,iW = 0;
 	static float LasterrLX = 0, LasterrRX = 0, LasterrW = 0;
 	float dLX = 0,dRX = 0,dW = 0;
+	float errLX, errRX, errW;
 
-
-	static float turnSpeedOld = 0;
 
 	// Linear acceleration, TODO - do not allow negative
 
-	if (GPIO_inputValue(STOP_BUTTON) == INPUT_OFF) //|| (!packetFailSafeCounter))
+	if (isEmergencySituation() || GPIO_inputValue(STOP_BUTTON) == INPUT_OFF) //|| (!packetFailSafeCounter))
 	{
 		rightSpeedOld = 0,
 		leftSpeedOld = 0;
@@ -406,7 +417,7 @@ void drive()
 	iW += errW * 0.02 * kiW ;
 	dW = (errW-LasterrW)*50;
 	LasterrW = errW;
-	iW = LimitVal(iW,200);
+	iW = limitVal(iW,200);
 
 
 	// check if robot is suppose to move and if not then halt // rotational speed
@@ -441,7 +452,7 @@ void drive()
 	else
 	{
 		iLX += errLX*0.02;
-		iLX = LimitVal(iLX,maxI);
+		iLX = limitVal(iLX,maxI);
 		dLX = (errLX-LasterrLX)*50;
 		LasterrLX = errLX;
 		leftSpeedOld  += (errLX * kpX + iLX * kiX + dLX * kdX);// + turnSpeedOld;
@@ -458,7 +469,7 @@ void drive()
 	else
 	{
 		iRX += errRX*0.02;
-		iRX = LimitVal(iRX,maxI);
+		iRX = limitVal(iRX,maxI);
 		dRX = (errRX-LasterrRX)*50;
 		LasterrRX = errRX;
 		rightSpeedOld += (errRX * kpX + iRX * kiX + dRX * kdX);// - turnSpeedOld;
