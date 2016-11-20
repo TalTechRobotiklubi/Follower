@@ -29,12 +29,15 @@ bool ReadDepthData(KinectLiveFrameSource* source) {
     hr = frame->AccessUnderlyingBuffer(&bufferSize, &buffer);
 
     if (SUCCEEDED(hr)) {
-      source->depthBuffer.clear();
-
       const uint16_t* begin = (const uint16_t*)buffer;
       const uint16_t* end = (const uint16_t*)buffer + bufferSize;
-
+      
+      std::unique_lock<std::mutex> lock(source->frameLock);
+      source->depthBuffer.clear();
       source->depthBuffer.insert(source->depthBuffer.end(), begin, end);
+      source->currentFrame.depthData = source->depthBuffer.data();
+      source->currentFrame.depthLength = int(source->depthBuffer.size());
+      lock.unlock();
 
       gotData = true;
     }
@@ -69,7 +72,14 @@ bool ReadRgbData(KinectLiveFrameSource* source) {
     UINT capacity;
     BYTE* yuy2Buffer;
     frame->AccessRawUnderlyingBuffer(&capacity, &yuy2Buffer);
+
+    std::unique_lock<std::mutex> lock(source->frameLock);
     source->kinectRgbaBuf = fl_yuy2_to_rgba(source->yuy2Converter, yuy2Buffer);
+    source->currentFrame.rgbaWidth = kDepthWidth;
+    source->currentFrame.rgbaHeight = kDeptHeight;
+    source->currentFrame.rgbaData = source->kinectRgbaBuf;
+    source->currentFrame.rgbaLength = int(source->kinectRgbaBufLen);
+    lock.unlock();
   }
 
   InterfaceRelease(frame);
@@ -103,7 +113,6 @@ KinectLiveFrameSource::KinectLiveFrameSource() : frameNumber(0) {
 
     if (SUCCEEDED(hr)) {
       hr = colorSource->OpenReader(&colorReader);
-      printf("opened color reader\n");
       kinectRgbaBufLen = kDepthWidth * kDeptHeight * 4;
     }
 
@@ -124,13 +133,6 @@ KinectLiveFrameSource::~KinectLiveFrameSource() {
 const KinectFrame* KinectLiveFrameSource::GetFrame() {
   if (ReadDepthData(this)) {
     ReadRgbData(this);
-
-    currentFrame.depthData = depthBuffer.data();
-    currentFrame.depthLength = int(depthBuffer.size());
-    currentFrame.rgbaWidth = kDepthWidth;
-    currentFrame.rgbaHeight = kDeptHeight;
-    currentFrame.rgbaData = kinectRgbaBuf;
-    currentFrame.rgbaLength = int(kinectRgbaBufLen);
     frameNumber += 1;
 
     return &currentFrame;
@@ -140,6 +142,7 @@ const KinectFrame* KinectLiveFrameSource::GetFrame() {
 }
 
 void KinectLiveFrameSource::FillFrame(KinectFrame* dst) {
+	std::lock_guard<std::mutex> lock(frameLock);
   CopyKinectFrame(&currentFrame, dst);
 }
 
