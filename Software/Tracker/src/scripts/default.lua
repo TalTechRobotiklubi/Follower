@@ -1,14 +1,15 @@
 local ffi = require("ffi")
-local MAX_TTL = 1.5
+local MAX_TTL = 2.5
+local MAX_JUMP = 0.5
 
 function filter(a, f)
-	local r = {}
-	for i, v in pairs(a) do
-		if f(v) then
-	 		r[i] = v
-		end
-	end
-	return r
+  local r = {}
+  for i, v in pairs(a) do
+    if f(v) then
+      r[i] = v
+    end
+  end
+  return r
 end
 
 function distance(a, b)
@@ -51,36 +52,49 @@ function decide(dt, world, state, tracking)
       local tl = closest.depthTopLeft
       local br = closest.depthBotRight
       local p = closest.metricPosition
+      local hist = ffi.new("float[768]", {})
+      ffi.copy(hist, closest.histogram, ffi.sizeof(hist))
       target = {
-        timeToLive = MAX_TTL,
-        kinect = {x = br.x - tl.x, y = br.y - tl.y},
-        position = {x = p.x, y = p.y, z = p.z}
+        timeToLive = 0.5,
+        kinect = {x = (br.x + tl.x) * 0.5, y = (br.y + tl.y) * 0.5},
+        position = {x = p.x, y = p.y, z = p.z},
+        histogram = hist
       }
     end
   else
-    if world.numDetections > 0 then
-      local closest_index = -1
+    local closest_index = -1
+    if world.numDetections == 1 then
+      local dist = distance(target.position, world.detections[0].metricPosition)
+      local hdist = ffi.C.HistogramDistance(target.histogram, world.detections[0].histogram, HIST_SIZE)
+      if dist < MAX_JUMP and hdist < 0.2 then
+        closest_index = 0
+      end
+    elseif world.numDetections > 1 then
       local closest_dist = nil
-      for i = 0, world.numDetections - 1, 1 do    
+      for i = 0, world.numDetections - 1 do    
         local dist = distance(target.position, world.detections[i].metricPosition)
-        if dist < 0.8 then
+        local hdist = ffi.C.HistogramDistance(target.histogram, world.detections[i].histogram, HIST_SIZE)
+        if dist < MAX_JUMP then
           if closest_index == -1 then
             closest_index = i
-            closest_dist = dist
-          elseif dist < closest_dist then
+            closest_dist = hdist
+          elseif hdist < closest_dist then
             closest_index = i
-            closest_dist = dist
+            closest_dist = hdist
           end
         end
       end
-      if closest_index ~= -1 then
-        local tl = world.detections[closest_index].depthTopLeft
-        local br = world.detections[closest_index].depthBotRight
-        local p = world.detections[closest_index].metricPosition
-        target.kinect = {x = br.x - tl.x, y = br.y - tl.y}
-        target.position = {x = p.x, y = p.y, z = p.z}
-        target.timeToLive = MAX_TTL
-      end
+    end
+
+    if closest_index ~= -1 then
+      local detection = world.detections[closest_index]
+      local tl = detection.depthTopLeft
+      local br = detection.depthBotRight
+      local p = detection.metricPosition
+      target.kinect = {x = (br.x + tl.x) * 0.5, y = (br.y + tl.y) * 0.5}
+      target.position = {x = p.x, y = p.y, z = p.z}
+      target.timeToLive = math.min(MAX_TTL, target.timeToLive + 0.05)
+      ffi.copy(target.histogram, world.detections[closest_index].histogram, ffi.sizeof(target.histogram))
     end
   end
 

@@ -53,6 +53,7 @@ static const char* const initScript = R"(
       float weight;
       vec2 kinect;
       vec3 position;
+			int32_t detectionIndex;
     } Target;
 
     typedef enum {

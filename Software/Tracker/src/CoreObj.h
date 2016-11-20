@@ -24,6 +24,7 @@ struct Target {
   float weight = 0.f;
   vec2 kinect;
   vec3 position;
+	int32_t detectionIndex = -1;
 
   Target() = default;
   Target(float weight, vec2 kinect, vec3 position)
