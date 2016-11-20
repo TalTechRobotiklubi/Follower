@@ -361,6 +361,22 @@
       <Description>
       </Description>
     </Parameter>
+    <Parameter>
+      <Name>EmergencySetEvent</Name>
+      <Type>Bool</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>EmergencyClearEvent</Name>
+      <Type>Bool</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
   </Parameters>
   <Packets>
     <Packet>
@@ -563,6 +579,19 @@
         </PacketParameter>
       </PacketParameters>
     </Packet>
+    <Packet>
+      <ID>207</ID>
+      <Name>Emergency</Name>
+      <NominalPeriod>0</NominalPeriod>
+      <PacketParameters>
+        <PacketParameter>
+          <Parameter>EmergencySetEvent</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>EmergencyClearEvent</Parameter>
+        </PacketParameter>
+      </PacketParameters>
+    </Packet>
   </Packets>
   <Nodes>
     <Node>
@@ -679,6 +708,11 @@
             </ReceivePacket>
             <ReceivePacket>
               <Packet>PidSetup</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </ReceivePacket>
+            <ReceivePacket>
+              <Packet>Emergency</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </ReceivePacket>
@@ -878,6 +912,23 @@
             </TransmitPacket>
             <TransmitPacket>
               <Packet>Quaternions</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </TransmitPacket>
+          </TransmitPackets>
+        </Interface>
+      </Interfaces>
+    </Node>
+    <Node>
+      <ID>0</ID>
+      <Name>RemoteStick</Name>
+      <Interfaces>
+        <Interface>
+          <Name>UART</Name>
+          <ReceivePackets />
+          <TransmitPackets>
+            <TransmitPacket>
+              <Packet>Emergency</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </TransmitPacket>

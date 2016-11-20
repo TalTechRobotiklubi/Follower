@@ -8,12 +8,40 @@ const GPIO_Struct GPIO_table[] = {
 	{BTN_START,			GPIOC,	GPIO_Pin_4,		RCC_AHBPeriph_GPIOC,	EXTI_Line4,		EXTI_PortSourceGPIOC,	EXTI_PinSource4,	EXTI4_IRQn},
 	{BTN_STOP,			GPIOB,	GPIO_Pin_10,	RCC_AHBPeriph_GPIOB,	EXTI_Line10, 	EXTI_PortSourceGPIOB,	EXTI_PinSource10,	EXTI15_10_IRQn},
 /* LED */
-	{LED,				GPIOC,  GPIO_Pin_8,		RCC_AHBPeriph_GPIOC,	EXTI_Line8,		EXTI_PortSourceGPIOC,   EXTI_PinSource8, 	EXTI9_5_IRQn}
+	{LED,				GPIOC,  GPIO_Pin_8,		RCC_AHBPeriph_GPIOC,	EXTI_Line8,		EXTI_PortSourceGPIOC,   EXTI_PinSource8, 	EXTI9_5_IRQn},
 /* Power */
 //#define PWR_CTRL          PB11
 //#define CHG_STAT          PC9
 //#define UBAT_PIN          PB1
+/* USART2*/
+	{USART2_TX, 		GPIOA,  GPIO_Pin_2,     RCC_AHBPeriph_GPIOA,    EXTI_Line2,     EXTI_PortSourceGPIOA,   EXTI_PinSource2,	USART2_IRQn},
+	{USART2_RX, 		GPIOA,  GPIO_Pin_3,     RCC_AHBPeriph_GPIOA,    EXTI_Line3,     EXTI_PortSourceGPIOA,   EXTI_PinSource3,	USART2_IRQn}
 };
+
+//#define XBEE_COM                        USART2
+//#define XBEE_COM_APBPERIPHCLOCK         RCC_APB1PeriphClockCmd
+//#define XBEE_COM_CLK                    RCC_APB1Periph_USART2
+//#define XBEE_COM_IRQn                   USART2_IRQn
+//#define XBEE_COM_IRQHandler             USART2_IRQHandler
+//
+//#define XBEE_COM_TX_PIN                 GPIO_Pin_2
+//#define XBEE_COM_TX_GPIO_PORT           GPIOA
+//#define XBEE_COM_TX_GPIO_CLK            RCC_AHBPeriph_GPIOA
+//#define XBEE_COM_TX_SOURCE              GPIO_PinSource2
+//#define XBEE_COM_TX_AF                  GPIO_AF_USART2
+//
+//#define XBEE_COM_RX_PIN                 GPIO_Pin_3
+//#define XBEE_COM_RX_GPIO_PORT           GPIOA
+//#define XBEE_COM_RX_GPIO_CLK            RCC_AHBPeriph_GPIOA
+//#define XBEE_COM_RX_SOURCE              GPIO_PinSource3
+//#define XBEE_COM_RX_AF                  GPIO_AF_USART2
+//
+//#define XBEE_RST_PIN                    GPIO_Pin_13
+//#define XBEE_RST_GPIO_PORT              GPIOC
+//#define XBEE_RST_GPIO_CLK               RCC_AHBPeriph_GPIOC
+//
+//#define XBEE_BAUDRATE                   9600
+//#define XBEE_API_ESCAPED
 
 /*private function declarations*/
 void initOutput(GPIO_IdDef io);

@@ -6,6 +6,8 @@
 #include "power.h"
 #include "logic.h"
 #include "st7735.h"
+#include "USART.h"
+#include "DataLayer.h"
 
 /*Table of initialization tasks. All functions in tables are called once after initializing system clock.
  * With adding new init check that id is corresponding to enum value.*/
@@ -14,8 +16,10 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
 		{INIT_GPIO,				GPIO_init   },
 		{INIT_BUTTON,			Button_Init },
 		{INIT_POWER,			Power_Init  },
+		{INIT_USART,			USART_init  },
 		{INIT_LCD,				ST7735_Init },
-		{INIT_LOGIC,			Logic_Init  }
+		{INIT_LOGIC,			Logic_Init  },
+		{INIT_DATAHANDLER,		DL_init		}
 };
 #define NUMBER_OF_INITS  (sizeof(TaskHandler_tableOfInits) / sizeof(INIT_STRUCT))
 
@@ -23,6 +27,8 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
  *Check that id is corresponding to enum value.*/
 const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		/*id              	  period (ms)   offset (ms)   taskPointer */
+		{TASK_DATAHANDLER,		  5,			0,			DL_task							},
+		{TASK_USART,			  5,			4,			USART_task						},
 		{TASK_BUTTON,			 10,			0,			Button_Task						},
 		{TASK_POWER,			 10,			1,			Power_Task						},
 		{TASK_LED,				400,			0,			GPIO_TASK_blinkLED	    		},
