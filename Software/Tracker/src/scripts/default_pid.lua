@@ -109,7 +109,7 @@ function decide(dt, world, state, tracking)
       local p = detection.metricPosition
       target.kinect = {x = (br.x + tl.x) * 0.5, y = (br.y + tl.y) * 0.5}
       target.position = {x = p.x, y = p.y, z = p.z}
-      target.timeToLive = math.min(MAX_TTL, target.timeToLive + 0.05)
+      target.timeToLive = math.min(MAX_TTL, target.timeToLive + 0.1)
       ffi.copy(target.histogram, world.detections[closest_index].histogram, ffi.sizeof(target.histogram))
     end
   end

@@ -160,10 +160,6 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
       core_handle_command(c, command);
       break;
     }
-    case proto::Payload_Classifier: {
-      core_send_status_message(c, "unsupported operation");
-      break;
-    }
     default:
       break;
   }

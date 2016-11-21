@@ -84,7 +84,7 @@ struct Client {
   std::vector<float> rotationSpeedHistory = std::vector<float>(512, 0.f);
   std::vector<float> frameTimeHistory = std::vector<float>(256, 0.f);
   std::vector<float> frameSizeHistory = std::vector<float>(256, 0.f);
-	std::vector<float> cameraXDegreesHistory = std::vector<float>(256, 0.f);
+  std::vector<float> cameraXDegreesHistory = std::vector<float>(256, 0.f);
   std::vector<Texture> candidateImages;
 
   Client();
@@ -168,30 +168,6 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
   } else if (command == "stopdebug") {
     SendCommand(c, proto::CommandType_StopDebug, nullptr);
     c->debugWindow = false;
-  } else if (command == "setclassifier") {
-    if (needArg(1)) return;
-
-    const std::string& inputFile = tokens[1];
-
-    IoVec content = LoadFile(inputFile.c_str());
-
-    if (!content.data) {
-      console->AddLog("no such file");
-      return;
-    }
-
-    console->AddLog("sending %s [%zu bytes]", inputFile.c_str(), content.len);
-
-    flatbuffers::FlatBufferBuilder builder;
-    auto classifier = proto::CreateClassifier(
-        builder, builder.CreateString("core_current_classifier.nn"),
-        builder.CreateVector((const int8_t*)content.data, content.len));
-    auto message = proto::CreateMessage(builder, proto::Payload_Classifier,
-                                        classifier.Union());
-    builder.Finish(message);
-    ClientSendData(c, builder.GetBufferPointer(), builder.GetSize());
-
-    free(content.data);
   }
 }
 
@@ -257,7 +233,7 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   ShiftPush(c->frameTimeHistory, frame->coreDtMs());
   ShiftPush(c->rotationSpeedHistory, frame->rotationSpeed());
   ShiftPush(c->speedHistory, frame->speed());
-	ShiftPush(c->cameraXDegreesHistory, cam->x());
+  ShiftPush(c->cameraXDegreesHistory, cam->x());
 
   if (frame->depth()) {
     RgbaImage img;
@@ -448,9 +424,9 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  client.console = new Console(
-      {"startscript", "stop", "speed", "rot", "stopvideo", "startvideo",
-       "record", "stoprecord", "setclassifier", "startdebug", "stopdebug"});
+  client.console = new Console({"startscript", "stop", "speed", "rot",
+                                "stopvideo", "startvideo", "record",
+                                "stoprecord", "startdebug", "stopdebug"});
 
   while (!glfwWindowShouldClose(window)) {
     ClientUpdate(&client);
@@ -504,9 +480,9 @@ int main(int argc, char** argv) {
 
     const ImVec2 plotSize(300.f, 100.f);
     ImGui::BeginGroup();
-		ImGui::PlotLines("##camx", client.cameraXDegreesHistory.data(),
-			client.cameraXDegreesHistory.size(), 0, "camera x deg",
-			-45.f, 45.f, plotSize);
+    ImGui::PlotLines("##camx", client.cameraXDegreesHistory.data(),
+                     client.cameraXDegreesHistory.size(), 0, "camera x deg",
+                     -45.f, 45.f, plotSize);
     ImGui::PlotLines("##rotationSpeed", client.rotationSpeedHistory.data(),
                      client.rotationSpeedHistory.size(), 0, "rotation speed",
                      -360.f, 360.f, plotSize);
