@@ -5,6 +5,11 @@ require 'pack';
 
 torch.setdefaulttensortype('torch.FloatTensor')
 
+cmd = torch.CmdLine()
+cmd:text("Options")
+cmd:option("--file", "", "t7 file")
+params = cmd:parse(arg)
+
 function load_data(file)
   local s = torch.load(file)
   s.label:apply(function(x) return x + 1 end)
@@ -25,7 +30,10 @@ function load_data(file)
   return s
 end
 
-traindata = load_data("train.t7")
+traindata = load_data(params.file)
+if traindata == nil then
+  print("Unable to load training set")
+end
 
 mean = traindata.data:mean()
 traindata.data:add(-mean)
