@@ -53,10 +53,12 @@ typedef enum
 	DLParamQz,                      // 34
 	DLParamEmergencySetEvent,       // 35
 	DLParamEmergencyClearEvent,     // 36
-	DLParamGyroX,                   // 37
-	DLParamGyroY,                   // 38
-	DLParamGyroZ,                   // 39
-	// Count of items is 40
+	DLParamEmergencyReserve1,       // 37
+	DLParamEmergencyReserve2,       // 38
+	DLParamGyroX,                   // 39
+	DLParamGyroY,                   // 40
+	DLParamGyroZ,                   // 41
+	// Count of items is 42
 	DLNumberOfParams
 }
 DLParam;

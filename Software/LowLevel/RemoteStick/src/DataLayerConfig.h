@@ -16,9 +16,13 @@
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	DLParamEmergencySetEvent,   // 0
-	DLParamEmergencyClearEvent, // 1
-	// Count of items is 2
+	DLParamEmergencySetEvent,       // 0
+	DLParamEmergencyClearEvent,     // 1
+	DLParamEmergencyReserve1,       // 2
+	DLParamEmergencyReserve2,       // 3
+	DLParamRequestTranslationSpeed, // 4
+	DLParamRequestRotationSpeed,    // 5
+	// Count of items is 6
 	DLNumberOfParams
 }
 DLParam;

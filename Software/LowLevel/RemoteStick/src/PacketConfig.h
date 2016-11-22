@@ -17,8 +17,9 @@
 // ----------------------------------------------------------------------------
 typedef enum
 {
-	PacketEmergency, // 0
-	// Count of items is 1
+	PacketEmergency,    // 0
+	PacketRobotControl, // 1
+	// Count of items is 2
 	NumberOfPackets
 }
 Packet;

@@ -103,10 +103,12 @@ const PacketParameter packetQuaternionsParameterList[4] =
 // ----------------------------------------------------------------------------
 // Packet "Emergency" parameters table
 // ----------------------------------------------------------------------------
-const PacketParameter packetEmergencyParameterList[2] = 
+const PacketParameter packetEmergencyParameterList[4] = 
 {
-	{ DLParamEmergencySetEvent,   0, 1 },
-	{ DLParamEmergencyClearEvent, 1, 1 }
+	{ DLParamEmergencySetEvent,    0,  1 },
+	{ DLParamEmergencyClearEvent,  1,  1 },
+	{ DLParamEmergencyReserve1,    2,  8 },
+	{ DLParamEmergencyReserve2,   10, 16 }
 };
 
 // ----------------------------------------------------------------------------
@@ -132,7 +134,7 @@ PacketDescriptor PacketDescriptorList[NumberOfPackets] =
 	/* DistanceSensors */ { 0xF0, packetDistanceSensorsParameterList, 8, 8 },
 	/* RobotFeedback   */ { 0xD4, packetRobotFeedbackParameterList,   4, 8 },
 	/* Quaternions     */ { 0xF2, packetQuaternionsParameterList,     4, 8 },
-	/* Emergency       */ { 0xCF, packetEmergencyParameterList,       2, 1 },
+	/* Emergency       */ { 0xCF, packetEmergencyParameterList,       4, 4 },
 	/* Gyro            */ { 0xF1, packetGyroParameterList,            3, 6 }
 };
 

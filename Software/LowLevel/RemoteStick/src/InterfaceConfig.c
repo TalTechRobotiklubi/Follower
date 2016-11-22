@@ -12,13 +12,14 @@
 // ----------------------------------------------------------------------------
 // Interface tables
 // ----------------------------------------------------------------------------
-InterfaceTransmitPacket nodeInterfaceUARTTransmitPacketList[1] = 
+InterfaceTransmitPacket nodeInterfaceUARTTransmitPacketList[2] = 
 {
-	{ &PacketDescriptorList[PacketEmergency], -1, -1 }
+	{ &PacketDescriptorList[PacketEmergency],    -1, -1 },
+	{ &PacketDescriptorList[PacketRobotControl], -1, -1 }
 };
 
 NodeInterfaceDescriptor InterfaceList[NumberOfInterfaces] = 
 {
-	/* UART */ { 0, 0, nodeInterfaceUARTTransmitPacketList, 1 }
+	/* UART */ { 0, 0, nodeInterfaceUARTTransmitPacketList, 2 }
 };
 

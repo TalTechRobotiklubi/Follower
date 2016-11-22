@@ -377,6 +377,22 @@
       <Description>
       </Description>
     </Parameter>
+    <Parameter>
+      <Name>EmergencyReserve1</Name>
+      <Type>U8</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
+    <Parameter>
+      <Name>EmergencyReserve2</Name>
+      <Type>U16</Type>
+      <Unit>
+      </Unit>
+      <Description>
+      </Description>
+    </Parameter>
   </Parameters>
   <Packets>
     <Packet>
@@ -589,6 +605,12 @@
         </PacketParameter>
         <PacketParameter>
           <Parameter>EmergencyClearEvent</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>EmergencyReserve1</Parameter>
+        </PacketParameter>
+        <PacketParameter>
+          <Parameter>EmergencyReserve2</Parameter>
         </PacketParameter>
       </PacketParameters>
     </Packet>
@@ -929,6 +951,11 @@
           <TransmitPackets>
             <TransmitPacket>
               <Packet>Emergency</Packet>
+              <TransmissionMethod>Periodic</TransmissionMethod>
+              <Period>-1</Period>
+            </TransmitPacket>
+            <TransmitPacket>
+              <Packet>RobotControl</Packet>
               <TransmissionMethod>Periodic</TransmissionMethod>
               <Period>-1</Period>
             </TransmitPacket>

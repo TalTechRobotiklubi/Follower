@@ -13,7 +13,8 @@
 // Values
 // ----------------------------------------------------------------------------
 Bool  pDLValueBool[7];
-U8    pDLValueU8[13];
+U8    pDLValueU8[14];
+U16   pDLValueU16[1];
 S16   pDLValueS16[19];
 Float pDLValueFloat[1];
 
@@ -59,6 +60,8 @@ const DLParamDescriptor psDLParamDescriptorList[DLNumberOfParams] =
 	/* Qz                      */ { TypeS16,   &pDLValueS16[15]  },
 	/* EmergencySetEvent       */ { TypeBool,  &pDLValueBool[5]  },
 	/* EmergencyClearEvent     */ { TypeBool,  &pDLValueBool[6]  },
+	/* EmergencyReserve1       */ { TypeU8,    &pDLValueU8[13]   },
+	/* EmergencyReserve2       */ { TypeU16,   &pDLValueU16[0]   },
 	/* GyroX                   */ { TypeS16,   &pDLValueS16[16]  },
 	/* GyroY                   */ { TypeS16,   &pDLValueS16[17]  },
 	/* GyroZ                   */ { TypeS16,   &pDLValueS16[18]  }
