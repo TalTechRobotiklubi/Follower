@@ -329,7 +329,7 @@ int main(int argc, char** argv) {
 
   double current_time = ms_now();
   double prev_time = current_time;
-  const double broadcastInterval = 0.03;
+  const double broadcastInterval = 0.04;
   double timeUntilBroadCast = broadcastInterval;
   for (;;) {
     prev_time = current_time;
