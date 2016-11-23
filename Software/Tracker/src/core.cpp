@@ -228,8 +228,6 @@ void core_serial_send(core* c) {
 
 void core_serialize(core* c) {
   c->builder.Clear();
-  auto depth =
-      c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len);
   std::vector<flatbuffers::Offset<proto::Detection>> detections;
   std::vector<proto::Target> targets;
   detections.reserve(c->world->numDetections);
@@ -279,21 +277,17 @@ void core_serialize(core* c) {
       c->builder, c->tracking.activeTarget, targetOffsets);
 
   proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
-
-  proto::FrameBuilder frame_builder(c->builder);
-
-  frame_builder.add_timestamp(c->timestamp);
-  frame_builder.add_coreDtMs(c->dtMilli);
-  frame_builder.add_camera(&camera);
-  frame_builder.add_rotationSpeed(c->state.rotationSpeed);
-  frame_builder.add_speed(c->state.speed);
-  if (c->sendVideo) {
-    frame_builder.add_depth(depth);
-  }
-  frame_builder.add_detections(detectionOffsets);
-  frame_builder.add_tracking(tracking);
-
-  auto frame = frame_builder.Finish();
+  auto depth = c->sendVideo ? c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len) : 0;
+  auto frame = proto::CreateFrame(c->builder,
+    c->timestamp,
+    c->dtMilli,
+    &camera,
+    c->state.rotationSpeed,
+    c->state.speed,
+    depth,
+    detectionOffsets,
+    tracking
+  );
   auto message =
       proto::CreateMessage(c->builder, proto::Payload_Frame, frame.Union());
   c->builder.Finish(message);
