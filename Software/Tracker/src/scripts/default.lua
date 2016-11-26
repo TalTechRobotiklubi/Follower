@@ -1,7 +1,15 @@
 local ffi = require("ffi")
-local MAX_TTL = 2.0
+local MAX_TTL = 1.0
 local MAX_JUMP = 0.7
-local TURN_DECAY = 0.9
+local TURN_DECAY = 0.5
+local MAX_TIME_WO_TARGET = 3.0
+
+
+-- 2 - right
+-- 1 - right-45
+-- 4 - frontleft
+-- 3 - left
+local sensors = {1, 2, 3, 4}
 
 function filter(a, f)
   local r = {}
@@ -39,18 +47,26 @@ function find_closest_detection(detections, n, point)
 end
 
 function fwd_speed(target_dist)
-  if target_dist > 1.3 then
-    return 200.0 + 100 * math.max(target_dist, 1.0)
-  else
-    return 1.0
+  if target_dist > 1.0 then
+    return 100.0 + 100 * math.max(target_dist, 1.0)
   end
+  
+  return 1.0
 end
 
 function rot_speed(angle)
-  return angle * 1.5
+  local rspeed = 35.0
+  if angle > 10.0 then
+    return rspeed
+  elseif angle < -10.0 then
+    return -rspeed
+  end
+
+  return 0.0
 end
 
 local target = nil
+local time_no_target = MAX_TIME_WO_TARGET
 function decide(dt, world, state, tracking)
   if target ~= nil then
     target.timeToLive = target.timeToLive - dt
@@ -112,6 +128,7 @@ function decide(dt, world, state, tracking)
   end
 
   if target ~= nil then
+    time_no_target = MAX_TIME_WO_TARGET
     tracking.numTargets = 1
     tracking.activeTarget = 0
     local t = tracking.targets[tracking.activeTarget]
@@ -120,28 +137,26 @@ function decide(dt, world, state, tracking)
     t.weight = target.timeToLive / MAX_TTL
 
     local angle = math.deg(math.atan(-target.position.x / target.position.z))
-
-    if angle > 10.0 then
-      state.rotationSpeed = rot_speed(angle)
-      --state.speed = 200.0
-    elseif angle < -10.0 then
-      state.rotationSpeed = rot_speed(angle)
-      --state.speed = 200.0
-    else 
-      state.rotationSpeed = 0.0
-      --state.speed = fwd_speed(target.position.z)
-    end
+    state.rotationSpeed = rot_speed(angle)
     state.speed = fwd_speed(target.position.z)
   else
-    if state.rotationSpeed < -10.0 or state.rotationSpeed > 10.0 then
-      state.rotationSpeed = state.rotationSpeed * 0.9
-    else
-      state.rotationSpeed = 0.0
-    end
-
+    state.rotationSpeed = 0.0
     tracking.numTargets = 0
     tracking.activeTarget = -1
     state.speed = 1.0
+
+    time_no_target = time_no_target - dt
+  end
+
+  for i = 1, #sensors do
+    if world.distance_sensors[sensors[i]] < 20 then
+      state.speed = 1.0
+    end
+  end
+
+  if time_no_target < 0.0 then
+    state.rotationSpeed = 50.0
+    state.speed = 0.0
   end
 
   state.camera.y = 20.0
