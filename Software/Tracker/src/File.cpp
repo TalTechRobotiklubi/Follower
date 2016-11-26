@@ -22,7 +22,7 @@ IoVec LoadFile(const char* name) {
 
 bool SaveFile(const char* name, const uint8_t* data, size_t len) {
   FILE* f = fopen(name, "wb");
-  
+
   if (!f) return false;
 
   size_t written = fwrite(data, 1, len, f);

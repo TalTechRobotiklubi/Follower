@@ -5,16 +5,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Constants.h"
 #include "CoreObj.h"
 #include "Decode.h"
 #include "File.h"
 #include "Style.h"
 #include "Texture.h"
-#include "Constants.h"
 #include "fl_math.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "parg/parg.h"
+#include "png/lodepng.h"
 #include "proto/message_generated.h"
 #include "ui/Console.h"
 
@@ -69,20 +70,24 @@ void ShiftPush(std::vector<float>& container, float v) {
 struct Client {
   ControlState state;
   TrackingState tracking;
-  World world;
+  World* world = nullptr;
   Decoder* decoder = nullptr;
   ENetHost* udpClient = nullptr;
   ENetPeer* peer = nullptr;
   Texture decodedDepth;
-  std::vector<Detection> detections;
   double coreTimestamp = 0.0;
   bool connected = false;
+  bool debugWindow = false;
   const ClientOptions* options;
   Console* console = nullptr;
   std::vector<float> speedHistory = std::vector<float>(512, 0.f);
   std::vector<float> rotationSpeedHistory = std::vector<float>(512, 0.f);
   std::vector<float> frameTimeHistory = std::vector<float>(256, 0.f);
+  std::vector<float> frameSizeHistory = std::vector<float>(256, 0.f);
+  std::vector<float> cameraXDegreesHistory = std::vector<float>(256, 0.f);
+  std::vector<Texture> candidateImages;
 
+  Client();
   ~Client();
 };
 
@@ -157,32 +162,16 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
     SendCommand(c, proto::CommandType_RecordDepth, nullptr);
   } else if (command == "stoprecord") {
     SendCommand(c, proto::CommandType_StopRecord, nullptr);
-  } else if (command == "setclassifier") {
-    if (needArg(1)) return;
-
-    const std::string& inputFile = tokens[1];
-
-    IoVec content = LoadFile(inputFile.c_str());
-
-    if (!content.data) {
-      console->AddLog("no such file");
-      return;
-    }
-
-    console->AddLog("sending %s [%zu bytes]", inputFile.c_str(), content.len);
-
-    flatbuffers::FlatBufferBuilder builder;
-    auto classifier = proto::CreateClassifier(
-        builder, builder.CreateString("core_current_classifier.nn"),
-        builder.CreateVector((const int8_t*)content.data, content.len));
-    auto message = proto::CreateMessage(builder, proto::Payload_Classifier,
-                                        classifier.Union());
-    builder.Finish(message);
-    ClientSendData(c, builder.GetBufferPointer(), builder.GetSize());
-
-    free(content.data);
+  } else if (command == "startdebug") {
+    SendCommand(c, proto::CommandType_StartDebug, nullptr);
+    c->debugWindow = true;
+  } else if (command == "stopdebug") {
+    SendCommand(c, proto::CommandType_StopDebug, nullptr);
+    c->debugWindow = false;
   }
 }
+
+Client::Client() : world((World*)calloc(1, sizeof(World))) {}
 
 Client::~Client() {
   enet_host_destroy(udpClient);
@@ -244,27 +233,49 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   ShiftPush(c->frameTimeHistory, frame->coreDtMs());
   ShiftPush(c->rotationSpeedHistory, frame->rotationSpeed());
   ShiftPush(c->speedHistory, frame->speed());
+  ShiftPush(c->cameraXDegreesHistory, cam->x());
 
   if (frame->depth()) {
-    rgba_image img;
+    RgbaImage img;
     if (DecodeFrame(c->decoder, frame->depth()->Data(), frame->depth()->size(),
                     kDepthWidth, kDeptHeight, &img)) {
       TextureUpdate(&c->decodedDepth, img.data, img.width, img.height);
     }
   }
 
-  c->detections.clear();
+  World* world = c->world;
+  world->numDetections = int32_t(frame->detections()->size());
+
   auto detections = frame->detections();
   for (uint32_t i = 0; i < detections->size(); i++) {
     const proto::Detection* d = detections->Get(i);
-    Detection local;
-    const proto::Vec2 position = d->position();
-    local.kinectPosition.x = position.x();
-    local.kinectPosition.y = position.y();
-    const proto::Vec3 metric = d->metricPosition();
-    local.metricPosition = vec3(metric.x(), metric.y(), metric.z());
-    local.weight = d->weight();
-    c->detections.push_back(local);
+    Detection* local = &world->detections[i];
+    local->depthTopLeft.x = d->depthTopLeft()->x();
+    local->depthTopLeft.y = d->depthTopLeft()->y();
+    local->depthBotRight.x = d->depthBotRight()->x();
+    local->depthBotRight.y = d->depthBotRight()->y();
+    const proto::Vec3* metric = d->metricPosition();
+    local->metricPosition = vec3(metric->x(), metric->y(), metric->z());
+    local->weight = d->weight();
+
+    if (d->histogram()) {
+      std::copy(d->histogram()->begin(), d->histogram()->end(),
+                &local->histogram[0]);
+    }
+
+    if (d->png() && i < kMaxCandidates) {
+      unsigned char* raw = nullptr;
+      unsigned width = 0, height = 0;
+      unsigned error = lodepng_decode32(&raw, &width, &height, d->png()->data(),
+                                        d->png()->size());
+      if (!error) {
+        TextureUpdate(&c->candidateImages[i], raw, width, height);
+        free(raw);
+      } else {
+        c->console->AddLog("Failed to decode PNG: %s",
+                           lodepng_error_text(error));
+      }
+    }
   }
 
   auto tracking = frame->tracking();
@@ -314,6 +325,8 @@ void ClientUpdate(Client* c) {
         break;
       case ENET_EVENT_TYPE_RECEIVE: {
         ClientHandleMessage(c, event.packet->data, event.packet->dataLength);
+        ShiftPush(c->frameSizeHistory,
+                  float(event.packet->dataLength) / 1000.f);
         enet_packet_destroy(event.packet);
         break;
       }
@@ -324,9 +337,8 @@ void ClientUpdate(Client* c) {
 }
 
 void RenderOverview(Client* client) {
-  const float s = 1.25f;
-  const float w = float(kDepthWidth) * s;
-  const float h = float(kDeptHeight) * s;
+  const float w = float(kDepthWidth);
+  const float h = float(kDeptHeight);
   ImDrawList* drawList = ImGui::GetWindowDrawList();
   ImVec2 c = ImGui::GetCursorScreenPos();
   ImVec2 end = ImVec2(c.x + w, c.y + h);
@@ -346,25 +358,27 @@ void RenderOverview(Client* client) {
                     ImColor(0xC6, 0xC7, 0xC5), 10.f);
 
   const float radius = 12.f;
-  for (const Detection& detection : client->detections) {
+  for (int i = 0; i < client->world->numDetections; i++) {
+    const Detection* detection = &client->world->detections[i];
     const float d =
-        fl_map_range(detection.metricPosition.z, 0.f, 4.5f, 0.f, height);
-    const float tx = s * detection.kinectPosition.x / w;
-    drawList->AddCircle(ImVec2(c.x + w * tx, robot.y - d), radius,
+        fl_map_range(detection->metricPosition.z, 0.f, 4.5f, 0.f, height);
+    const float centerX =
+        float(detection->depthBotRight.x + detection->depthTopLeft.x) * 0.5f;
+    drawList->AddCircle(ImVec2(c.x + centerX, robot.y - d), radius,
                         ImColor(0x66, 0xA2, 0xC6), 32);
   }
 
   const TrackingState* tracking = &client->tracking;
   const auto TargetToRenderCoords = [&](const Target& t) {
     const float d = fl_map_range(t.position.z, 0.f, 4.5f, 0.f, height);
-    const float tx = s * t.kinect.x / w;
+    const float tx = t.kinect.x / w;
     return ImVec2(c.x + w * tx, robot.y - d);
   };
 
   for (int32_t i = 0; i < tracking->numTargets; i++) {
     const Target& t = tracking->targets[i];
     ImVec2 renderCoord = TargetToRenderCoords(t);
-    drawList->AddCircleFilled(renderCoord, t.weight * radius,
+    drawList->AddCircleFilled(renderCoord, t.weight * radius * 0.9f,
                               ImColor(0xFF, 0xA2, 0xC6), 32);
   }
 
@@ -403,11 +417,17 @@ int main(int argc, char** argv) {
 
   ClientOptions options = ParseOptions(argc, argv);
   Client client;
+
+  client.candidateImages.resize(kMaxCandidates);
+
   if (!ClientStart(&client, &options)) {
     return 1;
   }
 
-  client.console = new Console();
+  client.console = new Console({"startscript", "stop", "speed", "rot",
+                                "stopvideo", "startvideo", "record",
+                                "stoprecord", "startdebug", "stopdebug"});
+
   while (!glfwWindowShouldClose(window)) {
     ClientUpdate(&client);
     glfwPollEvents();
@@ -422,7 +442,8 @@ int main(int argc, char** argv) {
 
     ImGuiWindowFlags flags =
         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar;
+        ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoBringToFrontOnFocus;
 
     ImGui::Begin("follower", &showWindow,
                  ImVec2(float(displayWidth), float(displayHeight)), -1.f,
@@ -440,10 +461,16 @@ int main(int argc, char** argv) {
                  ImVec2(float(kDepthWidth), float(kDeptHeight)), ImVec2(1, 0),
                  ImVec2(0, 1));
 
-    for (Detection& d : client.detections) {
-      draw_list->AddCircleFilled(
-          ImVec2(cursor.x + d.kinectPosition.x, cursor.y + d.kinectPosition.y),
-          20.f, ImColor(255, 0, 0));
+    for (int i = 0; i < client.world->numDetections; i++) {
+      const Detection* d = &client.world->detections[i];
+      ImVec2 a =
+          ImVec2(cursor.x + d->depthTopLeft.x, cursor.y + d->depthTopLeft.y);
+      ImVec2 b =
+          ImVec2(cursor.x + d->depthBotRight.x, cursor.y + d->depthBotRight.y);
+      draw_list->AddRect(a, b, ImColor(255, 0, 0), 0.f, 0x0F, 2.f);
+      draw_list->AddRectFilled(ImVec2(a.x + 1.f, a.y + 1.f),
+                               ImVec2(b.x - 1.f, b.y - 1.f),
+                               ImColor(255, 0, 255, 20));
     }
     ImGui::SameLine();
 
@@ -451,8 +478,11 @@ int main(int argc, char** argv) {
 
     ImGui::SameLine();
 
-    const ImVec2 plotSize(240.f, 80.f);
+    const ImVec2 plotSize(300.f, 100.f);
     ImGui::BeginGroup();
+    ImGui::PlotLines("##camx", client.cameraXDegreesHistory.data(),
+                     client.cameraXDegreesHistory.size(), 0, "camera x deg",
+                     -45.f, 45.f, plotSize);
     ImGui::PlotLines("##rotationSpeed", client.rotationSpeedHistory.data(),
                      client.rotationSpeedHistory.size(), 0, "rotation speed",
                      -360.f, 360.f, plotSize);
@@ -462,6 +492,9 @@ int main(int argc, char** argv) {
     ImGui::PlotLines("##coreFrameTime", client.frameTimeHistory.data(),
                      client.frameTimeHistory.size(), 0, "core frame time (ms)",
                      0.f, 100.f, plotSize);
+    ImGui::PlotLines("##frameSize", client.frameSizeHistory.data(),
+                     client.frameSizeHistory.size(), 0, "frame size (KB)",
+                     FLT_MAX, FLT_MAX, plotSize);
     ImGui::EndGroup();
 
     ImGui::Begin("##consolewindow", &showConsole, ImVec2(600.f, 400.f));
@@ -474,6 +507,23 @@ int main(int argc, char** argv) {
       }
     }
     ImGui::End();
+
+    if (client.debugWindow) {
+      ImGui::Begin("Debug", &client.debugWindow, ImVec2(500.f, 800.f));
+      for (int i = 0; i < std::min(kMaxCandidates, client.world->numDetections);
+           i++) {
+        Texture& t = client.candidateImages[i];
+        ImGui::Image(t.PtrHandle(), ImVec2(float(kCandidateWidth) * 2.f,
+                                           float(kCandidateHeight) * 2.f));
+        ImGui::SameLine();
+        ImGui::PushID(i);
+        ImGui::PlotHistogram(
+            "##histo", &client.world->detections[i].histogram[0], 3 * 256, 0,
+            nullptr, FLT_MAX, FLT_MAX, ImVec2(768.f, 256.f));
+        ImGui::PopID();
+      }
+      ImGui::End();
+    }
 
     ImGui::End();
 

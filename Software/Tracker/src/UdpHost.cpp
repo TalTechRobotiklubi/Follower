@@ -40,8 +40,10 @@ UdpHost* UdpHostCreate(const char* hostAddress, int port) {
   return udp;
 }
 
-void UdpHostBroadcast(UdpHost* udp, const uint8_t* data, int len, bool reliable) {
-  ENetPacket* packet = enet_packet_create(data, len, reliable ? ENET_PACKET_FLAG_RELIABLE : 0);
+void UdpHostBroadcast(UdpHost* udp, const uint8_t* data, int len,
+                      bool reliable) {
+  ENetPacket* packet =
+      enet_packet_create(data, len, reliable ? ENET_PACKET_FLAG_RELIABLE : 0);
   enet_host_broadcast(udp->host, 0, packet);
   enet_host_flush(udp->host);
 }

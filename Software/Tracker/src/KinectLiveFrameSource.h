@@ -1,9 +1,9 @@
 #pragma once
 
+#include <atomic>
 #include <cstdint>
 #include <mutex>
 #include <vector>
-#include <atomic>
 #include "KinectFrame.h"
 #include "KinectFrameSource.h"
 

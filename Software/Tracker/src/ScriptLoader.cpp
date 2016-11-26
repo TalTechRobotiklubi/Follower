@@ -1,32 +1,46 @@
 #include "ScriptLoader.h"
-#include "CoreObj.h"
-#include <lua.hpp>
 #include <stdio.h>
+#include <lua.hpp>
 #include <string>
+#include "CoreObj.h"
 
 static int RemoteLog(lua_State* L) {
-	ScriptLoader* s = (ScriptLoader*)lua_topointer(L, lua_upvalueindex(1));
-	const char* text = lua_tostring(L, -1);
+  ScriptLoader* s = (ScriptLoader*)lua_topointer(L, lua_upvalueindex(1));
+  const char* text = lua_tostring(L, -1);
 
-	if (text && s->log) {
-		s->log(text, s->user);
-	}
-	
-	lua_pop(L, 1);
-	return 0;
+  if (text && s->log) {
+    s->log(text, s->user);
+  }
+
+  lua_pop(L, 1);
+  return 0;
 }
 
 static const char* const initScript = R"(
+  package.path = package.path .. ";./scripts/?.lua"
 	local ffi = require("ffi")
   ffi.cdef[[
-		
+    float HistogramDistance(const float* a, const float* b, int length);
     typedef struct { float x, y; } vec2;
+    typedef struct { int x, y; } vec2i;
     typedef struct { float x, y, z; } vec3;
 
+		typedef struct {
+			int width;
+			int height;
+			int channels;
+			int stride;
+			int bytes;
+			uint8_t* data;
+		} RgbaImage;
+
     typedef struct {
-      vec2 kinectPosition;
+      vec2i depthTopLeft;
+      vec2i depthBotRight;
       vec3 metricPosition;
       float weight;
+      float histogram[768];
+      RgbaImage color;
     } Detection;
 
     typedef struct {
@@ -40,6 +54,7 @@ static const char* const initScript = R"(
       float weight;
       vec2 kinect;
       vec3 position;
+      int32_t detectionIndex;
     } Target;
 
     typedef enum {
@@ -63,6 +78,8 @@ static const char* const initScript = R"(
     } ControlState;
   ]]
 
+	HIST_SIZE = 768
+
 	function remote_log(fmt, ...)
 		local r = string.format(fmt, ...)
 		remote_log_internal(r)
@@ -81,7 +98,9 @@ static const char* const initScript = R"(
   end
 )";
 
-ScriptLoader::~ScriptLoader() { if (lua) lua_close(lua); }
+ScriptLoader::~ScriptLoader() {
+  if (lua) lua_close(lua);
+}
 
 bool ScriptLoaderInit(ScriptLoader* loader) {
   loader->lua = luaL_newstate();
@@ -96,9 +115,9 @@ bool ScriptLoaderInit(ScriptLoader* loader) {
     return false;
   }
 
-	lua_pushlightuserdata(loader->lua, loader);
-	lua_pushcclosure(loader->lua, RemoteLog, 1);
-	lua_setglobal(loader->lua, "remote_log_internal");
+  lua_pushlightuserdata(loader->lua, loader);
+  lua_pushcclosure(loader->lua, RemoteLog, 1);
+  lua_setglobal(loader->lua, "remote_log_internal");
 
   return true;
 }
@@ -140,11 +159,12 @@ bool ScriptLoaderExec(ScriptLoader* loader, const char* script) {
   return luaL_dostring(loader->lua, script) == 0;
 }
 
-void ScriptLoaderSetLogCallback(ScriptLoader* loader, void(*cb)(const char*, void*), void* user) {
-	loader->log = cb;
-	loader->user = user;
+void ScriptLoaderSetLogCallback(ScriptLoader* loader,
+                                void (*cb)(const char*, void*), void* user) {
+  loader->log = cb;
+  loader->user = user;
 }
 
 const char* ScriptLoaderGetError(ScriptLoader* loader) {
-  return lua_tostring(loader->lua, -1); 
+  return lua_tostring(loader->lua, -1);
 }

@@ -2,8 +2,8 @@
 
 struct ScriptLoader {
   struct lua_State* lua = nullptr;
-	void* user = nullptr;
-	void(*log)(const char*, void*) = nullptr;
+  void* user = nullptr;
+  void (*log)(const char*, void*) = nullptr;
 
   ~ScriptLoader();
 };
@@ -14,5 +14,6 @@ const char* ScriptLoaderUpdate(ScriptLoader* loader, double dt,
                                struct TrackingState* tracking);
 bool ScriptLoaderExecFile(ScriptLoader* loader, const char* file);
 bool ScriptLoaderExec(ScriptLoader* loader, const char* script);
-void ScriptLoaderSetLogCallback(ScriptLoader* loader, void(*cb)(const char*, void*), void* user);
+void ScriptLoaderSetLogCallback(ScriptLoader* loader,
+                                void (*cb)(const char*, void*), void* user);
 const char* ScriptLoaderGetError(ScriptLoader* loader);

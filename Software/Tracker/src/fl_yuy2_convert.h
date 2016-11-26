@@ -1,8 +1,8 @@
 #ifndef FL_YUY2_CONVERT
 #define FL_YUY2_CONVERT
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 struct fl_yuy2_convert;
 

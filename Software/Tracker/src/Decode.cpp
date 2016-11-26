@@ -8,8 +8,8 @@
 struct Decoder {
   vpx_codec_dec_cfg_t decoderCfg;
   vpx_codec_ctx_t codec;
-  rgba_image unscaled;
-  rgba_image scaledOutput;
+  RgbaImage unscaled;
+  RgbaImage scaledOutput;
 };
 
 Decoder* DecoderCreate() {
@@ -30,7 +30,7 @@ Decoder* DecoderCreate() {
 }
 
 bool DecodeFrame(Decoder* dc, const uint8_t* data, int len, int targetWidth,
-                 int targetHeight, rgba_image* out) {
+                 int targetHeight, RgbaImage* out) {
   vpx_codec_ctx_t* codec = &dc->codec;
   vpx_codec_err_t ret = vpx_codec_decode(codec, data, len, NULL, 0);
 
@@ -56,17 +56,18 @@ bool DecodeFrame(Decoder* dc, const uint8_t* data, int len, int targetWidth,
     return false;
   }
 
-  if (dc->unscaled.width != int(image->r_w) || dc->unscaled.height != int(image->r_h)) {
+  if (dc->unscaled.width != int(image->r_w) ||
+      dc->unscaled.height != int(image->r_h)) {
     if (dc->unscaled.data) {
       free(dc->unscaled.data);
     }
 
-    rgba_image_init(&dc->unscaled, image->r_w, image->r_h);
+    RgbaImageInit(&dc->unscaled, image->r_w, image->r_h);
   }
 
   libyuv::I420ToARGB(image->planes[0], image->stride[0], image->planes[1],
                      image->stride[1], image->planes[2], image->stride[2],
-                     dc->unscaled.data, dc->unscaled.pitch, image->r_w,
+                     dc->unscaled.data, dc->unscaled.stride, image->r_w,
                      image->r_h);
 
   if (targetWidth != int(image->r_w) || targetHeight != int(image->r_h)) {
@@ -76,12 +77,12 @@ bool DecodeFrame(Decoder* dc, const uint8_t* data, int len, int targetWidth,
         free(dc->scaledOutput.data);
       }
 
-      rgba_image_init(&dc->scaledOutput, targetWidth, targetHeight);
+      RgbaImageInit(&dc->scaledOutput, targetWidth, targetHeight);
 
-      const rgba_image* src = &dc->unscaled;
-      rgba_image* dst = &dc->scaledOutput;
-      libyuv::ARGBScale(src->data, src->pitch, src->width, src->height,
-                        dst->data, dst->pitch, dst->width, dst->height,
+      const RgbaImage* src = &dc->unscaled;
+      RgbaImage* dst = &dc->scaledOutput;
+      libyuv::ARGBScale(src->data, src->stride, src->width, src->height,
+                        dst->data, dst->stride, dst->width, dst->height,
                         libyuv::kFilterBilinear);
 
       *out = dc->scaledOutput;

@@ -1,20 +1,30 @@
 #include "core.h"
 #include <fhd.h>
 #include <fhd_kinect.h>
+#include <libyuv.h>
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
 #include <lua.hpp>
 #include "Clock.h"
+#include "Constants.h"
 #include "Encode.h"
 #include "File.h"
 #include "KinectFrameSource.h"
 #include "UdpHost.h"
 #include "comm/datalayer.h"
 #include "core_opt.h"
-#include "Constants.h"
 #include "fl_sqlite_writer.h"
+#include "png/lodepng.h"
 #include "proto/message_generated.h"
+
+void CopyRgbaSubImage(const KinectFrame* frame, int x, int y, int w, int h,
+                      RgbaImage* dst) {
+  const int stride = frame->rgbaWidth * 4;
+  const int offset = y * stride + x * 4;
+  libyuv::ARGBScale(&frame->rgbaData[offset], stride, w, h, dst->data,
+                    dst->stride, dst->width, dst->height, libyuv::kFilterNone);
+}
 
 void kinect_loop(core* c) {
   for (;;) {
@@ -23,7 +33,7 @@ void kinect_loop(core* c) {
 }
 
 void core_decide(core* c, double dt) {
-  ScriptLoaderUpdate(&c->scripts, dt, &c->world, &c->state, &c->tracking);
+  ScriptLoaderUpdate(&c->scripts, dt, c->world, &c->state, &c->tracking);
 }
 
 void core_send_status_message(core* c, const char* message) {
@@ -37,18 +47,20 @@ void core_send_status_message(core* c, const char* message) {
 }
 
 void core_start(core* c) {
-	ScriptLoaderSetLogCallback(&c->scripts, [](const char* s, void* user) {
-		core_send_status_message((core*)user, s);
-	}, c);
+  ScriptLoaderSetLogCallback(&c->scripts,
+                             [](const char* s, void* user) {
+                               core_send_status_message((core*)user, s);
+                             },
+                             c);
 
-	c->kinect_frame_thread = std::thread(kinect_loop, c);
+  c->kinect_frame_thread = std::thread(kinect_loop, c);
 
-	c->classifiers.erase(
-		std::remove_if(c->classifiers.begin(), c->classifiers.end(),
-			[](const std::unique_ptr<Classifier>& classifier) {
-		return !classifier->Init();
-	}),
-		c->classifiers.end());
+  c->classifiers.erase(
+      std::remove_if(c->classifiers.begin(), c->classifiers.end(),
+                     [](const std::unique_ptr<Classifier>& classifier) {
+                       return !classifier->Init();
+                     }),
+      c->classifiers.end());
 }
 
 void core_stop_actions(core* c) {
@@ -102,6 +114,16 @@ void core_handle_command(core* c, const proto::Command* command) {
       core_send_status_message(c, "ok");
       break;
     }
+    case proto::CommandType_StartDebug: {
+      c->sendDebugData = true;
+      core_send_status_message(c, "ok");
+      break;
+    }
+    case proto::CommandType_StopDebug: {
+      c->sendDebugData = false;
+      core_send_status_message(c, "ok");
+      break;
+    }
     default: {
       core_send_status_message(c, "unknown command");
       break;
@@ -138,22 +160,18 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
       core_handle_command(c, command);
       break;
     }
-    case proto::Payload_Classifier: {
-      core_send_status_message(c, "unsupported operation");
-      break;
-    }
     default:
       break;
   }
 }
 
 void core_detect(core* c, double timestamp) {
-  c->world.timestamp = timestamp;
-  c->world.numDetections = 0;
+  World* world = c->world;
+  world->timestamp = timestamp;
+  world->numDetections = 0;
 
   fhd_run_pass(c->fhd, c->kinectFrame.depthData);
 
-  const float w = float(kDepthWidth);
   size_t numCandidates = size_t(c->fhd->candidates_len);
   const size_t requiredPasses = std::max<size_t>(c->classifiers.size(), 1);
 
@@ -168,13 +186,35 @@ void core_detect(core* c, double timestamp) {
     }
 
     if (passed >= requiredPasses) {
-      vec2 kinectPos{w - candidate->kinect_position.x,
-                     candidate->kinect_position.y};
+      vec2i tl{kDepthWidth - candidate->depth_position.x -
+                   candidate->depth_position.width,
+               candidate->depth_position.y};
+      vec2i br{tl.x + candidate->depth_position.width,
+               tl.y + candidate->depth_position.height};
       vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
                      candidate->metric_position.z};
-      c->world.detections[c->world.numDetections] =
-          Detection{kinectPos, metricPos, candidate->weight};
-      c->world.numDetections++;
+      Detection* d = &world->detections[world->numDetections];
+      d->depthTopLeft = tl;
+      d->depthBotRight = br;
+      d->metricPosition = metricPos;
+      d->weight = candidate->weight;
+      CopyRgbaSubImage(&c->kinectFrame, candidate->depth_position.x,
+                       candidate->depth_position.y,
+                       candidate->depth_position.width,
+                       candidate->depth_position.height, &d->color);
+
+      memset(d->histogram, 0, sizeof(d->histogram));
+
+      for (int i = 0; i < d->color.bytes; i += 4) {
+        uint8_t r = d->color.data[i];
+        uint8_t g = d->color.data[i + 1];
+        uint8_t b = d->color.data[i + 2];
+        d->histogram[r] += 1.f;
+        d->histogram[256 + g] += 1.f;
+        d->histogram[512 + b] += 1.f;
+      }
+
+      world->numDetections++;
     }
   }
 }
@@ -188,20 +228,40 @@ void core_serial_send(core* c) {
 
 void core_serialize(core* c) {
   c->builder.Clear();
-  auto depth =
-      c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len);
-  std::vector<proto::Detection> detections;
+  std::vector<flatbuffers::Offset<proto::Detection>> detections;
   std::vector<proto::Target> targets;
-  detections.reserve(c->world.numDetections);
+  detections.reserve(c->world->numDetections);
   targets.reserve(c->tracking.numTargets);
 
-  for (int32_t i = 0; i < c->world.numDetections; i++) {
-    const Detection& detection = c->world.detections[i];
-    detections.push_back(proto::Detection(
-        proto::Vec2(detection.kinectPosition.x, detection.kinectPosition.y),
-        proto::Vec3(detection.metricPosition.x, detection.metricPosition.y,
-                    detection.metricPosition.z),
-        detection.weight));
+  bool debugging = c->sendDebugData;
+
+  for (int32_t i = 0; i < c->world->numDetections; i++) {
+    const Detection& detection = c->world->detections[i];
+
+    proto::Vec2i tl(detection.depthTopLeft.x, detection.depthTopLeft.y);
+    proto::Vec2i br(detection.depthBotRight.x, detection.depthBotRight.y);
+    proto::Vec3 metric(detection.metricPosition.x, detection.metricPosition.y,
+                       detection.metricPosition.z);
+
+    if (debugging) {
+      unsigned char* png = nullptr;
+      size_t pngSize = 0;
+      unsigned res =
+          lodepng_encode32(&png, &pngSize, detection.color.data,
+                           detection.color.width, detection.color.height);
+
+      detections.push_back(proto::CreateDetection(
+          c->builder, &tl, &br, &metric, detection.weight,
+          c->builder.CreateVector(
+              detection.histogram,
+              sizeof(detection.histogram) / sizeof(detection.histogram[0])),
+          res ? 0 : c->builder.CreateVector(png, pngSize)));
+
+      free(png);
+    } else {
+      detections.push_back(proto::CreateDetection(c->builder, &tl, &br, &metric,
+                                                  detection.weight));
+    }
   }
 
   for (int32_t i = 0; i < c->tracking.numTargets; i++) {
@@ -211,41 +271,42 @@ void core_serialize(core* c) {
                       proto::Vec3(t.position.x, t.position.y, t.position.z)));
   }
 
-  auto detectionOffsets = c->builder.CreateVectorOfStructs(detections);
+  auto detectionOffsets = c->builder.CreateVector(detections);
   auto targetOffsets = c->builder.CreateVectorOfStructs(targets);
   auto tracking = proto::CreateTrackingState(
       c->builder, c->tracking.activeTarget, targetOffsets);
 
   proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
-
-  proto::FrameBuilder frame_builder(c->builder);
-
-  frame_builder.add_timestamp(c->timestamp);
-  frame_builder.add_coreDtMs(c->dtMilli);
-  frame_builder.add_camera(&camera);
-  frame_builder.add_rotationSpeed(c->state.rotationSpeed);
-  frame_builder.add_speed(c->state.speed);
-  if (c->sendVideo) {
-    frame_builder.add_depth(depth);
-  }
-  frame_builder.add_detections(detectionOffsets);
-  frame_builder.add_tracking(tracking);
-
-  auto frame = frame_builder.Finish();
+  auto depth = c->sendVideo ? c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len) : 0;
+  auto frame = proto::CreateFrame(c->builder,
+    c->timestamp,
+    c->dtMilli,
+    &camera,
+    c->state.rotationSpeed,
+    c->state.speed,
+    depth,
+    detectionOffsets,
+    tracking
+  );
   auto message =
       proto::CreateMessage(c->builder, proto::Payload_Frame, frame.Union());
   c->builder.Finish(message);
 }
 
 core::core()
-	: encoder(EncoderCreate(kDepthWidth, kDeptHeight))
-	, fhd((fhd_context*)calloc(1, sizeof(fhd_context))) {
-	KinectFrameInit(&kinectFrame, kDepthWidth, kDeptHeight);
-	rgba_image_init(&rgba_depth, kDepthWidth, kDeptHeight);
-	rgba_image_init(&prev_rgba_depth, kDepthWidth, kDeptHeight);
-	ActiveMapReset(&rgba_depth_diff, kDepthWidth, kDeptHeight);
+    : world((World*)calloc(1, sizeof(World))),
+      encoder(EncoderCreate(kDepthWidth, kDeptHeight)),
+      fhd((fhd_context*)calloc(1, sizeof(fhd_context))) {
+  KinectFrameInit(&kinectFrame, kDepthWidth, kDeptHeight);
+  RgbaImageInit(&rgba_depth, kDepthWidth, kDeptHeight);
+  RgbaImageInit(&prev_rgba_depth, kDepthWidth, kDeptHeight);
+  ActiveMapReset(&rgba_depth_diff, kDepthWidth, kDeptHeight);
 
-	fhd_context_init(fhd, kDepthWidth, kDeptHeight, 8, 8);
+  fhd_context_init(fhd, kDepthWidth, kDeptHeight, 8, 8);
+
+  for (Detection& d : world->detections) {
+    RgbaImageInit(&d.color, kCandidateWidth, kCandidateHeight);
+  }
 }
 
 core::~core() {
@@ -268,7 +329,7 @@ int main(int argc, char** argv) {
 
   double current_time = ms_now();
   double prev_time = current_time;
-  const double broadcastInterval = 0.03;
+  const double broadcastInterval = 0.04;
   double timeUntilBroadCast = broadcastInterval;
   for (;;) {
     prev_time = current_time;
@@ -281,6 +342,7 @@ int main(int argc, char** argv) {
     int sourceFrameNum = c.frameSource->FrameNumber();
     if (sourceFrameNum != c.frameNum) {
       c.frameNum = sourceFrameNum;
+
       c.frameSource->FillFrame(&c.kinectFrame);
 
       if (c.writer) {
@@ -290,8 +352,8 @@ int main(int argc, char** argv) {
 
     if (c.sendVideo && timeUntilBroadCast <= 0.0) {
       memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
-      depth_to_rgba(c.kinectFrame.depthData, c.kinectFrame.depthLength,
-                    &c.rgba_depth);
+      DepthToRgba(c.kinectFrame.depthData, c.kinectFrame.depthLength,
+                  &c.rgba_depth);
       BlockDiff(c.prev_rgba_depth.data, c.rgba_depth.data, kDepthWidth,
                 kDeptHeight, &c.rgba_depth_diff);
       c.encoded_depth =
@@ -299,7 +361,8 @@ int main(int argc, char** argv) {
     }
 
     c.serial.receive(&c.in_data);
-    memcpy(c.world.distance_sensors, &c.in_data, sizeof(uint8_t) * NUM_OF_DISTANCE_SENSORS);
+    memcpy(c.world->distance_sensors, &c.in_data,
+           sizeof(uint8_t) * NUM_OF_DISTANCE_SENSORS);
 
     core_detect(&c, current_time);
     core_decide(&c, frameTimeSeconds);
@@ -315,8 +378,8 @@ int main(int argc, char** argv) {
 
     if (timeUntilBroadCast <= 0.0) {
       core_serialize(&c);
-      UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(),
-                       c.builder.GetSize(), false);
+      UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize(),
+                       false);
       timeUntilBroadCast = broadcastInterval;
     } else {
       timeUntilBroadCast -= frameTimeSeconds;

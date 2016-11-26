@@ -1,7 +1,7 @@
 #pragma once
 #include <imgui.h>
-#include <vector>
 #include <string>
+#include <vector>
 
 struct Console {
   char InputBuf[512];
@@ -12,9 +12,9 @@ struct Console {
   ImVector<const char*> Commands;
   ImGuiTextFilter filter;
   char* lastCommand = nullptr;
-	size_t maxLines = 512;
+  size_t maxLines = 512;
 
-  Console();
+  Console(const std::vector<const char*>& commands = {});
   ~Console();
 
   void ClearLog();

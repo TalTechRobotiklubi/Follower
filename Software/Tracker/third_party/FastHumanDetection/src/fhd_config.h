@@ -1,11 +1,12 @@
 #pragma once
 
-#define FHD_DEBUG_GRADIENTS 0
 #define FHD_PLANAR_REGIONS 0
 
 #ifndef FHD_NUM_THREADS
-#define FHD_NUM_THREADS 4
+#define FHD_NUM_THREADS 2
 #endif
+
+#define FHD_HOG 0
 
 const int FHD_HOG_WIDTH = 64;
 const int FHD_HOG_HEIGHT = 128;

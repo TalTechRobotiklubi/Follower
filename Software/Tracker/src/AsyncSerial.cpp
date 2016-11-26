@@ -1,9 +1,9 @@
 #include "AsyncSerial.h"
 
-#include <string>
 #include <algorithm>
-#include <iostream>
 #include <boost/bind.hpp>
+#include <iostream>
+#include <string>
 
 using namespace std;
 using namespace boost;

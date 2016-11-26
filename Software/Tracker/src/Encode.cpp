@@ -48,8 +48,8 @@ Encoder* EncoderCreate(int w, int h) {
     e->encoderCfg.g_h = e->dstHeight;
     e->encoderCfg.g_timebase.num = 1000;
     e->encoderCfg.g_timebase.den = 30000;
-    e->encoderCfg.rc_min_quantizer = 20;
-    e->encoderCfg.rc_max_quantizer = 30;
+    e->encoderCfg.rc_min_quantizer = 4;
+    e->encoderCfg.rc_max_quantizer = 56;
     e->encoderCfg.g_pass = VPX_RC_ONE_PASS;
     e->codecIface = codecIface;
   }

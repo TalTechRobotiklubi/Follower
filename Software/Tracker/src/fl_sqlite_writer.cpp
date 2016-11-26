@@ -19,18 +19,17 @@ fl_sqlite_writer* fl_sqlite_writer_create(const char* db) {
 
   char* err_msg = NULL;
 
-  res = sqlite3_exec(
-      writer->db,
-      "CREATE TABLE IF NOT EXISTS depth_frames (data BLOB)",
-      NULL, NULL, &err_msg);
+  res = sqlite3_exec(writer->db,
+                     "CREATE TABLE IF NOT EXISTS depth_frames (data BLOB)",
+                     NULL, NULL, &err_msg);
 
   if (err_msg) {
     printf("%s\n", err_msg);
     sqlite3_free(err_msg);
   }
 
-  res = sqlite3_prepare_v2(writer->db, "INSERT INTO depth_frames VALUES (?)", -1,
-                           &writer->insert_query, NULL);
+  res = sqlite3_prepare_v2(writer->db, "INSERT INTO depth_frames VALUES (?)",
+                           -1, &writer->insert_query, NULL);
 
   if (res != SQLITE_OK) {
     printf("failed to compile query: %s\n", sqlite3_errmsg(writer->db));

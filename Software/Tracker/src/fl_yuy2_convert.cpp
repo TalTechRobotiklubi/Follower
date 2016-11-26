@@ -1,6 +1,6 @@
 #include "fl_yuy2_convert.h"
-#include <stdlib.h>
 #include <libyuv.h>
+#include <stdlib.h>
 #include "fl_math.h"
 
 struct fl_yuy2_convert {

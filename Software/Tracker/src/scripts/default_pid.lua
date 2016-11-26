@@ -1,15 +1,9 @@
 local ffi = require("ffi")
-local MAX_TTL = 1.0
-local MAX_JUMP = 0.7
-local TURN_DECAY = 0.5
-local MAX_TIME_WO_TARGET = 3.0
+local inspect = require("inspect")
+local PID = require("pid")
 
-
--- 2 - right
--- 1 - right-45
--- 4 - frontleft
--- 3 - left
-local sensors = {1, 2, 3, 4}
+local MAX_TTL = 2.5
+local MAX_JUMP = 0.5
 
 function filter(a, f)
   local r = {}
@@ -19,6 +13,16 @@ function filter(a, f)
     end
   end
   return r
+end
+
+function clamp(a, min, max)
+  if a < min then
+    return min
+  elseif a > max then
+    return max
+  else
+    return a
+  end
 end
 
 function distance(a, b)
@@ -46,27 +50,10 @@ function find_closest_detection(detections, n, point)
   return closest_detection
 end
 
-function fwd_speed(target_dist)
-  if target_dist > 1.0 then
-    return 100.0 + 100 * math.max(target_dist, 1.0)
-  end
-  
-  return 1.0
-end
-
-function rot_speed(angle)
-  local rspeed = 35.0
-  if angle > 10.0 then
-    return rspeed
-  elseif angle < -10.0 then
-    return -rspeed
-  end
-
-  return 0.0
-end
-
 local target = nil
-local time_no_target = MAX_TIME_WO_TARGET
+local cam_pid = PID.new(0.0, 0.5, 0.0)
+local turn_pid = PID.new(0.1, 0.1, 0.0)
+local forward_pid = PID.new(0.1, 0.1, 0.0)
 function decide(dt, world, state, tracking)
   if target ~= nil then
     target.timeToLive = target.timeToLive - dt
@@ -102,8 +89,8 @@ function decide(dt, world, state, tracking)
       local closest_dist = nil
       for i = 0, world.numDetections - 1 do    
         local dist = distance(target.position, world.detections[i].metricPosition)
+        local hdist = ffi.C.HistogramDistance(target.histogram, world.detections[i].histogram, HIST_SIZE)
         if dist < MAX_JUMP then
-          local hdist = ffi.C.HistogramDistance(target.histogram, world.detections[i].histogram, HIST_SIZE)
           if closest_index == -1 then
             closest_index = i
             closest_dist = hdist
@@ -122,13 +109,13 @@ function decide(dt, world, state, tracking)
       local p = detection.metricPosition
       target.kinect = {x = (br.x + tl.x) * 0.5, y = (br.y + tl.y) * 0.5}
       target.position = {x = p.x, y = p.y, z = p.z}
-      target.timeToLive = math.min(MAX_TTL, target.timeToLive + 1.0)
+      target.timeToLive = math.min(MAX_TTL, target.timeToLive + 0.1)
       ffi.copy(target.histogram, world.detections[closest_index].histogram, ffi.sizeof(target.histogram))
     end
   end
 
+  local rspeed = 40.0
   if target ~= nil then
-    time_no_target = MAX_TIME_WO_TARGET
     tracking.numTargets = 1
     tracking.activeTarget = 0
     local t = tracking.targets[tracking.activeTarget]
@@ -136,26 +123,25 @@ function decide(dt, world, state, tracking)
     t.position = target.position
     t.weight = target.timeToLive / MAX_TTL
 
-    local angle = math.deg(math.atan(-target.position.x / target.position.z))
-    state.rotationSpeed = rot_speed(angle)
-    state.speed = fwd_speed(target.position.z)
+    local angle = math.deg(math.atan2(-target.position.x, target.position.z))
+
+    local current_angle = state.camera.x
+    local new_angle = cam_pid:update(current_angle, angle)
+    new_angle = clamp(new_angle, -45.0, 45.0)
+    state.camera.x = new_angle
+    local new_robot_rot = turn_pid:update(new_angle, 0.0)
+    local diff = clamp(-new_robot_rot * 2.0, -rspeed, rspeed)
+    state.rotationSpeed = diff
+
+    -- This probably isn't right. Test turning first!
+    local z = target.position.z
+    local ns = forward_pid:update(state.speed, 200.0 * math.min(z / 1.4, 1.0))
+    state.speed = ns
+
   else
-    state.rotationSpeed = 0.0
     tracking.numTargets = 0
     tracking.activeTarget = -1
-    state.speed = 1.0
-
-    time_no_target = time_no_target - dt
-  end
-
-  for i = 1, #sensors do
-    if world.distance_sensors[sensors[i]] < 20 then
-      state.speed = 1.0
-    end
-  end
-
-  if time_no_target < 0.0 then
-    state.rotationSpeed = 50.0
+    state.rotationSpeed = 0.0
     state.speed = 0.0
   end
 

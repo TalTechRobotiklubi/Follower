@@ -11,6 +11,8 @@ struct Command;
 
 struct Vec2;
 
+struct Vec2i;
+
 struct Vec3;
 
 struct Target;
@@ -37,12 +39,14 @@ enum CommandType {
   CommandType_StopVideo = 4,
   CommandType_RecordDepth = 5,
   CommandType_StopRecord = 6,
+  CommandType_StartDebug = 7,
+  CommandType_StopDebug = 8,
   CommandType_MIN = CommandType_RotationSpeed,
-  CommandType_MAX = CommandType_StopRecord
+  CommandType_MAX = CommandType_StopDebug
 };
 
 inline const char **EnumNamesCommandType() {
-  static const char *names[] = { "RotationSpeed", "Stop", "Speed", "StartVideo", "StopVideo", "RecordDepth", "StopRecord", nullptr };
+  static const char *names[] = { "RotationSpeed", "Stop", "Speed", "StartVideo", "StopVideo", "RecordDepth", "StopRecord", "StartDebug", "StopDebug", nullptr };
   return names;
 }
 
@@ -66,6 +70,30 @@ inline const char **EnumNamesPayload() {
 
 inline const char *EnumNamePayload(Payload e) { return EnumNamesPayload()[static_cast<int>(e)]; }
 
+template<typename T> struct PayloadTraits {
+  static const Payload enum_value = Payload_NONE;
+};
+
+template<> struct PayloadTraits<Frame> {
+  static const Payload enum_value = Payload_Frame;
+};
+
+template<> struct PayloadTraits<LuaMainScript> {
+  static const Payload enum_value = Payload_LuaMainScript;
+};
+
+template<> struct PayloadTraits<StatusMessage> {
+  static const Payload enum_value = Payload_StatusMessage;
+};
+
+template<> struct PayloadTraits<Classifier> {
+  static const Payload enum_value = Payload_Classifier;
+};
+
+template<> struct PayloadTraits<Command> {
+  static const Payload enum_value = Payload_Command;
+};
+
 inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *union_obj, Payload type);
 
 MANUALLY_ALIGNED_STRUCT(4) Vec2 FLATBUFFERS_FINAL_CLASS {
@@ -83,6 +111,22 @@ MANUALLY_ALIGNED_STRUCT(4) Vec2 FLATBUFFERS_FINAL_CLASS {
   float y() const { return flatbuffers::EndianScalar(y_); }
 };
 STRUCT_END(Vec2, 8);
+
+MANUALLY_ALIGNED_STRUCT(4) Vec2i FLATBUFFERS_FINAL_CLASS {
+ private:
+  int32_t x_;
+  int32_t y_;
+
+ public:
+  Vec2i() { memset(this, 0, sizeof(Vec2i)); }
+  Vec2i(const Vec2i &_o) { memcpy(this, &_o, sizeof(Vec2i)); }
+  Vec2i(int32_t _x, int32_t _y)
+    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)) { }
+
+  int32_t x() const { return flatbuffers::EndianScalar(x_); }
+  int32_t y() const { return flatbuffers::EndianScalar(y_); }
+};
+STRUCT_END(Vec2i, 8);
 
 MANUALLY_ALIGNED_STRUCT(4) Vec3 FLATBUFFERS_FINAL_CLASS {
  private:
@@ -119,24 +163,6 @@ MANUALLY_ALIGNED_STRUCT(4) Target FLATBUFFERS_FINAL_CLASS {
   const Vec3 &position() const { return position_; }
 };
 STRUCT_END(Target, 24);
-
-MANUALLY_ALIGNED_STRUCT(4) Detection FLATBUFFERS_FINAL_CLASS {
- private:
-  Vec2 position_;
-  Vec3 metricPosition_;
-  float weight_;
-
- public:
-  Detection() { memset(this, 0, sizeof(Detection)); }
-  Detection(const Detection &_o) { memcpy(this, &_o, sizeof(Detection)); }
-  Detection(const Vec2 &_position, const Vec3 &_metricPosition, float _weight)
-    : position_(_position), metricPosition_(_metricPosition), weight_(flatbuffers::EndianScalar(_weight)) { }
-
-  const Vec2 &position() const { return position_; }
-  const Vec3 &metricPosition() const { return metricPosition_; }
-  float weight() const { return flatbuffers::EndianScalar(weight_); }
-};
-STRUCT_END(Detection, 24);
 
 struct Command FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
@@ -180,6 +206,79 @@ inline flatbuffers::Offset<Command> CreateCommandDirect(flatbuffers::FlatBufferB
     CommandType type = CommandType_RotationSpeed,
     const char *arg = nullptr) {
   return CreateCommand(_fbb, type, arg ? _fbb.CreateString(arg) : 0);
+}
+
+struct Detection FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_DEPTHTOPLEFT = 4,
+    VT_DEPTHBOTRIGHT = 6,
+    VT_METRICPOSITION = 8,
+    VT_WEIGHT = 10,
+    VT_HISTOGRAM = 12,
+    VT_PNG = 14
+  };
+  const Vec2i *depthTopLeft() const { return GetStruct<const Vec2i *>(VT_DEPTHTOPLEFT); }
+  const Vec2i *depthBotRight() const { return GetStruct<const Vec2i *>(VT_DEPTHBOTRIGHT); }
+  const Vec3 *metricPosition() const { return GetStruct<const Vec3 *>(VT_METRICPOSITION); }
+  float weight() const { return GetField<float>(VT_WEIGHT, 0.0f); }
+  const flatbuffers::Vector<float> *histogram() const { return GetPointer<const flatbuffers::Vector<float> *>(VT_HISTOGRAM); }
+  const flatbuffers::Vector<uint8_t> *png() const { return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_PNG); }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<Vec2i>(verifier, VT_DEPTHTOPLEFT) &&
+           VerifyField<Vec2i>(verifier, VT_DEPTHBOTRIGHT) &&
+           VerifyField<Vec3>(verifier, VT_METRICPOSITION) &&
+           VerifyField<float>(verifier, VT_WEIGHT) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_HISTOGRAM) &&
+           verifier.Verify(histogram()) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_PNG) &&
+           verifier.Verify(png()) &&
+           verifier.EndTable();
+  }
+};
+
+struct DetectionBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_depthTopLeft(const Vec2i *depthTopLeft) { fbb_.AddStruct(Detection::VT_DEPTHTOPLEFT, depthTopLeft); }
+  void add_depthBotRight(const Vec2i *depthBotRight) { fbb_.AddStruct(Detection::VT_DEPTHBOTRIGHT, depthBotRight); }
+  void add_metricPosition(const Vec3 *metricPosition) { fbb_.AddStruct(Detection::VT_METRICPOSITION, metricPosition); }
+  void add_weight(float weight) { fbb_.AddElement<float>(Detection::VT_WEIGHT, weight, 0.0f); }
+  void add_histogram(flatbuffers::Offset<flatbuffers::Vector<float>> histogram) { fbb_.AddOffset(Detection::VT_HISTOGRAM, histogram); }
+  void add_png(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> png) { fbb_.AddOffset(Detection::VT_PNG, png); }
+  DetectionBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+  DetectionBuilder &operator=(const DetectionBuilder &);
+  flatbuffers::Offset<Detection> Finish() {
+    auto o = flatbuffers::Offset<Detection>(fbb_.EndTable(start_, 6));
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Detection> CreateDetection(flatbuffers::FlatBufferBuilder &_fbb,
+    const Vec2i *depthTopLeft = 0,
+    const Vec2i *depthBotRight = 0,
+    const Vec3 *metricPosition = 0,
+    float weight = 0.0f,
+    flatbuffers::Offset<flatbuffers::Vector<float>> histogram = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> png = 0) {
+  DetectionBuilder builder_(_fbb);
+  builder_.add_png(png);
+  builder_.add_histogram(histogram);
+  builder_.add_weight(weight);
+  builder_.add_metricPosition(metricPosition);
+  builder_.add_depthBotRight(depthBotRight);
+  builder_.add_depthTopLeft(depthTopLeft);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Detection> CreateDetectionDirect(flatbuffers::FlatBufferBuilder &_fbb,
+    const Vec2i *depthTopLeft = 0,
+    const Vec2i *depthBotRight = 0,
+    const Vec3 *metricPosition = 0,
+    float weight = 0.0f,
+    const std::vector<float> *histogram = nullptr,
+    const std::vector<uint8_t> *png = nullptr) {
+  return CreateDetection(_fbb, depthTopLeft, depthBotRight, metricPosition, weight, histogram ? _fbb.CreateVector<float>(*histogram) : 0, png ? _fbb.CreateVector<uint8_t>(*png) : 0);
 }
 
 struct TrackingState FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -243,7 +342,7 @@ struct Frame FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   float rotationSpeed() const { return GetField<float>(VT_ROTATIONSPEED, 0.0f); }
   float speed() const { return GetField<float>(VT_SPEED, 0.0f); }
   const flatbuffers::Vector<uint8_t> *depth() const { return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_DEPTH); }
-  const flatbuffers::Vector<const Detection *> *detections() const { return GetPointer<const flatbuffers::Vector<const Detection *> *>(VT_DETECTIONS); }
+  const flatbuffers::Vector<flatbuffers::Offset<Detection>> *detections() const { return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Detection>> *>(VT_DETECTIONS); }
   const TrackingState *tracking() const { return GetPointer<const TrackingState *>(VT_TRACKING); }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -256,6 +355,7 @@ struct Frame FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.Verify(depth()) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_DETECTIONS) &&
            verifier.Verify(detections()) &&
+           verifier.VerifyVectorOfTables(detections()) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_TRACKING) &&
            verifier.VerifyTable(tracking()) &&
            verifier.EndTable();
@@ -271,7 +371,7 @@ struct FrameBuilder {
   void add_rotationSpeed(float rotationSpeed) { fbb_.AddElement<float>(Frame::VT_ROTATIONSPEED, rotationSpeed, 0.0f); }
   void add_speed(float speed) { fbb_.AddElement<float>(Frame::VT_SPEED, speed, 0.0f); }
   void add_depth(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> depth) { fbb_.AddOffset(Frame::VT_DEPTH, depth); }
-  void add_detections(flatbuffers::Offset<flatbuffers::Vector<const Detection *>> detections) { fbb_.AddOffset(Frame::VT_DETECTIONS, detections); }
+  void add_detections(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Detection>>> detections) { fbb_.AddOffset(Frame::VT_DETECTIONS, detections); }
   void add_tracking(flatbuffers::Offset<TrackingState> tracking) { fbb_.AddOffset(Frame::VT_TRACKING, tracking); }
   FrameBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
   FrameBuilder &operator=(const FrameBuilder &);
@@ -288,7 +388,7 @@ inline flatbuffers::Offset<Frame> CreateFrame(flatbuffers::FlatBufferBuilder &_f
     float rotationSpeed = 0.0f,
     float speed = 0.0f,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> depth = 0,
-    flatbuffers::Offset<flatbuffers::Vector<const Detection *>> detections = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Detection>>> detections = 0,
     flatbuffers::Offset<TrackingState> tracking = 0) {
   FrameBuilder builder_(_fbb);
   builder_.add_timestamp(timestamp);
@@ -309,9 +409,9 @@ inline flatbuffers::Offset<Frame> CreateFrameDirect(flatbuffers::FlatBufferBuild
     float rotationSpeed = 0.0f,
     float speed = 0.0f,
     const std::vector<uint8_t> *depth = nullptr,
-    const std::vector<const Detection *> *detections = nullptr,
+    const std::vector<flatbuffers::Offset<Detection>> *detections = nullptr,
     flatbuffers::Offset<TrackingState> tracking = 0) {
-  return CreateFrame(_fbb, timestamp, coreDtMs, camera, rotationSpeed, speed, depth ? _fbb.CreateVector<uint8_t>(*depth) : 0, detections ? _fbb.CreateVector<const Detection *>(*detections) : 0, tracking);
+  return CreateFrame(_fbb, timestamp, coreDtMs, camera, rotationSpeed, speed, depth ? _fbb.CreateVector<uint8_t>(*depth) : 0, detections ? _fbb.CreateVector<flatbuffers::Offset<Detection>>(*detections) : 0, tracking);
 }
 
 struct LuaMainScript FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -483,11 +583,17 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *union_obj
   }
 }
 
-inline const proto::Message *GetMessage(const void *buf) { return flatbuffers::GetRoot<proto::Message>(buf); }
+inline const proto::Message *GetMessage(const void *buf) {
+  return flatbuffers::GetRoot<proto::Message>(buf);
+}
 
-inline bool VerifyMessageBuffer(flatbuffers::Verifier &verifier) { return verifier.VerifyBuffer<proto::Message>(nullptr); }
+inline bool VerifyMessageBuffer(flatbuffers::Verifier &verifier) {
+  return verifier.VerifyBuffer<proto::Message>(nullptr);
+}
 
-inline void FinishMessageBuffer(flatbuffers::FlatBufferBuilder &fbb, flatbuffers::Offset<proto::Message> root) { fbb.Finish(root); }
+inline void FinishMessageBuffer(flatbuffers::FlatBufferBuilder &fbb, flatbuffers::Offset<proto::Message> root) {
+  fbb.Finish(root);
+}
 
 }  // namespace proto
 
