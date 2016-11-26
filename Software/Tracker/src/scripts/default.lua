@@ -1,6 +1,7 @@
 local ffi = require("ffi")
-local MAX_TTL = 2.5
-local MAX_JUMP = 0.5
+local MAX_TTL = 2.0
+local MAX_JUMP = 0.7
+local TURN_DECAY = 0.9
 
 function filter(a, f)
   local r = {}
@@ -35,6 +36,18 @@ function find_closest_detection(detections, n, point)
   end
 
   return closest_detection
+end
+
+function fwd_speed(target_dist)
+  if target_dist > 1.3 then
+    return 200.0 + 100 * math.max(target_dist, 1.0)
+  else
+    return 1.0
+  end
+end
+
+function rot_speed(angle)
+  return angle * 1.5
 end
 
 local target = nil
@@ -73,8 +86,8 @@ function decide(dt, world, state, tracking)
       local closest_dist = nil
       for i = 0, world.numDetections - 1 do    
         local dist = distance(target.position, world.detections[i].metricPosition)
-        local hdist = ffi.C.HistogramDistance(target.histogram, world.detections[i].histogram, HIST_SIZE)
         if dist < MAX_JUMP then
+          local hdist = ffi.C.HistogramDistance(target.histogram, world.detections[i].histogram, HIST_SIZE)
           if closest_index == -1 then
             closest_index = i
             closest_dist = hdist
@@ -93,12 +106,11 @@ function decide(dt, world, state, tracking)
       local p = detection.metricPosition
       target.kinect = {x = (br.x + tl.x) * 0.5, y = (br.y + tl.y) * 0.5}
       target.position = {x = p.x, y = p.y, z = p.z}
-      target.timeToLive = math.min(MAX_TTL, target.timeToLive + 0.05)
+      target.timeToLive = math.min(MAX_TTL, target.timeToLive + 1.0)
       ffi.copy(target.histogram, world.detections[closest_index].histogram, ffi.sizeof(target.histogram))
     end
   end
 
-  local rspeed = 40.0
   if target ~= nil then
     tracking.numTargets = 1
     tracking.activeTarget = 0
@@ -110,24 +122,26 @@ function decide(dt, world, state, tracking)
     local angle = math.deg(math.atan(-target.position.x / target.position.z))
 
     if angle > 10.0 then
-      state.rotationSpeed = rspeed
-      state.speed = 0.0
+      state.rotationSpeed = rot_speed(angle)
+      --state.speed = 200.0
     elseif angle < -10.0 then
-      state.rotationSpeed = -rspeed
-      state.speed = 0.0
+      state.rotationSpeed = rot_speed(angle)
+      --state.speed = 200.0
     else 
       state.rotationSpeed = 0.0
-      if target.position.z > 1.4 then
-        state.speed = 200.0
-      else
-        state.speed = 0.0
-      end
+      --state.speed = fwd_speed(target.position.z)
     end
+    state.speed = fwd_speed(target.position.z)
   else
+    if state.rotationSpeed < -10.0 or state.rotationSpeed > 10.0 then
+      state.rotationSpeed = state.rotationSpeed * 0.9
+    else
+      state.rotationSpeed = 0.0
+    end
+
     tracking.numTargets = 0
     tracking.activeTarget = -1
-    state.rotationSpeed = 0.0
-    state.speed = 0.0
+    state.speed = 1.0
   end
 
   state.camera.y = 20.0
