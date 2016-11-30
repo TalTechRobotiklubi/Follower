@@ -29,8 +29,8 @@ void USARTx_init(USART_TypeDef *uartX)
 	UARTx_IRQ_init(io);
 	UARTxBuffersInit(uartX);
 	USART_InitTypeDef  USART_InitStruct;
-	//Configure 8N1 UART with 115200 baud rate
-	USART_InitStruct.USART_BaudRate = 115200;
+	//Configure 8N1 UART with 9600 baud rate
+	USART_InitStruct.USART_BaudRate = 9600;
 	USART_InitStruct.USART_WordLength = USART_WordLength_8b;
 	USART_InitStruct.USART_StopBits = USART_StopBits_1;
 	USART_InitStruct.USART_Parity = USART_Parity_No;
@@ -157,7 +157,19 @@ void USART2_IRQHandler(void)
 
 void handleTransmitData(void)
 {
-
+	uint8_t activity;
+	if (DL_getData(DLParamVisualizationActivity, &activity))
+	{
+		sendChar(USART2, 'p');  // p
+		sendChar(USART2, 'a');
+		sendChar(USART2, 'g');
+		sendChar(USART2, 'e');
+		sendChar(USART2, ' ');
+		sendChar(USART2, activity + 0x30);
+		sendChar(USART2, 0xFF);
+		sendChar(USART2, 0xFF);
+		sendChar(USART2, 0xFF);
+	}
 }
 
 void USART_init()

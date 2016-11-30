@@ -475,17 +475,6 @@ void drive()
 		rightSpeedOld += (errRX * kpX + iRX * kiX + dRX * kdX);// - turnSpeedOld;
 	}
 
-
-/*	if(!priv_speedX && !priv_speedW)
-	{
-		rightSpeedOld = 0;
-		leftSpeedOld = 0;
-	}
-*/
-
-/*	rightSpeedOld = 0;
-	leftSpeedOld = 0;
-*/
 	int16_t speedL = (int) (leftSpeedOld  + turnSpeedOld);
 	int16_t speedR = (int) (rightSpeedOld - turnSpeedOld);
 	// Set motor speeds
@@ -506,21 +495,16 @@ void drive()
 
 		//priv_leftEncoder - (float)priv_rightEncoder
 
-			int16_t temp = (int)(encspeed * 10.0);
-			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback1, &temp);
-			temp = (int)(fwd_speed * 10.0);
-			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback2, &temp);
-			temp = (int)(-temp_gyro * 10.0);
-			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback3, &temp);
-			temp = (int)(turn_speed * 10.0);
-			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback4, &temp);
+//			int16_t temp = (int)(encspeed * 10.0);
+//			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback1, &temp);
+//			temp = (int)(fwd_speed * 10.0);
+//			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback2, &temp);
+//			temp = (int)(-temp_gyro * 10.0);
+//			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback3, &temp);
+//			temp = (int)(turn_speed * 10.0);
+//			DL_setDataWithForcedAsyncSend(DLParamRobotFeedback4, &temp);
 //		}
 	}
-	// Save old values for PID
-
-
-	//priv_leftEncoder = 0;
-	//priv_rightEncoder = 0;
 }
 
 void Drive_init()

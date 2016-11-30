@@ -32,14 +32,14 @@ struct Target {
 };
 
 enum Activity {
-  // meant for Hw side, if packet not received with valid data or smt.
-  Error = 0,
-  // no activity, kinect down, sleeping emoticon on tft screen
-  Resting = 1,
-  // no target, moving and searches, emoticon with eyes looking around
-  Searching = 2,
+  // no activity or kinect down, sleeping emoticon on tft screen
+  Resting = 0,
+  // no target, moving and searches, emoticon with question mark
+  Searching = 1,
   // follows target, happy emoticon
-  Following = 3
+  Following = 2,
+  // if there is a case where robot is confused on lost, sad emoticon with tear
+  Confused = 3
 };
 
 struct TrackingState {

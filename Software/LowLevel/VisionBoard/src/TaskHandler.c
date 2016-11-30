@@ -6,6 +6,7 @@
 #include "GPIO.h"
 #include "CAN.h"
 #include "usb.h"
+#include "USART.h"
 #include "servo.h"
 #include "DataLayer.h"
 
@@ -16,6 +17,7 @@ const INIT_STRUCT TaskHandler_tableOfInits[] = {
 		{INIT_GPIO,				GPIO_init   },
 		{INIT_CAN,				CAN_init    },
 		{INIT_USB,				USB_init	},
+		{INIT_USART,			USART_init	},
 		{INIT_SERVO,			Servo_init	},
 		{INIT_DATALAYER,		DL_init		}
 };
@@ -28,6 +30,7 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_DATAHANDLER,			5,			0,			DL_task				},
 		{TASK_CAN,			        5,		    1,			CAN_task      		},
 		{TASK_USB,				    5,		    2,			USB_task			},
+		{TASK_USART,				5,			3,			USART_task			},
 		{TASK_LED,				  400,		    0,			GPIO_task			},
 		{TASK_SERVO,			   20,			5,			Servo_task			}
 };

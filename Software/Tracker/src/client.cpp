@@ -424,9 +424,10 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  client.console = new Console({"startscript", "stop", "speed", "rot",
-                                "stopvideo", "startvideo", "record",
-                                "stoprecord", "startdebug", "stopdebug"});
+  std::vector<const char*> commands = {"startscript", "stop", "speed", "rot",
+                                       "stopvideo", "startvideo", "record",
+                                       "stoprecord", "startdebug", "stopdebug"};
+  client.console = new Console(commands);
 
   while (!glfwWindowShouldClose(window)) {
     ClientUpdate(&client);
