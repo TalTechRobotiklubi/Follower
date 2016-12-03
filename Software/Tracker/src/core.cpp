@@ -223,6 +223,7 @@ void core_serial_send(core* c) {
   c->out_data.translation_speed = int16_t(c->state.speed);
   c->out_data.rotation_speed = int16_t(c->state.rotationSpeed);
   c->out_data.camera_degrees = c->state.camera;
+  c->out_data.activity = (Activity)c->tracking.activity;
   c->serial.send(c->out_data);
 }
 
