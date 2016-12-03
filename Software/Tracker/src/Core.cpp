@@ -323,13 +323,13 @@ int main(int argc, char** argv) {
 
   CoreStart(&c);
 
-  double currentTime = ms_now();
+  double currentTime = MsNow();
   double prevTime = currentTime;
   const double broadcastInterval = 0.04;
   double timeUntilBroadCast = broadcastInterval;
   for (;;) {
     prevTime = currentTime;
-    currentTime = ms_now();
+    currentTime = MsNow();
     const double frameTime = currentTime - prevTime;
     const double frameTimeSeconds = frameTime / 1000.0;
     c.timestamp += frameTime;

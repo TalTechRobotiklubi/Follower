@@ -30,8 +30,8 @@ Encoder* EncoderCreate(int w, int h) {
   e->frameHeight = h;
   e->dstWidth = e->frameWidth;
   e->dstHeight = e->frameHeight;
-  e->tsBegin = ms_now();
-  e->tsMs = ms_now();
+  e->tsBegin = MsNow();
+  e->tsMs = MsNow();
 
   vpx_codec_iface_t* codecIface = vpx_codec_vp8_cx();
   vpx_codec_err_t confRes =
@@ -127,7 +127,7 @@ IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, const ActiveMap* map) {
   }
 
   encoder->frameCount += 1;
-  encoder->tsMs = ms_now();
+  encoder->tsMs = MsNow();
 
   return result;
 }

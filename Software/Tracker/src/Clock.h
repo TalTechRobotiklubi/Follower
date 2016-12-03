@@ -6,7 +6,7 @@
 #endif
 #include <stdint.h>
 
-inline int64_t hp_counter() {
+inline int64_t HpCounter() {
 #ifdef _WIN32
   LARGE_INTEGER li;
   QueryPerformanceCounter(&li);
@@ -19,7 +19,7 @@ inline int64_t hp_counter() {
   return i64;
 }
 
-inline int64_t hp_freq() {
+inline int64_t HpFreq() {
 #ifdef _WIN32
   LARGE_INTEGER li;
   QueryPerformanceFrequency(&li);
@@ -29,6 +29,6 @@ inline int64_t hp_freq() {
 #endif
 }
 
-inline double ms_now() {
-  return double(hp_counter()) * 1000.0 / double(hp_freq());
+inline double MsNow() {
+  return double(HpCounter()) * 1000.0 / double(HpFreq());
 }
