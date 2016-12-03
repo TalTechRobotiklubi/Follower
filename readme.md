@@ -9,7 +9,8 @@ Concept
 -----------
 Follower's conceptional drawing is presented below
 
-[3d_concept.png]
+<img src="https://gitlab.com/TTYRobotiklubi/Follower/blob/master/Documents/Images/3d_concept.png" width=400>
+
 The robot has differential drive with two wheels inside the body to avoid collision effect while turning. Sensor boards reads ultrasonic sensors, which should detect any obstacles and inertial measurement unit, which helps to detect robots movements in time (turning, acceleration). Vision board controls servo motors to move camera left/right and up/down.
 
 The robot does not have any basket to carry things. It is a first prototype to 
