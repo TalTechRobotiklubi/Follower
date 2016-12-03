@@ -8,6 +8,7 @@
 #include <lua.hpp>
 #include "Clock.h"
 #include "Constants.h"
+#include "CoreOptions.h"
 #include "Encode.h"
 #include "File.h"
 #include "KinectFrameSource.h"
@@ -15,7 +16,6 @@
 #include "SqliteFrameWriter.h"
 #include "UdpHost.h"
 #include "comm/datalayer.h"
-#include "core_opt.h"
 #include "png/lodepng.h"
 #include "proto/message_generated.h"
 
@@ -317,7 +317,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  if (!parse_opt(&c, argc, argv)) {
+  if (!ParseCoreOptions(&c, argc, argv)) {
     return 1;
   }
 
@@ -357,7 +357,7 @@ int main(int argc, char** argv) {
     }
 
     c.serial.receive(&c.inData);
-    memcpy(c.world->distance_sensors, &c.inData,
+    memcpy(c.world->distanceSensors, &c.inData,
            sizeof(uint8_t) * NUM_OF_DISTANCE_SENSORS);
 
     CoreDetect(&c, currentTime);

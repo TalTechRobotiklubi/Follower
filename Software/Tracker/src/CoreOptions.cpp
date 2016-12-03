@@ -1,8 +1,9 @@
-#include "core_opt.h"
+#include "CoreOptions.h"
 #include <fhd.h>
 #include <fhd_classifier.h>
 #include <stdio.h>
 #include "Constants.h"
+#include "Core.h"
 #include "KinectLiveFrameSource.h"
 #include "KinectNullFrameSource.h"
 #include "KinectSqliteFrameSource.h"
@@ -10,10 +11,9 @@
 #include "UdpHost.h"
 #include "classifier/FHDClassifier.h"
 #include "classifier/TorchClassifier.h"
-#include "Core.h"
 #include "parg/parg.h"
 
-int parse_opt(Core* c, int argc, char** argv) {
+int ParseCoreOptions(Core* c, int argc, char** argv) {
   parg_state args;
   parg_init(&args);
 

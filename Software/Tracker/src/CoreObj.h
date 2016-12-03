@@ -17,7 +17,7 @@ struct World {
   double timestamp = 0.0;
   int32_t numDetections = 0;
   Detection detections[16];
-  uint8_t distance_sensors[NUM_OF_DISTANCE_SENSORS];
+  uint8_t distanceSensors[NUM_OF_DISTANCE_SENSORS];
 };
 
 struct Target {

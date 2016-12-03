@@ -22,7 +22,7 @@ set(CORE_SOURCES
   classifier/TorchClassifier.cpp
 
   Core.cpp
-  core_opt.cpp
+  CoreOptions.cpp
 
   comm/datalayer.cpp
   comm/DataLayerConfig.cpp
