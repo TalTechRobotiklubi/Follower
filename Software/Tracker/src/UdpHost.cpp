@@ -26,8 +26,8 @@ UdpHost* UdpHostCreate(const char* hostAddress, int port) {
   }
   address.port = port;
   ENetHost* host = enet_host_create(&address, 8, 1, 0, 0);
-  if (host == NULL) {
-    return NULL;
+  if (host == nullptr) {
+    return nullptr;
   }
 
   UdpHost* udp = (UdpHost*)calloc(1, sizeof(UdpHost));

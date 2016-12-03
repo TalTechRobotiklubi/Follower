@@ -12,7 +12,7 @@ Texture TextureAllocate(int width, int height) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA,
-               GL_UNSIGNED_BYTE, NULL);
+               GL_UNSIGNED_BYTE, nullptr);
 
   return t;
 }
@@ -32,7 +32,7 @@ void TextureUpdate(Texture* texture, const uint8_t* data, int width,
     texture->width = width;
     texture->height = height;
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA,
-                 GL_UNSIGNED_BYTE, NULL);
+                 GL_UNSIGNED_BYTE, nullptr);
 
   } else {
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA,

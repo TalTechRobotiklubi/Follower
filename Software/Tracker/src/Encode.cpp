@@ -113,8 +113,8 @@ IoVec EncodeImage(Encoder* encoder, const uint8_t* raw, const ActiveMap* map) {
     printf("%s\n", vpx_codec_error_detail(&encoder->codec));
   }
 
-  const vpx_codec_cx_pkt_t* pkt = NULL;
-  vpx_codec_iter_t iter = NULL;
+  const vpx_codec_cx_pkt_t* pkt = nullptr;
+  vpx_codec_iter_t iter = nullptr;
 
   IoVec result;
 

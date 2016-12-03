@@ -32,19 +32,13 @@ Decoder* DecoderCreate() {
 bool DecodeFrame(Decoder* dc, const uint8_t* data, int len, int targetWidth,
                  int targetHeight, RgbaImage* out) {
   vpx_codec_ctx_t* codec = &dc->codec;
-  vpx_codec_err_t ret = vpx_codec_decode(codec, data, len, NULL, 0);
+  vpx_codec_err_t ret = vpx_codec_decode(codec, data, len, nullptr, 0);
 
   if (ret != VPX_CODEC_OK) {
-#if 0
-    const char* error = vpx_codec_error(codec);
-    const char* detail = vpx_codec_error_detail(codec);
-    printf("Failed to decode, %s: %s\n", (error ? error : "unknown"),
-           (detail ? detail : "unknown"));
-#endif
     return false;
   }
 
-  vpx_codec_iter_t iter = NULL;
+  vpx_codec_iter_t iter = nullptr;
   vpx_image_t* image = vpx_codec_get_frame(codec, &iter);
   if (!image) {
     printf("No video frame available\n");

@@ -4,6 +4,6 @@
 #include <stdlib.h>
 
 struct IoVec {
-  uint8_t* data = NULL;
+  uint8_t* data = nullptr;
   size_t len = 0;
 };

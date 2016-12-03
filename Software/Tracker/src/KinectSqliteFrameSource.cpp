@@ -24,7 +24,7 @@ KinectSqliteFrameSource::KinectSqliteFrameSource(const char* database)
   }
 
   if (!res) {
-    sqlite3_stmt* countStmt = NULL;
+    sqlite3_stmt* countStmt = nullptr;
     sqlite3_prepare_v2(db, "SELECT count(*) FROM depth_frames", -1, &countStmt,
                        nullptr);
 
