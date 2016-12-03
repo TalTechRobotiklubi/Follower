@@ -32,7 +32,7 @@ const TASK_STRUCT TaskHandler_tableOfTasks[] = {
 		{TASK_BUTTON,			 10,			0,			Button_Task						},
 		{TASK_POWER,			 10,			1,			Power_Task						},
 		{TASK_LED,				400,			0,			GPIO_TASK_blinkLED	    		},
-		{TASK_LOGIC,			100,			2,			Logic_Task						},
+		{TASK_LOGIC,			 40,			2,			Logic_Task						},
 		{TASK_LCD,				 10,			3,			ST7735_Task						}
 };
 #define NUMBER_OF_TASKS  (sizeof(TaskHandler_tableOfTasks) / sizeof(TASK_STRUCT))

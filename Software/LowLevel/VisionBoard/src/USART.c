@@ -11,7 +11,6 @@ static GPIO_IdDef UARTx_GPIO_init(USART_TypeDef *uartX);
 static void UARTx_IRQ_init(GPIO_IdDef);
 static void UARTxBuffersInit(USART_TypeDef *uartX);
 static void sendChar(USART_TypeDef *uartX, unsigned char data_char);
-static void sendString(USART_TypeDef *uartX, unsigned char *data_string);
 static void handleTransmitData(void);
 
 //USART2 Tx
@@ -126,16 +125,6 @@ void sendChar(USART_TypeDef *uartX, unsigned char data_char)
 	}
 }
 
-void sendString(USART_TypeDef *uartX, unsigned char *data_string)
-{
-	unsigned int i=0;
-	while(data_string[i])
-	{
-		sendChar(uartX, (unsigned char)data_string[i]);
-		i++;
-	}
-}
-
 void USART2_IRQHandler(void)
 {
 	if(USART_GetITStatus(USART2, USART_IT_TXE) != RESET)
@@ -157,18 +146,23 @@ void USART2_IRQHandler(void)
 
 void handleTransmitData(void)
 {
+	static uint8_t prev_activity = 0;
 	uint8_t activity;
 	if (DL_getData(DLParamVisualizationActivity, &activity))
 	{
-		sendChar(USART2, 'p');  // p
-		sendChar(USART2, 'a');
-		sendChar(USART2, 'g');
-		sendChar(USART2, 'e');
-		sendChar(USART2, ' ');
-		sendChar(USART2, activity + 0x30);
-		sendChar(USART2, 0xFF);
-		sendChar(USART2, 0xFF);
-		sendChar(USART2, 0xFF);
+		if (activity != prev_activity)
+		{
+			sendChar(USART2, 'p');  // p
+			sendChar(USART2, 'a');
+			sendChar(USART2, 'g');
+			sendChar(USART2, 'e');
+			sendChar(USART2, ' ');
+			sendChar(USART2, activity + 0x30);
+			sendChar(USART2, 0xFF);
+			sendChar(USART2, 0xFF);
+			sendChar(USART2, 0xFF);
+		}
+		prev_activity = activity;
 	}
 }
 

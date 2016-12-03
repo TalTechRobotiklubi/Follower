@@ -18,31 +18,6 @@ const GPIO_Struct GPIO_table[] = {
 	{USART2_RX, 		GPIOA,  GPIO_Pin_3,     RCC_AHBPeriph_GPIOA,    EXTI_Line3,     EXTI_PortSourceGPIOA,   EXTI_PinSource3,	USART2_IRQn}
 };
 
-//#define XBEE_COM                        USART2
-//#define XBEE_COM_APBPERIPHCLOCK         RCC_APB1PeriphClockCmd
-//#define XBEE_COM_CLK                    RCC_APB1Periph_USART2
-//#define XBEE_COM_IRQn                   USART2_IRQn
-//#define XBEE_COM_IRQHandler             USART2_IRQHandler
-//
-//#define XBEE_COM_TX_PIN                 GPIO_Pin_2
-//#define XBEE_COM_TX_GPIO_PORT           GPIOA
-//#define XBEE_COM_TX_GPIO_CLK            RCC_AHBPeriph_GPIOA
-//#define XBEE_COM_TX_SOURCE              GPIO_PinSource2
-//#define XBEE_COM_TX_AF                  GPIO_AF_USART2
-//
-//#define XBEE_COM_RX_PIN                 GPIO_Pin_3
-//#define XBEE_COM_RX_GPIO_PORT           GPIOA
-//#define XBEE_COM_RX_GPIO_CLK            RCC_AHBPeriph_GPIOA
-//#define XBEE_COM_RX_SOURCE              GPIO_PinSource3
-//#define XBEE_COM_RX_AF                  GPIO_AF_USART2
-//
-//#define XBEE_RST_PIN                    GPIO_Pin_13
-//#define XBEE_RST_GPIO_PORT              GPIOC
-//#define XBEE_RST_GPIO_CLK               RCC_AHBPeriph_GPIOC
-//
-//#define XBEE_BAUDRATE                   9600
-//#define XBEE_API_ESCAPED
-
 /*private function declarations*/
 void initOutput(GPIO_IdDef io);
 void initInput(GPIO_IdDef io,GPIOPuPd_TypeDef puPd);
@@ -107,7 +82,6 @@ void GPIO_outputOff(GPIO_IdDef io)
 GPIO_InputDef GPIO_inputValue(GPIO_IdDef io)
 {
 	if((GPIO_table[io].port->IDR & GPIO_table[io].pin) != (uint32_t)Bit_RESET)
-	//if ((GPIO_PORT[io]->IDR & GPIO_PIN[io]) != (uint32_t)Bit_RESET)
 	{
 		return INPUT_ON;
 	}

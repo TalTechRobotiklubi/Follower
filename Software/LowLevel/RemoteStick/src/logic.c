@@ -333,8 +333,8 @@ void Logic_Task()
 
   if (Button_IsDown(BTN_LEFT) && Button_IsDown(BTN_RIGHT))
   {
-    ShutDownDelay += period;
-    if (ShutDownDelay >= 2000)
+    ShutDownDelay++;
+    if (ShutDownDelay >= 2000/period)
     {
       Power_TurnOff(100);
     }
