@@ -4,7 +4,7 @@
 #include <float.h>
 #include "Clock.h"
 #include "Constants.h"
-#include "fl_yuy2_convert.h"
+#include "Yuy2Convert.h"
 
 namespace {
 
@@ -31,7 +31,7 @@ bool ReadDepthData(KinectLiveFrameSource* source) {
     if (SUCCEEDED(hr)) {
       const uint16_t* begin = (const uint16_t*)buffer;
       const uint16_t* end = (const uint16_t*)buffer + bufferSize;
-      
+
       std::unique_lock<std::mutex> lock(source->frameLock);
       source->depthBuffer.clear();
       source->depthBuffer.insert(source->depthBuffer.end(), begin, end);
@@ -74,7 +74,7 @@ bool ReadRgbData(KinectLiveFrameSource* source) {
     frame->AccessRawUnderlyingBuffer(&capacity, &yuy2Buffer);
 
     std::unique_lock<std::mutex> lock(source->frameLock);
-    source->kinectRgbaBuf = fl_yuy2_to_rgba(source->yuy2Converter, yuy2Buffer);
+    source->kinectRgbaBuf = Yuy2ToRgba(source->yuy2Converter, yuy2Buffer);
     source->currentFrame.rgbaWidth = kDepthWidth;
     source->currentFrame.rgbaHeight = kDeptHeight;
     source->currentFrame.rgbaData = source->kinectRgbaBuf;
@@ -93,7 +93,7 @@ KinectLiveFrameSource::KinectLiveFrameSource() : frameNumber(0) {
     fprintf(stderr, "Failed to get the kinect sensor\n");
   }
 
-  yuy2Converter = fl_yuy2_convert_create(1920, 1080, kDepthWidth, kDeptHeight);
+  yuy2Converter = Yuy2ConvertCreate(1920, 1080, kDepthWidth, kDeptHeight);
 
   if (kinect) {
     hr = kinect->Open();
@@ -127,7 +127,7 @@ KinectLiveFrameSource::~KinectLiveFrameSource() {
     InterfaceRelease(kinect);
   }
 
-  fl_yuy2_convert_destroy(yuy2Converter);
+  Yuy2ConvertDestroy(yuy2Converter);
 }
 
 const KinectFrame* KinectLiveFrameSource::GetFrame() {
@@ -142,7 +142,7 @@ const KinectFrame* KinectLiveFrameSource::GetFrame() {
 }
 
 void KinectLiveFrameSource::FillFrame(KinectFrame* dst) {
-	std::lock_guard<std::mutex> lock(frameLock);
+  std::lock_guard<std::mutex> lock(frameLock);
   CopyKinectFrame(&currentFrame, dst);
 }
 

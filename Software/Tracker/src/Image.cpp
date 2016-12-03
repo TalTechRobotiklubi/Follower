@@ -1,10 +1,10 @@
 #include "Image.h"
 #include <assert.h>
 #include <stdlib.h>
-#include "fl_math.h"
+#include "FlMath.h"
 
 static uint8_t DepthToByte(uint16_t value, uint16_t min, uint16_t max) {
-  const uint32_t v = fl_clamp(value, min, max);
+  const uint32_t v = Clamp(value, min, max);
   const uint32_t lmin = min;
   const uint32_t lmax = max;
   return uint8_t((v - lmin) * 255 / (lmax - lmin));

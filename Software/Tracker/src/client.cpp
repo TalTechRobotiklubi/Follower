@@ -9,9 +9,9 @@
 #include "CoreObj.h"
 #include "Decode.h"
 #include "File.h"
+#include "FlMath.h"
 #include "Style.h"
 #include "Texture.h"
-#include "fl_math.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "parg/parg.h"
@@ -255,7 +255,7 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
     local->depthBotRight.x = d->depthBotRight()->x();
     local->depthBotRight.y = d->depthBotRight()->y();
     const proto::Vec3* metric = d->metricPosition();
-    local->metricPosition = vec3(metric->x(), metric->y(), metric->z());
+    local->metricPosition = Vec3(metric->x(), metric->y(), metric->z());
     local->weight = d->weight();
 
     if (d->histogram()) {
@@ -285,8 +285,8 @@ void ClientHandleFrame(Client* c, const proto::Frame* frame) {
   for (uint32_t i = 0; i < targets->size(); i++) {
     const proto::Target* t = targets->Get(i);
     c->tracking.targets[i] =
-        Target(t->weight(), vec2{t->kinect().x(), t->kinect().y()},
-               vec3{t->position().x(), t->position().y(), t->position().z()});
+        Target(t->weight(), Vec2{t->kinect().x(), t->kinect().y()},
+               Vec3{t->position().x(), t->position().y(), t->position().z()});
   }
 }
 
@@ -350,9 +350,9 @@ void RenderOverview(Client* client) {
   drawList->AddCircle(robot, 20.f, ImColor(0x8E, 0x8A, 0x71), 9, 2.f);
 
   // Camera position
-  const float camRotRad = deg_to_rad(client->state.camera.x);
-  const vec2 camTopLeft = vec2_rotate(vec2{-12.f, 0.f}, camRotRad);
-  const vec2 camBotRight = vec2_rotate(vec2{12.f, 0.f}, camRotRad);
+  const float camRotRad = DegToRad(client->state.camera.x);
+  const Vec2 camTopLeft = Vec2Rotate(Vec2{-12.f, 0.f}, camRotRad);
+  const Vec2 camBotRight = Vec2Rotate(Vec2{12.f, 0.f}, camRotRad);
   drawList->AddLine(ImVec2(camTopLeft.x + robot.x, camTopLeft.y + robot.y),
                     ImVec2(camBotRight.x + robot.x, camBotRight.y + robot.y),
                     ImColor(0xC6, 0xC7, 0xC5), 10.f);
@@ -361,7 +361,7 @@ void RenderOverview(Client* client) {
   for (int i = 0; i < client->world->numDetections; i++) {
     const Detection* detection = &client->world->detections[i];
     const float d =
-        fl_map_range(detection->metricPosition.z, 0.f, 4.5f, 0.f, height);
+        MapRange(detection->metricPosition.z, 0.f, 4.5f, 0.f, height);
     const float centerX =
         float(detection->depthBotRight.x + detection->depthTopLeft.x) * 0.5f;
     drawList->AddCircle(ImVec2(c.x + centerX, robot.y - d), radius,
@@ -370,7 +370,7 @@ void RenderOverview(Client* client) {
 
   const TrackingState* tracking = &client->tracking;
   const auto TargetToRenderCoords = [&](const Target& t) {
-    const float d = fl_map_range(t.position.z, 0.f, 4.5f, 0.f, height);
+    const float d = MapRange(t.position.z, 0.f, 4.5f, 0.f, height);
     const float tx = t.kinect.x / w;
     return ImVec2(c.x + w * tx, robot.y - d);
   };
@@ -424,9 +424,9 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  std::vector<const char*> commands = {"startscript", "stop", "speed", "rot",
-                                       "stopvideo", "startvideo", "record",
-                                       "stoprecord", "startdebug", "stopdebug"};
+  std::vector<const char*> commands = {
+      "startscript", "stop",   "speed",      "rot",        "stopvideo",
+      "startvideo",  "record", "stoprecord", "startdebug", "stopdebug"};
   client.console = new Console(commands);
 
   while (!glfwWindowShouldClose(window)) {

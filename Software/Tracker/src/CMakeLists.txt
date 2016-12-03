@@ -34,7 +34,6 @@ set(CORE_SOURCES
 
   Encode.cpp
 
-  fl_yuy2_convert.cpp
   fl_sqlite_writer.cpp
   File.cpp
   HistogramDistance.cpp
@@ -46,7 +45,7 @@ set(CORE_SOURCES
   ScriptLoader.cpp
   UdpHost.cpp
 
-  vec2.cpp
+  Yuy2Convert.cpp
 
   parg/parg.c
 )
@@ -67,11 +66,10 @@ add_executable(
   client.cpp
   Decode.cpp
   File.cpp
-  fl_math.cpp
+  FlMath.cpp
   Image.cpp
   Style.cpp
   Texture.cpp
-  vec2.cpp
 
   ui/Console.cpp
 

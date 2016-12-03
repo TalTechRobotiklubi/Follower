@@ -1,13 +1,13 @@
 #pragma once
 #include <stdint.h>
+#include "FlMath.h"
 #include "Image.h"
 #include "comm/comm_input.h"
-#include "vec3.h"
 
 struct Detection {
-  vec2i depthTopLeft;
-  vec2i depthBotRight;
-  vec3 metricPosition;
+  Vec2i depthTopLeft;
+  Vec2i depthBotRight;
+  Vec3 metricPosition;
   float weight;
   float histogram[768];
   RgbaImage color;
@@ -22,12 +22,12 @@ struct World {
 
 struct Target {
   float weight = 0.f;
-  vec2 kinect;
-  vec3 position;
+  Vec2 kinect;
+  Vec3 position;
   int32_t detectionIndex = -1;
 
   Target() = default;
-  Target(float weight, vec2 kinect, vec3 position)
+  Target(float weight, Vec2 kinect, Vec3 position)
       : weight(weight), kinect(kinect), position(position) {}
 };
 
@@ -45,7 +45,7 @@ struct TrackingState {
 };
 
 struct ControlState {
-  vec2 camera;
+  Vec2 camera;
   float rotationSpeed = 0.f;
   float speed = 0.f;
 };

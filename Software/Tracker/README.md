@@ -23,10 +23,25 @@ Running the core
 --------
 follower_core 
 -h x.x.x.x (ip-address) 
--c classifier.nn 
+-c cpu.net
 -s COMx 
 -i default.lua
 
+Detection algorithm
+-------
+The detection algorithm works in two phases: possible candidate selection and candidate filtering.
+Selection is roughly based on *Fast Human Detection for Indoor Mobile Robots Using Depth Images* [1]:
+1. The initial depth image (512x424) is downsampled into a 64x53 (1/8) grid, where each depth value is received by selecting n(=16) points through stratified sampling from the original 8x8 grid cell and taking their median. The original algorithm used random sampling, however stratified sampling is faster and allows for repeatability.
+2. The downscaled depth image is segmented using *Efficient Graph-Based Image Segmentation* [2]
+3. A normal map/image is created from the downscaled depth image and segmented using the same algorithm.
+4. Normal and depth points which lie in the same connected component are selected and their corresponding bounding boxes are calculated.
+5. Now the regions are merged together based on several heuristics (their distance from each other, the amount of points they have). The original algorithm tried to filter out non-planar regions, but this removed a lot of regions with useful information (e.g. heads) so this step is omitted.
+6. Merged regions that fit all the criteria (not too small or large) are used in the final step. Depth values from the original image are copied into a 64x128 image based on the filtered regions. The result is a list of 64x128 depth images which are the final candidates. The previous version created a HOG feature vector from the images, but is now disabled.
+
+The candidate depth images are fed into a convolutional neural network (built with [Torch](http://torch.ch/)) which filters out possible humans. The training set for the classifier consisted of roughly 60k depth images.
+
+[1]: http://www.cs.cmu.edu/~mmv/papers/13icra-CoBotPeopleDetection.pdf
+[2]: http://cs.brown.edu/~pff/segment/
 Coding
 -------
 1. Next time after set up it is necessary only to open follower.sln file for coding

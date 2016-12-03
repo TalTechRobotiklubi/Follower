@@ -186,12 +186,12 @@ void core_detect(core* c, double timestamp) {
     }
 
     if (passed >= requiredPasses) {
-      vec2i tl{kDepthWidth - candidate->depth_position.x -
+      Vec2i tl{kDepthWidth - candidate->depth_position.x -
                    candidate->depth_position.width,
                candidate->depth_position.y};
-      vec2i br{tl.x + candidate->depth_position.width,
+      Vec2i br{tl.x + candidate->depth_position.width,
                tl.y + candidate->depth_position.height};
-      vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
+      Vec3 metricPos{candidate->metric_position.x, candidate->metric_position.y,
                      candidate->metric_position.z};
       Detection* d = &world->detections[world->numDetections];
       d->depthTopLeft = tl;
