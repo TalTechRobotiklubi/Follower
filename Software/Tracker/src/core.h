@@ -16,7 +16,7 @@ struct core {
   float dtMilli = 0.0;
   bool sendVideo = true;
   bool sendDebugData = false;
-  struct fl_sqlite_writer* writer = nullptr;
+  struct SqliteFrameWriter* writer = nullptr;
   World* world = nullptr;
   TrackingState tracking;
   ControlState state;

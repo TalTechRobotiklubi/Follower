@@ -11,10 +11,10 @@
 #include "Encode.h"
 #include "File.h"
 #include "KinectFrameSource.h"
+#include "SqliteFrameWriter.h"
 #include "UdpHost.h"
 #include "comm/datalayer.h"
 #include "core_opt.h"
-#include "fl_sqlite_writer.h"
 #include "png/lodepng.h"
 #include "proto/message_generated.h"
 
@@ -99,7 +99,7 @@ void core_handle_command(core* c, const proto::Command* command) {
     case proto::CommandType_RecordDepth: {
       if (!c->writer) {
         const char* db = "depth_frames.db";
-        c->writer = fl_sqlite_writer_create(db);
+        c->writer = SqliteFrameWriterCreate(db);
         core_send_status_message(c, "recording to depth_frames.db");
       } else {
         core_send_status_message(c, "already recording");
@@ -108,7 +108,7 @@ void core_handle_command(core* c, const proto::Command* command) {
     }
     case proto::CommandType_StopRecord: {
       if (c->writer) {
-        fl_sqlite_writer_destroy(c->writer);
+        SqliteFrameWriterDestroy(c->writer);
         c->writer = nullptr;
       }
       core_send_status_message(c, "ok");
@@ -278,17 +278,13 @@ void core_serialize(core* c) {
       c->builder, c->tracking.activeTarget, targetOffsets);
 
   proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
-  auto depth = c->sendVideo ? c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len) : 0;
-  auto frame = proto::CreateFrame(c->builder,
-    c->timestamp,
-    c->dtMilli,
-    &camera,
-    c->state.rotationSpeed,
-    c->state.speed,
-    depth,
-    detectionOffsets,
-    tracking
-  );
+  auto depth =
+      c->sendVideo
+          ? c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len)
+          : 0;
+  auto frame = proto::CreateFrame(c->builder, c->timestamp, c->dtMilli, &camera,
+                                  c->state.rotationSpeed, c->state.speed, depth,
+                                  detectionOffsets, tracking);
   auto message =
       proto::CreateMessage(c->builder, proto::Payload_Frame, frame.Union());
   c->builder.Finish(message);
@@ -312,7 +308,7 @@ core::core()
 
 core::~core() {
   if (kinect_frame_thread.joinable()) kinect_frame_thread.join();
-  if (writer) fl_sqlite_writer_destroy(writer);
+  if (writer) SqliteFrameWriterDestroy(writer);
 }
 
 int main(int argc, char** argv) {
@@ -347,7 +343,7 @@ int main(int argc, char** argv) {
       c.frameSource->FillFrame(&c.kinectFrame);
 
       if (c.writer) {
-        fl_sqlite_writer_add_frame(c.writer, &c.kinectFrame);
+        SqliteFrameWriterAddFrame(c.writer, &c.kinectFrame);
       }
     }
 
