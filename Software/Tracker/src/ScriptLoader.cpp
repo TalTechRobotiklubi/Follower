@@ -1,4 +1,5 @@
 #include "ScriptLoader.h"
+#include <assert.h>
 #include <stdio.h>
 #include <lua.hpp>
 #include <string>
@@ -148,8 +149,11 @@ bool ScriptLoaderExecFile(ScriptLoader* loader, const char* file) {
   fseek(f, 0, SEEK_SET);
 
   std::string content(size, 0);
-  fread(&content[0], 1, size, f);
+  size_t bytesRead = fread(&content[0], 1, size, f);
   fclose(f);
+  assert(bytesRead == size_t(size));
+
+  if (bytesRead != size_t(size)) return false;
 
   return ScriptLoaderExec(loader, content.c_str());
 }
