@@ -11,38 +11,38 @@
 #include "comm/serial_comm.h"
 #include "proto/flatbuffers/flatbuffers.h"
 
-struct core {
+struct Core {
   double timestamp = 0.0;
-  float dtMilli = 0.0;
+  double dtMilli = 0.0;
   bool sendVideo = true;
   bool sendDebugData = false;
   struct SqliteFrameWriter* writer = nullptr;
   World* world = nullptr;
   TrackingState tracking;
   ControlState state;
-  CommInput in_data;
-  CommOutput out_data;
+  CommInput inData;
+  CommOutput outData;
   SerialComm serial;
-  std::thread kinect_frame_thread;
+  std::thread kinectFrameThread;
   int frameNum = 0;
   KinectFrame kinectFrame;
   struct KinectFrameSource* frameSource = nullptr;
   struct UdpHost* udp = nullptr;
   ScriptLoader scripts;
 
-  RgbaImage rgba_depth;
-  RgbaImage prev_rgba_depth;
-  ActiveMap rgba_depth_diff;
+  RgbaImage rgbaDepth;
+  RgbaImage prevRgbaDepth;
+  ActiveMap rgbaDepthDiff;
   struct Encoder* encoder;
-  IoVec encoded_depth;
+  IoVec encodedDepth;
 
   struct fhd_context* fhd = nullptr;
 
   flatbuffers::FlatBufferBuilder builder;
   std::vector<std::unique_ptr<Classifier>> classifiers;
 
-  core();
-  ~core();
+  Core();
+  ~Core();
 };
 
-void core_start(core* c);
+void CoreStart(Core* c);

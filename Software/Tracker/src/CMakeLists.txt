@@ -21,7 +21,7 @@ set(CORE_SOURCES
   classifier/FHDClassifier.cpp
   classifier/TorchClassifier.cpp
 
-  core.cpp
+  Core.cpp
   core_opt.cpp
 
   comm/datalayer.cpp

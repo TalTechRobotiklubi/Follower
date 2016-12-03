@@ -10,10 +10,10 @@
 #include "UdpHost.h"
 #include "classifier/FHDClassifier.h"
 #include "classifier/TorchClassifier.h"
-#include "core.h"
+#include "Core.h"
 #include "parg/parg.h"
 
-int parse_opt(core* c, int argc, char** argv) {
+int parse_opt(Core* c, int argc, char** argv) {
   parg_state args;
   parg_init(&args);
 

@@ -1,4 +1,4 @@
-#include "core.h"
+#include "Core.h"
 #include <fhd.h>
 #include <fhd_kinect.h>
 #include <libyuv.h>
@@ -26,17 +26,11 @@ void CopyRgbaSubImage(const KinectFrame* frame, int x, int y, int w, int h,
                     dst->stride, dst->width, dst->height, libyuv::kFilterNone);
 }
 
-void kinect_loop(core* c) {
-  for (;;) {
-    c->frameSource->GetFrame();
-  }
-}
-
-void core_decide(core* c, double dt) {
+void CoreDecide(Core* c, double dt) {
   ScriptLoaderUpdate(&c->scripts, dt, c->world, &c->state, &c->tracking);
 }
 
-void core_send_status_message(core* c, const char* message) {
+void CoreSendStatusMessage(Core* c, const char* message) {
   flatbuffers::FlatBufferBuilder builder;
   auto content = builder.CreateString(message);
   auto m = proto::CreateMessage(
@@ -46,14 +40,18 @@ void core_send_status_message(core* c, const char* message) {
   UdpHostBroadcast(c->udp, builder.GetBufferPointer(), builder.GetSize(), true);
 }
 
-void core_start(core* c) {
-  ScriptLoaderSetLogCallback(&c->scripts,
-                             [](const char* s, void* user) {
-                               core_send_status_message((core*)user, s);
-                             },
-                             c);
+void CoreStart(Core* c) {
+  ScriptLoaderSetLogCallback(
+      &c->scripts,
+      [](const char* s, void* user) { CoreSendStatusMessage((Core*)user, s); },
+      c);
 
-  c->kinect_frame_thread = std::thread(kinect_loop, c);
+  auto kinectLoop = [](Core* core) {
+    for (;;) {
+      core->frameSource->GetFrame();
+    }
+  };
+  c->kinectFrameThread = std::thread(kinectLoop, c);
 
   c->classifiers.erase(
       std::remove_if(c->classifiers.begin(), c->classifiers.end(),
@@ -63,46 +61,46 @@ void core_start(core* c) {
       c->classifiers.end());
 }
 
-void core_stop_actions(core* c) {
+void CoreStopActions(Core* c) {
   ScriptLoaderExec(&c->scripts, "decide = nil");
   c->state = ControlState();
 }
 
-void core_handle_command(core* c, const proto::Command* command) {
+void CoreHandleCommand(Core* c, const proto::Command* command) {
   switch (command->type()) {
     case proto::CommandType_Stop:
-      core_stop_actions(c);
-      core_send_status_message(c, "stop done");
+      CoreStopActions(c);
+      CoreSendStatusMessage(c, "stop done");
       break;
     case proto::CommandType_Speed: {
       c->state.speed = float(atof(command->arg()->c_str()));
       std::string actual = std::to_string(c->state.speed);
-      core_send_status_message(c, actual.c_str());
+      CoreSendStatusMessage(c, actual.c_str());
       break;
     }
     case proto::CommandType_RotationSpeed: {
       c->state.rotationSpeed = float(atof(command->arg()->c_str()));
       std::string actual = std::to_string(c->state.rotationSpeed);
-      core_send_status_message(c, actual.c_str());
+      CoreSendStatusMessage(c, actual.c_str());
       break;
     }
     case proto::CommandType_StopVideo: {
       c->sendVideo = false;
-      core_send_status_message(c, "ok");
+      CoreSendStatusMessage(c, "ok");
       break;
     }
     case proto::CommandType_StartVideo: {
       c->sendVideo = true;
-      core_send_status_message(c, "ok");
+      CoreSendStatusMessage(c, "ok");
       break;
     }
     case proto::CommandType_RecordDepth: {
       if (!c->writer) {
         const char* db = "depth_frames.db";
         c->writer = SqliteFrameWriterCreate(db);
-        core_send_status_message(c, "recording to depth_frames.db");
+        CoreSendStatusMessage(c, "recording to depth_frames.db");
       } else {
-        core_send_status_message(c, "already recording");
+        CoreSendStatusMessage(c, "already recording");
       }
       break;
     }
@@ -111,27 +109,27 @@ void core_handle_command(core* c, const proto::Command* command) {
         SqliteFrameWriterDestroy(c->writer);
         c->writer = nullptr;
       }
-      core_send_status_message(c, "ok");
+      CoreSendStatusMessage(c, "ok");
       break;
     }
     case proto::CommandType_StartDebug: {
       c->sendDebugData = true;
-      core_send_status_message(c, "ok");
+      CoreSendStatusMessage(c, "ok");
       break;
     }
     case proto::CommandType_StopDebug: {
       c->sendDebugData = false;
-      core_send_status_message(c, "ok");
+      CoreSendStatusMessage(c, "ok");
       break;
     }
     default: {
-      core_send_status_message(c, "unknown command");
+      CoreSendStatusMessage(c, "unknown command");
       break;
     }
   }
 }
 
-void core_handle_message(core* c, const uint8_t* data, size_t) {
+void CoreHandleMessage(Core* c, const uint8_t* data, size_t) {
   auto message = proto::GetMessage(data);
   if (!message) {
     return;
@@ -143,21 +141,21 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
       const char* remoteScript = scriptMessage->content()->c_str();
 
       if (ScriptLoaderExec(&c->scripts, remoteScript)) {
-        core_send_status_message(c, "load successful");
+        CoreSendStatusMessage(c, "load successful");
       } else {
         const char* err = ScriptLoaderGetError(&c->scripts);
         if (err) {
           printf("failed to load wrapper script: %s\n", err);
-          core_send_status_message(c, err);
+          CoreSendStatusMessage(c, err);
         } else {
-          core_send_status_message(c, "failed to load script, no lua error");
+          CoreSendStatusMessage(c, "failed to load script, no lua error");
         }
       }
       break;
     }
     case proto::Payload_Command: {
       auto command = (const proto::Command*)message->payload();
-      core_handle_command(c, command);
+      CoreHandleCommand(c, command);
       break;
     }
     default:
@@ -165,7 +163,7 @@ void core_handle_message(core* c, const uint8_t* data, size_t) {
   }
 }
 
-void core_detect(core* c, double timestamp) {
+void CoreDetect(Core* c, double timestamp) {
   World* world = c->world;
   world->timestamp = timestamp;
   world->numDetections = 0;
@@ -219,15 +217,15 @@ void core_detect(core* c, double timestamp) {
   }
 }
 
-void core_serial_send(core* c) {
-  c->out_data.translation_speed = int16_t(c->state.speed);
-  c->out_data.rotation_speed = int16_t(c->state.rotationSpeed);
-  c->out_data.camera_degrees = c->state.camera;
-  c->out_data.activity = (Activity)c->tracking.activity;
-  c->serial.send(c->out_data);
+void CoreSerialSend(Core* c) {
+  c->outData.translation_speed = int16_t(c->state.speed);
+  c->outData.rotation_speed = int16_t(c->state.rotationSpeed);
+  c->outData.camera_degrees = c->state.camera;
+  c->outData.activity = (Activity)c->tracking.activity;
+  c->serial.send(c->outData);
 }
 
-void core_serialize(core* c) {
+void CoreSerialize(Core* c) {
   c->builder.Clear();
   std::vector<flatbuffers::Offset<proto::Detection>> detections;
   std::vector<proto::Target> targets;
@@ -280,7 +278,7 @@ void core_serialize(core* c) {
   proto::Vec2 camera(c->state.camera.x, c->state.camera.y);
   auto depth =
       c->sendVideo
-          ? c->builder.CreateVector(c->encoded_depth.data, c->encoded_depth.len)
+          ? c->builder.CreateVector(c->encodedDepth.data, c->encodedDepth.len)
           : 0;
   auto frame = proto::CreateFrame(c->builder, c->timestamp, c->dtMilli, &camera,
                                   c->state.rotationSpeed, c->state.speed, depth,
@@ -290,14 +288,14 @@ void core_serialize(core* c) {
   c->builder.Finish(message);
 }
 
-core::core()
+Core::Core()
     : world((World*)calloc(1, sizeof(World))),
       encoder(EncoderCreate(kDepthWidth, kDeptHeight)),
       fhd((fhd_context*)calloc(1, sizeof(fhd_context))) {
   KinectFrameInit(&kinectFrame, kDepthWidth, kDeptHeight);
-  RgbaImageInit(&rgba_depth, kDepthWidth, kDeptHeight);
-  RgbaImageInit(&prev_rgba_depth, kDepthWidth, kDeptHeight);
-  ActiveMapReset(&rgba_depth_diff, kDepthWidth, kDeptHeight);
+  RgbaImageInit(&rgbaDepth, kDepthWidth, kDeptHeight);
+  RgbaImageInit(&prevRgbaDepth, kDepthWidth, kDeptHeight);
+  ActiveMapReset(&rgbaDepthDiff, kDepthWidth, kDeptHeight);
 
   fhd_context_init(fhd, kDepthWidth, kDeptHeight, 8, 8);
 
@@ -306,13 +304,13 @@ core::core()
   }
 }
 
-core::~core() {
-  if (kinect_frame_thread.joinable()) kinect_frame_thread.join();
+Core::~Core() {
+  if (kinectFrameThread.joinable()) kinectFrameThread.join();
   if (writer) SqliteFrameWriterDestroy(writer);
 }
 
 int main(int argc, char** argv) {
-  core c;
+  Core c;
   if (!ScriptLoaderInit(&c.scripts)) {
     printf("Failed to initialize lua\n");
     return 1;
@@ -322,19 +320,19 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  core_start(&c);
+  CoreStart(&c);
 
-  double current_time = ms_now();
-  double prev_time = current_time;
+  double currentTime = ms_now();
+  double prevTime = currentTime;
   const double broadcastInterval = 0.04;
   double timeUntilBroadCast = broadcastInterval;
   for (;;) {
-    prev_time = current_time;
-    current_time = ms_now();
-    const double frame_time = current_time - prev_time;
-    const double frameTimeSeconds = frame_time / 1000.0;
-    c.timestamp += frame_time;
-    c.dtMilli = float(frame_time);
+    prevTime = currentTime;
+    currentTime = ms_now();
+    const double frameTime = currentTime - prevTime;
+    const double frameTimeSeconds = frameTime / 1000.0;
+    c.timestamp += frameTime;
+    c.dtMilli = frameTime;
 
     int sourceFrameNum = c.frameSource->FrameNumber();
     if (sourceFrameNum != c.frameNum) {
@@ -348,33 +346,33 @@ int main(int argc, char** argv) {
     }
 
     if (c.sendVideo && timeUntilBroadCast <= 0.0) {
-      memcpy(c.prev_rgba_depth.data, c.rgba_depth.data, c.rgba_depth.bytes);
+      memcpy(c.prevRgbaDepth.data, c.rgbaDepth.data, c.rgbaDepth.bytes);
       DepthToRgba(c.kinectFrame.depthData, c.kinectFrame.depthLength,
-                  &c.rgba_depth);
-      BlockDiff(c.prev_rgba_depth.data, c.rgba_depth.data, kDepthWidth,
-                kDeptHeight, &c.rgba_depth_diff);
-      c.encoded_depth =
-          EncodeImage(c.encoder, c.rgba_depth.data, &c.rgba_depth_diff);
+                  &c.rgbaDepth);
+      BlockDiff(c.prevRgbaDepth.data, c.rgbaDepth.data, kDepthWidth,
+                kDeptHeight, &c.rgbaDepthDiff);
+      c.encodedDepth =
+          EncodeImage(c.encoder, c.rgbaDepth.data, &c.rgbaDepthDiff);
     }
 
-    c.serial.receive(&c.in_data);
-    memcpy(c.world->distance_sensors, &c.in_data,
+    c.serial.receive(&c.inData);
+    memcpy(c.world->distance_sensors, &c.inData,
            sizeof(uint8_t) * NUM_OF_DISTANCE_SENSORS);
 
-    core_detect(&c, current_time);
-    core_decide(&c, frameTimeSeconds);
+    CoreDetect(&c, currentTime);
+    CoreDecide(&c, frameTimeSeconds);
 
-    DL_task(int16_t(frame_time));
-    core_serial_send(&c);
+    DL_task(int16_t(frameTime));
+    CoreSerialSend(&c);
 
     const IoVec* received = UdpHostPoll(c.udp);
 
     if (received) {
-      core_handle_message(&c, received->data, received->len);
+      CoreHandleMessage(&c, received->data, received->len);
     }
 
     if (timeUntilBroadCast <= 0.0) {
-      core_serialize(&c);
+      CoreSerialize(&c);
       UdpHostBroadcast(c.udp, c.builder.GetBufferPointer(), c.builder.GetSize(),
                        false);
       timeUntilBroadCast = broadcastInterval;
