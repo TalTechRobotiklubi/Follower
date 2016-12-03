@@ -11,6 +11,7 @@
 #include "Encode.h"
 #include "File.h"
 #include "KinectFrameSource.h"
+#include "Message.h"
 #include "SqliteFrameWriter.h"
 #include "UdpHost.h"
 #include "comm/datalayer.h"
@@ -70,7 +71,7 @@ void CoreHandleCommand(Core* c, const proto::Command* command) {
   switch (command->type()) {
     case proto::CommandType_Stop:
       CoreStopActions(c);
-      CoreSendStatusMessage(c, "stop done");
+      CoreSendStatusMessage(c, MSG_OK);
       break;
     case proto::CommandType_Speed: {
       c->state.speed = float(atof(command->arg()->c_str()));
@@ -86,12 +87,12 @@ void CoreHandleCommand(Core* c, const proto::Command* command) {
     }
     case proto::CommandType_StopVideo: {
       c->sendVideo = false;
-      CoreSendStatusMessage(c, "ok");
+      CoreSendStatusMessage(c, MSG_OK);
       break;
     }
     case proto::CommandType_StartVideo: {
       c->sendVideo = true;
-      CoreSendStatusMessage(c, "ok");
+      CoreSendStatusMessage(c, MSG_OK);
       break;
     }
     case proto::CommandType_RecordDepth: {
@@ -109,21 +110,21 @@ void CoreHandleCommand(Core* c, const proto::Command* command) {
         SqliteFrameWriterDestroy(c->writer);
         c->writer = nullptr;
       }
-      CoreSendStatusMessage(c, "ok");
+      CoreSendStatusMessage(c, MSG_OK);
       break;
     }
     case proto::CommandType_StartDebug: {
       c->sendDebugData = true;
-      CoreSendStatusMessage(c, "ok");
+      CoreSendStatusMessage(c, MSG_OK);
       break;
     }
     case proto::CommandType_StopDebug: {
       c->sendDebugData = false;
-      CoreSendStatusMessage(c, "ok");
+      CoreSendStatusMessage(c, MSG_OK);
       break;
     }
     default: {
-      CoreSendStatusMessage(c, "unknown command");
+      CoreSendStatusMessage(c, MSG_UNKNOWN_CMD);
       break;
     }
   }
