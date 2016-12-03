@@ -32,21 +32,16 @@ struct Target {
 };
 
 enum Activity {
-  // no activity or kinect down, sleeping emoticon on tft screen
   Resting = 0,
-  // no target, moving and searches, emoticon with question mark
   Searching = 1,
-  // follows target, happy emoticon
   Following = 2,
-  // if there is a case where robot is confused on lost, sad emoticon with tear
-  Confused = 3
 };
 
 struct TrackingState {
   int32_t activeTarget = -1;
   int32_t numTargets = 0;
   Target targets[16];
-  Activity activity;
+  int32_t activity;
 };
 
 struct ControlState {

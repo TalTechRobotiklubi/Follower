@@ -58,17 +58,16 @@ static const char* const initScript = R"(
     } Target;
 
     typedef enum {
-      Error = 0,
-      Resting = 1,
-      Searching = 2,
-      Following = 3,
+      Resting = 0,
+      Searching = 1,
+      Following = 2,
     } Activity;
 
     typedef struct {
       int32_t activeTarget;
       int32_t numTargets;
       Target targets[16];
-      Activity activity;
+      int32_t activity;
     } TrackingState;
 
     typedef struct {
