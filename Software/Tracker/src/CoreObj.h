@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include "Image.h"
 #include "comm/comm_input.h"
-#include "vec3.h"
+#include "FlMath.h"
 
 struct Detection {
   vec2i depthTopLeft;

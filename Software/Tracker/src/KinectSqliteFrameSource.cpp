@@ -5,7 +5,7 @@
 #include <string.h>
 #include <chrono>
 #include <thread>
-#include "fl_math.h"
+#include "FlMath.h"
 #include "sqlite3/sqlite3.h"
 
 KinectSqliteFrameSource::KinectSqliteFrameSource(const char* database)

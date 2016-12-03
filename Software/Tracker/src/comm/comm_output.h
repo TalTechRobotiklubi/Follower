@@ -3,7 +3,6 @@
 #pragma once
 
 #include <stdint.h>
-#include "vec2.h"
 #include "CoreObj.h"
 
 struct CommOutput {
@@ -19,4 +18,3 @@ struct CommOutput {
     activity = Resting;
   }
 };
-

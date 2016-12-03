@@ -1,7 +1,7 @@
 #include "fl_yuy2_convert.h"
 #include <libyuv.h>
 #include <stdlib.h>
-#include "fl_math.h"
+#include "FlMath.h"
 
 struct fl_yuy2_convert {
   int output_width;

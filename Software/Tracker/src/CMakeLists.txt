@@ -46,8 +46,6 @@ set(CORE_SOURCES
   ScriptLoader.cpp
   UdpHost.cpp
 
-  vec2.cpp
-
   parg/parg.c
 )
 
@@ -67,11 +65,10 @@ add_executable(
   client.cpp
   Decode.cpp
   File.cpp
-  fl_math.cpp
+  FlMath.cpp
   Image.cpp
   Style.cpp
   Texture.cpp
-  vec2.cpp
 
   ui/Console.cpp
 
