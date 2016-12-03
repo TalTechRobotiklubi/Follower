@@ -1,5 +1,4 @@
 // Copyright 2016 TUT Robotics Club
-
 #pragma once
 
 #include <stdint.h>

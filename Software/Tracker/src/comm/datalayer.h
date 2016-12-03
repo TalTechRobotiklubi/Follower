@@ -9,11 +9,7 @@
 #include "DataLayerConfig.h"
 #include "PacketConfig.h"
 
-enum APERIODIC_PACKET_STATUS
-{
-	PACKET_WAITING = -1,
-	PACKET_NEW = -2
-};
+enum APERIODIC_PACKET_STATUS { PACKET_WAITING = -1, PACKET_NEW = -2 };
 
 // ----------------------------------------------------------------------------
 // Function declarations
