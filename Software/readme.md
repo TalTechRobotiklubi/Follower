@@ -12,6 +12,6 @@ Communication
 ----------------------
 Follower robot has several communication interfaces. See the picture below.
 
-<img src="https://gitlab.com/TTYRobotiklubi/Follower/blob/master/Documents/Images/communication.png" width=500>
+![communication diagram](https://gitlab.com/TTYRobotiklubi/Follower/raw/master/Documents/Images/communication.png)
 
 It is used CAN bus between motor controllers, sensor board and vision board. It is mainly used to drive motors and receive feedback from robot. There is XRF radio module connected to sensor board. It provides a control and feedback possibility with low level robot without running the on-board PC. CAN bus and PC are connected via vision board, which passes messages from CAN bus to USB and vice-versa. Video and following algorithm feedback is passed to remote computer via WiFi.
