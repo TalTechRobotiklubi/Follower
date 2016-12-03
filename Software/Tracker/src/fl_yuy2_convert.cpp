@@ -90,5 +90,5 @@ void fl_yuy2_convert_destroy(fl_yuy2_convert* converter) {
 
 void fl_yuy2_set_quality(fl_yuy2_convert* converter, int quality) {
   converter->quality =
-      fl_clamp(quality, int(libyuv::kFilterNone), int(libyuv::kFilterBox));
+      Clamp(quality, int(libyuv::kFilterNone), int(libyuv::kFilterBox));
 }
