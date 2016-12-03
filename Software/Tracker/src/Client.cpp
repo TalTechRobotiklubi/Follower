@@ -10,6 +10,7 @@
 #include "Decode.h"
 #include "File.h"
 #include "FlMath.h"
+#include "Message.h"
 #include "Style.h"
 #include "Texture.h"
 #include "imgui.h"
@@ -27,7 +28,7 @@ struct ClientOptions {
   int screenHeight = 720;
 };
 
-std::vector<std::string> split(const std::string& text, char sep) {
+std::vector<std::string> Split(const std::string& text, char sep) {
   std::vector<std::string> tokens;
   std::size_t start = 0, end = 0;
   while ((end = text.find(sep, start)) != std::string::npos) {
@@ -146,26 +147,26 @@ void HandleCommand(Client* c, const std::vector<std::string>& tokens) {
     ClientSendData(c, builder.GetBufferPointer(), builder.GetSize());
 
     free(content.data);
-  } else if (command == "stop") {
+  } else if (command == kCmdStop) {
     SendCommand(c, proto::CommandType_Stop, nullptr);
-  } else if (command == "speed") {
+  } else if (command == kCmdSpeed) {
     if (needArg(1)) return;
     SendCommand(c, proto::CommandType_Speed, tokens[1].c_str());
-  } else if (command == "rot") {
+  } else if (command == kCmdRotation) {
     if (needArg(1)) return;
     SendCommand(c, proto::CommandType_RotationSpeed, tokens[1].c_str());
-  } else if (command == "stopvideo") {
+  } else if (command == kCmdStopVideo) {
     SendCommand(c, proto::CommandType_StopVideo, nullptr);
-  } else if (command == "startvideo") {
+  } else if (command == kCmdStartVideo) {
     SendCommand(c, proto::CommandType_StartVideo, nullptr);
-  } else if (command == "record") {
+  } else if (command == kCmdRecord) {
     SendCommand(c, proto::CommandType_RecordDepth, nullptr);
-  } else if (command == "stoprecord") {
+  } else if (command == kCmdStopRecord) {
     SendCommand(c, proto::CommandType_StopRecord, nullptr);
-  } else if (command == "startdebug") {
+  } else if (command == kCmdStartDebug) {
     SendCommand(c, proto::CommandType_StartDebug, nullptr);
     c->debugWindow = true;
-  } else if (command == "stopdebug") {
+  } else if (command == kCmdStopDebug) {
     SendCommand(c, proto::CommandType_StopDebug, nullptr);
     c->debugWindow = false;
   }
@@ -425,8 +426,9 @@ int main(int argc, char** argv) {
   }
 
   std::vector<const char*> commands = {
-      "startscript", "stop",   "speed",      "rot",        "stopvideo",
-      "startvideo",  "record", "stoprecord", "startdebug", "stopdebug"};
+      kCmdStartScript, kCmdStop,       kCmdSpeed,  kCmdRotation,
+      kCmdStopVideo,   kCmdStartVideo, kCmdRecord, kCmdStopRecord,
+      kCmdStartDebug,  kCmdStopDebug};
   client.console = new Console(commands);
 
   while (!glfwWindowShouldClose(window)) {
@@ -502,7 +504,7 @@ int main(int argc, char** argv) {
     const char* cmd =
         client.console->Draw("console", float(displayWidth - 20) * 0.5f, 300.f);
     if (cmd) {
-      auto tokens = split(cmd, ' ');
+      auto tokens = Split(cmd, ' ');
       if (tokens.size() >= 1) {
         HandleCommand(&client, tokens);
       }

@@ -63,7 +63,7 @@ set(HEADERS_ONLY CoreObj.h Constants.h Clock.h)
 
 add_executable(
   follower_client
-  client.cpp
+  Client.cpp
   Decode.cpp
   File.cpp
   FlMath.cpp

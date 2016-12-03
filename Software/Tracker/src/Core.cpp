@@ -71,7 +71,7 @@ void CoreHandleCommand(Core* c, const proto::Command* command) {
   switch (command->type()) {
     case proto::CommandType_Stop:
       CoreStopActions(c);
-      CoreSendStatusMessage(c, MSG_OK);
+      CoreSendStatusMessage(c, kMsgOk);
       break;
     case proto::CommandType_Speed: {
       c->state.speed = float(atof(command->arg()->c_str()));
@@ -87,12 +87,12 @@ void CoreHandleCommand(Core* c, const proto::Command* command) {
     }
     case proto::CommandType_StopVideo: {
       c->sendVideo = false;
-      CoreSendStatusMessage(c, MSG_OK);
+      CoreSendStatusMessage(c, kMsgOk);
       break;
     }
     case proto::CommandType_StartVideo: {
       c->sendVideo = true;
-      CoreSendStatusMessage(c, MSG_OK);
+      CoreSendStatusMessage(c, kMsgOk);
       break;
     }
     case proto::CommandType_RecordDepth: {
@@ -110,21 +110,21 @@ void CoreHandleCommand(Core* c, const proto::Command* command) {
         SqliteFrameWriterDestroy(c->writer);
         c->writer = nullptr;
       }
-      CoreSendStatusMessage(c, MSG_OK);
+      CoreSendStatusMessage(c, kMsgOk);
       break;
     }
     case proto::CommandType_StartDebug: {
       c->sendDebugData = true;
-      CoreSendStatusMessage(c, MSG_OK);
+      CoreSendStatusMessage(c, kMsgOk);
       break;
     }
     case proto::CommandType_StopDebug: {
       c->sendDebugData = false;
-      CoreSendStatusMessage(c, MSG_OK);
+      CoreSendStatusMessage(c, kMsgOk);
       break;
     }
     default: {
-      CoreSendStatusMessage(c, MSG_UNKNOWN_CMD);
+      CoreSendStatusMessage(c, kMsgUnknownCommand);
       break;
     }
   }
