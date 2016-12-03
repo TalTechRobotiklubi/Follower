@@ -4,6 +4,10 @@ local MAX_JUMP = 0.7
 local TURN_DECAY = 0.5
 local MAX_TIME_WO_TARGET = 3.0
 
+local RESTING = 0
+local SEARCHING = 1
+local FOLLOWING = 2
+local CRY = 3
 
 -- 2 - right
 -- 1 - right-45
@@ -139,24 +143,27 @@ function decide(dt, world, state, tracking)
     local angle = math.deg(math.atan(-target.position.x / target.position.z))
     state.rotationSpeed = rot_speed(angle)
     state.speed = fwd_speed(target.position.z)
+    tracking.activity = FOLLOWING
   else
     state.rotationSpeed = 0.0
     tracking.numTargets = 0
     tracking.activeTarget = -1
     state.speed = 1.0
+    tracking.activity = CRY
 
     time_no_target = time_no_target - dt
-  end
-
-  for i = 1, #sensors do
-    if world.distance_sensors[sensors[i]] < 20 then
-      state.speed = 1.0
-    end
   end
 
   if time_no_target < 0.0 then
     state.rotationSpeed = 50.0
     state.speed = 0.0
+    tracking.activity = SEARCHING
+  end
+
+  for i = 0, 3 do
+    if world.distance_sensors[i] < 25 then
+      state.speed = 1.0
+    end
   end
 
   state.camera.y = 20.0

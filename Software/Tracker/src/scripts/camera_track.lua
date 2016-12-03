@@ -1,4 +1,8 @@
-local MAX_TTL = 1.5
+local ffi = require("ffi")
+local MAX_TTL = 0.1
+local MAX_JUMP = 0.7
+local TURN_DECAY = 0.5
+local MAX_TIME_WO_TARGET = 3.0
 
 function filter(a, f)
 	local r = {}
@@ -43,8 +47,6 @@ local curr_camera_y = default_camera_y
 local curr_rotation_speed = 0
 
 function decide(dt, world, state, tracking)
-  remote_log("d1: %d, d2: %d, d3: %d, d4: %d\n", world.distance_sensors[0], world.distance_sensors[1],
-              world.distance_sensors[2], world.distance_sensors[3])
   if decide_init == true then
     curr_camera_y = default_camera_y
     state.camera.y = curr_camera_y
@@ -61,37 +63,52 @@ function decide(dt, world, state, tracking)
   if target == nil then
     local closest = find_closest_detection(world.detections, world.numDetections, {x = 0.0, z = 0.0})
     if closest ~= nil then
-      local k = closest.kinectPosition
+      local tl = closest.depthTopLeft
+      local br = closest.depthBotRight
       local p = closest.metricPosition
+      local hist = ffi.new("float[768]", {})
+      ffi.copy(hist, closest.histogram, ffi.sizeof(hist))
       target = {
-        timeToLive = MAX_TTL,
-        kinect = {x = k.x, y = k.y},
-        position = {x = p.x, y = p.y, z = p.z}
+        timeToLive = 0.5,
+        kinect = {x = (br.x + tl.x) * 0.5, y = (br.y + tl.y) * 0.5},
+        position = {x = p.x, y = p.y, z = p.z},
+        histogram = hist
       }
     end
   else
-    if world.numDetections > 0 then
-      local closest_index = -1
+    local closest_index = -1
+    if world.numDetections == 1 then
+      local dist = distance(target.position, world.detections[0].metricPosition)
+      local hdist = ffi.C.HistogramDistance(target.histogram, world.detections[0].histogram, HIST_SIZE)
+      if dist < MAX_JUMP and hdist < 0.2 then
+        closest_index = 0
+      end
+    elseif world.numDetections > 1 then
       local closest_dist = nil
-      for i = 0, world.numDetections - 1, 1 do    
+      for i = 0, world.numDetections - 1 do    
         local dist = distance(target.position, world.detections[i].metricPosition)
-        if dist < 0.8 then
+        if dist < MAX_JUMP then
+          local hdist = ffi.C.HistogramDistance(target.histogram, world.detections[i].histogram, HIST_SIZE)
           if closest_index == -1 then
             closest_index = i
-            closest_dist = dist
-          elseif dist < closest_dist then
+            closest_dist = hdist
+          elseif hdist < closest_dist then
             closest_index = i
-            closest_dist = dist
+            closest_dist = hdist
           end
         end
       end
-      if closest_index ~= -1 then
-        local k = world.detections[closest_index].kinectPosition
-        local p = world.detections[closest_index].metricPosition
-        target.kinect = {x = k.x, y = k.y}
-        target.position = {x = p.x, y = p.y, z = p.z}
-        target.timeToLive = MAX_TTL
-      end
+    end
+
+    if closest_index ~= -1 then
+      local detection = world.detections[closest_index]
+      local tl = detection.depthTopLeft
+      local br = detection.depthBotRight
+      local p = detection.metricPosition
+      target.kinect = {x = (br.x + tl.x) * 0.5, y = (br.y + tl.y) * 0.5}
+      target.position = {x = p.x, y = p.y, z = p.z}
+      target.timeToLive = math.min(MAX_TTL, target.timeToLive + 0.5)
+      ffi.copy(target.histogram, world.detections[closest_index].histogram, ffi.sizeof(target.histogram))
     end
   end
 
@@ -106,18 +123,18 @@ function decide(dt, world, state, tracking)
 
     local angle = math.deg(math.atan(-target.position.x / target.position.z))
     
-    local camera_x_acc = 0.25  -- change it depending on how fast is human detection
-    local camera_y_acc = 0.25
+    local camera_x_acc = 0.8  -- change it depending on how fast is human detection
+    local camera_y_acc = 0.8
     local max_degrees = 45
 
     -- range -45 ... 45
-    if angle > 4 then
+    if angle > 8 then
       curr_camera_x = curr_camera_x + camera_x_acc
       if curr_camera_x > max_degrees then
         curr_camera_x = max_degrees
       end
       state.camera.x = curr_camera_x
-    elseif angle < -4 then
+    elseif angle < -8 then
       curr_camera_x = curr_camera_x - camera_x_acc
       if curr_camera_x < -max_degrees then
         curr_camera_x = -max_degrees
@@ -139,17 +156,16 @@ function decide(dt, world, state, tracking)
       end
       state.camera.y = curr_camera_y
     end
-  --remote_log("target: y %f, camera set %d\n", target.position.y, curr_camera_y)
   
-    local rotate_acc = 4
+    local rotate_acc = 1
     local max_rot = 40
-    if curr_camera_x > 4 then
+    if curr_camera_x > 6 then
       curr_rotation_speed = curr_rotation_speed + rotate_acc
       if curr_rotation_speed > max_rot then
         curr_rotation_speed = max_rot
       end
       state.rotationSpeed = curr_rotation_speed
-    elseif curr_camera_x < 4 then
+    elseif curr_camera_x < 6 then
       curr_rotation_speed = curr_rotation_speed - rotate_acc
       if curr_rotation_speed < -max_rot then
         curr_rotation_speed = -max_rot
