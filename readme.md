@@ -9,7 +9,7 @@ Concept
 -----------
 Follower's conceptional drawing is presented below
 
-<img src="https://gitlab.com/TTYRobotiklubi/Follower/blob/master/Documents/Images/3d_concept.png" width=500>
+![pilt robotist](https://gitlab.com/TTYRobotiklubi/Follower/raw/master/Documents/Images/3d_concept.png)
 
 The robot has differential drive with two wheels inside the body to avoid collision effect while turning. Sensor boards reads ultrasonic sensors, which should detect any obstacles and inertial measurement unit, which helps to detect robots movements in time (turning, acceleration). Vision board controls servo motors to move camera left/right and up/down.
 
