@@ -34,7 +34,6 @@ set(CORE_SOURCES
 
   Encode.cpp
 
-  fl_yuy2_convert.cpp
   fl_sqlite_writer.cpp
   File.cpp
   HistogramDistance.cpp
@@ -45,6 +44,8 @@ set(CORE_SOURCES
 
   ScriptLoader.cpp
   UdpHost.cpp
+
+  Yuy2Convert.cpp
 
   parg/parg.c
 )
