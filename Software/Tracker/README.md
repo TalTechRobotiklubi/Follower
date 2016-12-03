@@ -38,7 +38,7 @@ Selection is roughly based on *Fast Human Detection for Indoor Mobile Robots Usi
 5. Now the regions are merged together based on several heuristics (their distance from each other, the amount of points they have). The original algorithm tried to filter out non-planar regions, but this removed a lot of regions with useful information (e.g. heads) so this step is omitted.
 6. Merged regions that fit all the criteria (not too small or large) are used in the final step. Depth values from the original image are copied into a 64x128 image based on the filtered regions. The result is a list of 64x128 depth images which are the final candidates. The previous version created a HOG feature vector from the images, but is now disabled.
 
-The candidate depth images are fed into a convolutional neural network which filters out possible humans. The training set for the classifier consisted of roughly 60k depth images.
+The candidate depth images are fed into a convolutional neural network (built with [Torch](http://torch.ch/)) which filters out possible humans. The training set for the classifier consisted of roughly 60k depth images.
 
 [1]: http://www.cs.cmu.edu/~mmv/papers/13icra-CoBotPeopleDetection.pdf
 [2]: http://cs.brown.edu/~pff/segment/
