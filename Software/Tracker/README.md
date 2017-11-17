@@ -23,7 +23,7 @@ Running the core
 --------
 follower_core 
 -h x.x.x.x (ip-address) 
--c cpu.net
+-t cpu.net
 -s COMx 
 -i default.lua
 
