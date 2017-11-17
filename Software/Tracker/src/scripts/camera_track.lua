@@ -159,6 +159,8 @@ function decide(dt, world, state, tracking)
   
     local rotate_acc = 1
     local max_rot = 40
+
+    -- Set motor speed according to curr_camera_x.
     if curr_camera_x > 6 then
       curr_rotation_speed = curr_rotation_speed + rotate_acc
       if curr_rotation_speed > max_rot then
@@ -171,6 +173,9 @@ function decide(dt, world, state, tracking)
         curr_rotation_speed = -max_rot
       end
       state.rotationSpeed = curr_rotation_speed
+    else
+      -- 0 rotation speed in case of curr_camera_x being within ]-15; 15[
+      state.rotationSpeed = 0.0
     end
   else
     tracking.numTargets = 0
