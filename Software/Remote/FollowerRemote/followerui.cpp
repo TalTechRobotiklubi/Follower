@@ -176,16 +176,20 @@ void FollowerUi::keyPressEvent(QKeyEvent * event)
   switch(key)
   {
     case Qt::Key_A:
-      kinematics_->setSpeeds(tSpeed, -wSpeed);
+      //kinematics_->setSpeeds(tSpeed, -wSpeed);
+      kinematics_->setSpeeds(0, -wSpeed);
       break;
     case Qt::Key_D:
-      kinematics_->setSpeeds(tSpeed, wSpeed);
+      //kinematics_->setSpeeds(tSpeed, wSpeed);
+      kinematics_->setSpeeds(0, wSpeed);
       break;
     case Qt::Key_W:
-      kinematics_->setSpeeds(tSpeed, wSpeed);
+      //kinematics_->setSpeeds(tSpeed, wSpeed);
+      kinematics_->setSpeeds(tSpeed, 0);
       break;
     case Qt::Key_Z:
-      kinematics_->setSpeeds(-tSpeed, wSpeed);
+      //kinematics_->setSpeeds(-tSpeed, wSpeed);
+      kinematics_->setSpeeds(-tSpeed, 0);
       break;
     case Qt::Key_S:
       kinematics_->stop();
